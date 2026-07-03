@@ -77,7 +77,7 @@ export function Footer() {
               </h2>
               <ul className="grid gap-3 text-sm text-slate-300">
                 {group.links.map(([label, href]) => (
-                  <li key={href}>
+                  <li key={`${group.title}-${label}-${href}`}>
                     <Link href={href} className="hover:text-white">
                       {label}
                     </Link>
