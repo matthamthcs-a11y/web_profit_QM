@@ -1,11 +1,17 @@
-import type { Product } from "@/lib/types";
+import { text } from "@/lib/i18n";
+import type { Locale, Product } from "@/lib/types";
 
 type ProductVisualProps = {
   product: Product;
+  locale: Locale;
   size?: "card" | "hero";
 };
 
-export function ProductVisual({ product, size = "card" }: ProductVisualProps) {
+export function ProductVisual({
+  product,
+  locale,
+  size = "card",
+}: ProductVisualProps) {
   const isHero = size === "hero";
   const shellSize = isHero ? "h-[27rem] w-full max-w-sm" : "h-52 w-full";
   const packageSize = isHero ? "h-80 w-52" : "h-36 w-28";
@@ -24,18 +30,20 @@ export function ProductVisual({ product, size = "card" }: ProductVisualProps) {
         style={{ backgroundColor: product.visual.accent }}
       />
       <div className="absolute left-5 top-5 rounded-full bg-white/80 px-3 py-1 text-xs font-black uppercase text-ink shadow-sm">
-        {product.visual.badge}
+        {text(product.visual.badge, locale)}
       </div>
-      <PackageShape product={product} className={packageSize} />
+      <PackageShape product={product} locale={locale} className={packageSize} />
     </div>
   );
 }
 
 function PackageShape({
   product,
+  locale,
   className,
 }: {
   product: Product;
+  locale: Locale;
   className: string;
 }) {
   const common =
@@ -47,7 +55,7 @@ function PackageShape({
         className={`${className} ${common} rounded-full`}
         style={{ borderColor: product.visual.accent }}
       >
-        <ProductLabel product={product} compact />
+        <ProductLabel product={product} locale={locale} compact />
       </div>
     );
   }
@@ -57,7 +65,7 @@ function PackageShape({
       <div className={`${className} relative flex items-end justify-center`}>
         <div className="absolute top-0 h-10 w-44 rounded-t border border-black/10 bg-slate-900" />
         <div className={`${common} h-64 w-52 rounded-b rounded-t-sm pt-12`}>
-          <ProductLabel product={product} />
+          <ProductLabel product={product} locale={locale} />
         </div>
       </div>
     );
@@ -70,7 +78,7 @@ function PackageShape({
         style={{ borderColor: product.visual.accent }}
       >
         <div className="absolute left-5 right-5 top-4 h-2 rounded-full bg-black/10" />
-        <ProductLabel product={product} />
+        <ProductLabel product={product} locale={locale} />
       </div>
     );
   }
@@ -80,16 +88,18 @@ function PackageShape({
       className={`${className} ${common} rounded-b-2xl rounded-t-md`}
       style={{ borderColor: product.visual.accent }}
     >
-      <ProductLabel product={product} />
+      <ProductLabel product={product} locale={locale} />
     </div>
   );
 }
 
 function ProductLabel({
   product,
+  locale,
   compact = false,
 }: {
   product: Product;
+  locale: Locale;
   compact?: boolean;
 }) {
   return (
@@ -103,10 +113,10 @@ function ProductLabel({
       <span
         className={`${compact ? "text-lg" : "text-2xl"} font-black leading-tight text-ink`}
       >
-        {product.name}
+        {text(product.name, locale)}
       </span>
       <span className="text-xs font-black uppercase text-muted">
-        {product.primaryGoal}
+        {text(product.primaryGoal, locale)}
       </span>
     </>
   );

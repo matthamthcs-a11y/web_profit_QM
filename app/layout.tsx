@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { QuickContact } from "@/components/quick-contact";
+import { getLocale } from "@/lib/i18n";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,25 +18,28 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Profitness | Dinh duong the thao chinh hang",
-    template: "%s | Profitness",
+    default: "Pro-Fitness Sports Nutrition",
+    template: "%s | Pro-Fitness",
   },
   description:
-    "Website catalog Profitness cho san pham dinh duong the thao, thuong hieu phan phoi, kien thuc su dung va lien he tu van.",
+    "Catalog san pham Pro-Fitness Sports Nutrition: gia ban, huong vi, cong dung, cach su dung va lien he tu van.",
   metadataBase: new URL("https://profitness-preview.vercel.app"),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="vi">
+    <html lang={locale}>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Header />
         <main>{children}</main>
         <Footer />
+        <QuickContact locale={locale} />
       </body>
     </html>
   );

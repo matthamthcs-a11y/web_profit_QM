@@ -11,193 +11,312 @@ import type {
 export const categories: Category[] = [
   {
     id: "cat_energy",
-    name: "Energy Gel",
+    name: { vi: "Gel năng lượng", en: "Energy Gel" },
     slug: "energy",
-    description: "Gel năng lượng và sản phẩm bổ sung carbohydrate cho buổi tập dài.",
+    description: {
+      vi: "Bổ sung năng lượng nhanh cho chạy bộ, đạp xe và các buổi tập dài.",
+      en: "Quick energy support for running, cycling and long training sessions.",
+    },
   },
   {
     id: "cat_hydration",
-    name: "Electrolyte",
+    name: { vi: "Điện giải", en: "Electrolyte" },
     slug: "hydration",
-    description: "Điện giải hỗ trợ bù khoáng, hạn chế chuột rút và duy trì hiệu suất.",
+    description: {
+      vi: "Hỗ trợ bù khoáng, duy trì hiệu suất và hạn chế chuột rút.",
+      en: "Mineral support for hydration, performance and cramp prevention.",
+    },
   },
   {
     id: "cat_protein",
-    name: "Protein",
+    name: { vi: "Protein", en: "Protein" },
     slug: "protein",
-    description: "Protein sau tập, hỗ trợ phục hồi và phát triển cơ.",
+    description: {
+      vi: "Bổ sung protein cho phục hồi sau tập và khẩu phần hằng ngày.",
+      en: "Protein support for recovery and daily nutrition.",
+    },
   },
   {
     id: "cat_recovery",
-    name: "Recovery",
+    name: { vi: "Phục hồi", en: "Recovery" },
     slug: "recovery",
-    description: "Sản phẩm phục hồi sau vận động cường độ cao.",
+    description: {
+      vi: "Công thức phục hồi sau vận động cường độ cao hoặc thời lượng dài.",
+      en: "Recovery formulas after intense or long-duration exercise.",
+    },
   },
   {
     id: "cat_vitamin",
-    name: "Vitamin & Supplement",
+    name: { vi: "Vitamin & Supplement", en: "Vitamin & Supplement" },
     slug: "vitamin",
-    description: "Vi chất, vitamin và supplement hỗ trợ sức khỏe nền.",
+    description: {
+      vi: "Vi chất và supplement nền hỗ trợ sức khỏe cho người tập luyện.",
+      en: "Micronutrients and daily supplements for active lifestyles.",
+    },
   },
   {
     id: "cat_weight",
-    name: "Weight Management",
+    name: { vi: "Quản lý cân nặng", en: "Weight Management" },
     slug: "weight-management",
-    description: "Sản phẩm hỗ trợ kiểm soát cân nặng và chế độ tập luyện.",
+    description: {
+      vi: "Sản phẩm hỗ trợ kiểm soát cân nặng theo mục tiêu tập luyện.",
+      en: "Products that support weight management and training goals.",
+    },
   },
 ];
 
 export const products: Product[] = [
   {
     id: "prd_energy-gel-citrus",
-    name: "Endurance Gel Citrus",
+    name: { vi: "Endurance Gel Citrus", en: "Endurance Gel Citrus" },
     slug: "endurance-gel-citrus",
     brand: "ProFuel",
     categoryId: "cat_energy",
-    categoryName: "Energy Gel",
+    categoryName: { vi: "Gel năng lượng", en: "Energy Gel" },
     origin: "USA",
+    price: 45000,
     sizes: ["35g", "Box 24"],
-    flavors: ["Citrus", "Berry", "Cola"],
-    primaryGoal: "Energy",
-    shortDescription:
-      "Gel năng lượng dễ dùng cho runner, cyclist và triathlete trong buổi tập dài.",
+    flavors: [
+      { vi: "Cam chanh", en: "Citrus" },
+      { vi: "Dâu rừng", en: "Berry" },
+      { vi: "Cola", en: "Cola" },
+    ],
+    primaryGoal: { vi: "Năng lượng", en: "Energy" },
+    shortDescription: {
+      vi: "Gel năng lượng dễ dùng cho runner, cyclist và triathlete trong buổi tập dài.",
+      en: "Easy-to-use energy gel for runners, cyclists and triathletes during long sessions.",
+    },
     visual: {
       packageType: "gel",
       accent: "#ce1732",
       background: "#fff1f2",
-      badge: "Race fuel",
+      badge: { vi: "Race fuel", en: "Race fuel" },
     },
     benefits: [
-      "Bổ sung năng lượng nhanh trong lúc vận động",
-      "Dễ mang theo khi chạy bộ hoặc đạp xe",
-      "Phù hợp cho buổi tập từ 60 phút trở lên",
+      {
+        vi: "Bổ sung năng lượng nhanh trong lúc vận động.",
+        en: "Supports quick energy intake during exercise.",
+      },
+      {
+        vi: "Dễ mang theo khi chạy bộ hoặc đạp xe.",
+        en: "Easy to carry for running or cycling.",
+      },
+      {
+        vi: "Phù hợp cho buổi tập từ 60 phút trở lên.",
+        en: "Suitable for sessions lasting 60 minutes or more.",
+      },
     ],
-    ingredients: ["Maltodextrin", "Fructose", "Sodium", "Potassium"],
+    ingredients: [
+      { name: "Carbohydrate", amount: "23g" },
+      { name: "Sodium", amount: "90mg" },
+      { name: "Potassium", amount: "35mg" },
+    ],
     usage: [
-      "Dùng 1 gói trước hoặc trong khi tập.",
-      "Uống kèm nước để hấp thụ tốt hơn.",
+      {
+        vi: "Dùng 1 gói trước hoặc trong khi tập.",
+        en: "Take 1 sachet before or during training.",
+      },
+      {
+        vi: "Uống kèm nước để hỗ trợ hấp thụ.",
+        en: "Drink with water for better absorption.",
+      },
     ],
-    audience: ["Runner", "Cyclist", "Triathlete", "Gym endurance"],
-    faq: [
-      {
-        question: "Dùng trước hay trong lúc tập?",
-        answer: "Có thể dùng trước 10-15 phút hoặc chia đều trong buổi tập dài.",
-      },
-      {
-        question: "Có cần uống nước kèm không?",
-        answer: "Nên uống kèm nước để hỗ trợ tiêu hóa và hấp thụ.",
-      },
+    audience: [
+      { vi: "Runner", en: "Runner" },
+      { vi: "Cyclist", en: "Cyclist" },
+      { vi: "Triathlete", en: "Triathlete" },
     ],
     relatedProductIds: ["prd_electrolyte-tabs", "prd_recovery-drink"],
     isFeatured: true,
+    isBestSeller: true,
   },
   {
     id: "prd_electrolyte-tabs",
-    name: "Electrolyte Tabs",
+    name: { vi: "Electrolyte Tabs", en: "Electrolyte Tabs" },
     slug: "electrolyte-tabs",
     brand: "HydraMax",
     categoryId: "cat_hydration",
-    categoryName: "Electrolyte",
+    categoryName: { vi: "Điện giải", en: "Electrolyte" },
     origin: "Germany",
-    sizes: ["Tube 20 viên"],
-    flavors: ["Lemon", "Orange"],
-    primaryGoal: "Hydration",
-    shortDescription:
-      "Viên sủi điện giải cho buổi tập ra nhiều mồ hôi hoặc thi đấu ngoài trời.",
+    price: 320000,
+    sizes: ["Tube 20 tablets"],
+    flavors: [
+      { vi: "Chanh vàng", en: "Lemon" },
+      { vi: "Cam", en: "Orange" },
+    ],
+    primaryGoal: { vi: "Bù khoáng", en: "Hydration" },
+    shortDescription: {
+      vi: "Viên sủi điện giải cho buổi tập ra nhiều mồ hôi hoặc thi đấu ngoài trời.",
+      en: "Electrolyte tablets for heavy sweating sessions or outdoor racing.",
+    },
     visual: {
       packageType: "tube",
       accent: "#0f766e",
       background: "#ecfdf5",
-      badge: "Electrolytes",
+      badge: { vi: "Electrolytes", en: "Electrolytes" },
     },
     benefits: [
-      "Bổ sung sodium, potassium và magnesium",
-      "Hỗ trợ duy trì nước và khoáng",
-      "Dễ pha với bình nước tập luyện",
-    ],
-    ingredients: ["Sodium", "Potassium", "Magnesium", "Vitamin C"],
-    usage: ["Pha 1 viên với 500-750ml nước.", "Dùng trước và trong khi tập."],
-    audience: ["Runner", "Cyclist", "Trail runner", "Outdoor sports"],
-    faq: [
       {
-        question: "Có dùng hằng ngày được không?",
-        answer: "Nên dùng theo nhu cầu vận động và lượng mồ hôi thực tế.",
+        vi: "Bổ sung sodium, potassium và magnesium.",
+        en: "Provides sodium, potassium and magnesium.",
+      },
+      {
+        vi: "Hỗ trợ duy trì nước và khoáng trong lúc tập.",
+        en: "Supports fluid and mineral balance during exercise.",
+      },
+      {
+        vi: "Dễ pha với bình nước tập luyện.",
+        en: "Easy to mix in a training bottle.",
       },
     ],
-    relatedProductIds: ["prd_energy-gel-citrus", "prd_amino-recovery"],
+    ingredients: [
+      { name: "Sodium", amount: "250mg" },
+      { name: "Potassium", amount: "80mg" },
+      { name: "Magnesium", amount: "45mg" },
+    ],
+    usage: [
+      {
+        vi: "Pha 1 viên với 500-750ml nước.",
+        en: "Dissolve 1 tablet in 500-750ml of water.",
+      },
+      {
+        vi: "Dùng trước và trong khi tập.",
+        en: "Use before and during training.",
+      },
+    ],
+    audience: [
+      { vi: "Runner", en: "Runner" },
+      { vi: "Cyclist", en: "Cyclist" },
+      { vi: "Thể thao ngoài trời", en: "Outdoor sports" },
+    ],
+    relatedProductIds: ["prd_energy-gel-citrus", "prd_recovery-drink"],
     isFeatured: true,
+    isBestSeller: true,
   },
   {
     id: "prd_whey-protein",
-    name: "Whey Protein Isolate",
+    name: { vi: "Whey Protein Isolate", en: "Whey Protein Isolate" },
     slug: "whey-protein-isolate",
     brand: "NutriCore",
     categoryId: "cat_protein",
-    categoryName: "Protein",
+    categoryName: { vi: "Protein", en: "Protein" },
     origin: "New Zealand",
+    price: 1250000,
     sizes: ["900g", "2.2kg"],
-    flavors: ["Chocolate", "Vanilla"],
-    primaryGoal: "Protein",
-    shortDescription:
-      "Protein isolate cho phục hồi sau tập và bổ sung protein trong khẩu phần.",
+    flavors: [
+      { vi: "Chocolate", en: "Chocolate" },
+      { vi: "Vanilla", en: "Vanilla" },
+    ],
+    primaryGoal: { vi: "Protein", en: "Protein" },
+    shortDescription: {
+      vi: "Protein isolate cho phục hồi sau tập và bổ sung protein trong khẩu phần.",
+      en: "Protein isolate for post-workout recovery and daily protein intake.",
+    },
     visual: {
       packageType: "tub",
       accent: "#1f2937",
       background: "#f1f5f9",
-      badge: "25g protein",
+      badge: { vi: "25g protein", en: "25g protein" },
     },
     benefits: [
-      "Hàm lượng protein cao",
-      "Hỗ trợ phục hồi cơ sau tập",
-      "Dễ pha, phù hợp dùng sau tập",
-    ],
-    ingredients: ["Whey protein isolate", "Cocoa powder", "Lecithin"],
-    usage: ["Pha 1 muỗng với 250ml nước hoặc sữa.", "Dùng sau tập hoặc bữa phụ."],
-    audience: ["Gym", "Runner", "Người cần bổ sung protein"],
-    faq: [
       {
-        question: "Người mới tập có dùng được không?",
-        answer: "Có, nếu cần bổ sung protein và không dị ứng với sữa.",
+        vi: "Hàm lượng protein cao.",
+        en: "High protein content.",
+      },
+      {
+        vi: "Hỗ trợ phục hồi cơ sau tập.",
+        en: "Supports muscle recovery after training.",
+      },
+      {
+        vi: "Dễ pha, phù hợp dùng sau tập.",
+        en: "Easy to mix and suitable after workouts.",
       },
     ],
-    relatedProductIds: ["prd_recovery-drink", "prd_daily-vitamin"],
+    ingredients: [
+      { name: "Protein", amount: "25g" },
+      { name: "BCAA", amount: "5.5g" },
+      { name: "Sugar", amount: "1g" },
+    ],
+    usage: [
+      {
+        vi: "Pha 1 muỗng với 250ml nước hoặc sữa.",
+        en: "Mix 1 scoop with 250ml water or milk.",
+      },
+      {
+        vi: "Dùng sau tập hoặc như bữa phụ.",
+        en: "Use after training or as a protein snack.",
+      },
+    ],
+    audience: [
+      { vi: "Gym", en: "Gym" },
+      { vi: "Người cần bổ sung protein", en: "Protein supplementation" },
+    ],
+    relatedProductIds: ["prd_recovery-drink"],
     isFeatured: true,
+    isBestSeller: true,
   },
   {
     id: "prd_recovery-drink",
-    name: "Recovery Drink Mix",
+    name: { vi: "Recovery Drink Mix", en: "Recovery Drink Mix" },
     slug: "recovery-drink-mix",
     brand: "ProFuel",
     categoryId: "cat_recovery",
-    categoryName: "Recovery",
+    categoryName: { vi: "Phục hồi", en: "Recovery" },
     origin: "USA",
+    price: 780000,
     sizes: ["600g"],
-    flavors: ["Berry", "Mango"],
-    primaryGoal: "Recovery",
-    shortDescription:
-      "Công thức phục hồi sau buổi tập dài với carbohydrate, protein và điện giải.",
+    flavors: [
+      { vi: "Dâu rừng", en: "Berry" },
+      { vi: "Xoài", en: "Mango" },
+    ],
+    primaryGoal: { vi: "Phục hồi", en: "Recovery" },
+    shortDescription: {
+      vi: "Công thức phục hồi sau buổi tập dài với carbohydrate, protein và điện giải.",
+      en: "Recovery formula with carbohydrates, protein and electrolytes after long sessions.",
+    },
     visual: {
       packageType: "pouch",
       accent: "#c9972f",
       background: "#fffbeb",
-      badge: "Post-workout",
+      badge: { vi: "Sau tập", en: "Post-workout" },
     },
     benefits: [
-      "Hỗ trợ nạp lại glycogen",
-      "Bổ sung protein cho phục hồi cơ",
-      "Phù hợp sau chạy dài hoặc đạp dài",
-    ],
-    ingredients: ["Carbohydrate blend", "Whey protein", "Sodium", "BCAA"],
-    usage: ["Dùng trong vòng 30-60 phút sau tập.", "Pha với 300ml nước lạnh."],
-    audience: ["Runner", "Cyclist", "Triathlete"],
-    faq: [
       {
-        question: "Có thay bữa ăn được không?",
-        answer: "Không nên xem là bữa ăn chính; dùng như sản phẩm hỗ trợ phục hồi.",
+        vi: "Hỗ trợ nạp lại glycogen.",
+        en: "Supports glycogen replenishment.",
       },
+      {
+        vi: "Bổ sung protein cho phục hồi cơ.",
+        en: "Provides protein for muscle recovery.",
+      },
+      {
+        vi: "Phù hợp sau chạy dài hoặc đạp dài.",
+        en: "Suitable after long runs or rides.",
+      },
+    ],
+    ingredients: [
+      { name: "Carbohydrate", amount: "38g" },
+      { name: "Protein", amount: "12g" },
+      { name: "Sodium", amount: "180mg" },
+    ],
+    usage: [
+      {
+        vi: "Dùng trong vòng 30-60 phút sau tập.",
+        en: "Use within 30-60 minutes after training.",
+      },
+      {
+        vi: "Pha với 300ml nước lạnh.",
+        en: "Mix with 300ml cold water.",
+      },
+    ],
+    audience: [
+      { vi: "Runner", en: "Runner" },
+      { vi: "Cyclist", en: "Cyclist" },
+      { vi: "Triathlete", en: "Triathlete" },
     ],
     relatedProductIds: ["prd_energy-gel-citrus", "prd_whey-protein"],
     isFeatured: true,
+    isBestSeller: false,
   },
 ];
 
@@ -207,7 +326,10 @@ export const brands: Brand[] = [
     name: "ProFuel",
     slug: "profuel",
     origin: "USA",
-    description: "Dòng sản phẩm năng lượng và phục hồi cho vận động sức bền.",
+    description: {
+      vi: "Dòng sản phẩm năng lượng và phục hồi cho vận động sức bền.",
+      en: "Energy and recovery products for endurance sports.",
+    },
     documentCount: 6,
   },
   {
@@ -215,7 +337,10 @@ export const brands: Brand[] = [
     name: "HydraMax",
     slug: "hydramax",
     origin: "Germany",
-    description: "Giải pháp điện giải và hydration cho tập luyện ngoài trời.",
+    description: {
+      vi: "Giải pháp điện giải và hydration cho tập luyện ngoài trời.",
+      en: "Electrolyte and hydration solutions for outdoor training.",
+    },
     documentCount: 4,
   },
   {
@@ -223,41 +348,11 @@ export const brands: Brand[] = [
     name: "NutriCore",
     slug: "nutricore",
     origin: "New Zealand",
-    description: "Protein và supplement nền cho người tập luyện đều đặn.",
+    description: {
+      vi: "Protein và supplement nền cho người tập luyện đều đặn.",
+      en: "Protein and daily supplements for regular training.",
+    },
     documentCount: 5,
-  },
-];
-
-export const blogPosts: BlogPost[] = [
-  {
-    id: "post_energy-gel",
-    title: "Cách dùng gel năng lượng cho buổi chạy dài",
-    slug: "cach-dung-gel-nang-luong-cho-buoi-chay-dai",
-    category: "Dinh dưỡng thể thao",
-    excerpt:
-      "Gợi ý thời điểm dùng gel, cách uống nước kèm và các lỗi thường gặp khi chạy dài.",
-    publishedAt: "2026-06-20",
-    readingMinutes: 5,
-  },
-  {
-    id: "post_electrolyte",
-    title: "Điện giải là gì và khi nào cần bổ sung?",
-    slug: "dien-giai-la-gi-va-khi-nao-can-bo-sung",
-    category: "Hydration",
-    excerpt:
-      "Hiểu đúng về sodium, potassium, magnesium và cách lựa chọn sản phẩm điện giải.",
-    publishedAt: "2026-06-12",
-    readingMinutes: 6,
-  },
-  {
-    id: "post_protein",
-    title: "Protein sau tập có cần thiết không?",
-    slug: "protein-sau-tap-co-can-thiet-khong",
-    category: "Recovery",
-    excerpt:
-      "Khi nào cần whey protein, khi nào chỉ cần điều chỉnh khẩu phần ăn hằng ngày.",
-    publishedAt: "2026-06-04",
-    readingMinutes: 4,
   },
 ];
 
@@ -267,56 +362,71 @@ export const testimonials: Testimonial[] = [
     name: "Minh Anh",
     role: "Marathon runner",
     rating: 5,
-    quote:
-      "Mình dễ chọn sản phẩm hơn khi có tư vấn theo cự ly và thời điểm sử dụng.",
+    quote: {
+      vi: "Mình dễ chọn sản phẩm hơn khi có giá, vị và cách dùng rõ ràng.",
+      en: "It is easier to choose products when price, flavors and usage are clear.",
+    },
   },
   {
     id: "tst_cyclist",
     name: "Quốc Huy",
     role: "Cyclist",
     rating: 5,
-    quote:
-      "Tài liệu thành phần và giấy tờ sản phẩm rõ ràng, rất tiện khi tư vấn cho CLB.",
+    quote: {
+      vi: "Thông tin sản phẩm gọn, dễ xem và có hotline để hỏi nhanh.",
+      en: "Product information is concise, easy to review and has a hotline for quick advice.",
+    },
   },
 ];
 
 export const dealers: Dealer[] = [
   {
     id: "dealer_hcm",
-    name: "Profitness Ho Chi Minh",
+    name: "Pro-Fitness Ho Chi Minh",
     city: "Ho Chi Minh City",
     address: "District 1, Ho Chi Minh City",
-    phone: "0900 000 001",
+    phone: "02838481014",
   },
   {
     id: "dealer_hanoi",
-    name: "Profitness Ha Noi Partner",
+    name: "Pro-Fitness Ha Noi Partner",
     city: "Ha Noi",
     address: "Ba Dinh, Ha Noi",
-    phone: "0900 000 002",
+    phone: "02838481014",
   },
 ];
 
 export const documents: DocumentAsset[] = [
   {
     id: "doc_catalog",
-    title: "Catalog sản phẩm 2026",
+    title: { vi: "Catalog sản phẩm", en: "Product catalog" },
     type: "catalog",
-    description: "Tổng quan danh mục sản phẩm và thương hiệu phân phối.",
+    description: {
+      vi: "Tổng quan danh mục sản phẩm và thương hiệu phân phối.",
+      en: "Overview of products and distributed brands.",
+    },
   },
   {
     id: "doc_certificate",
-    title: "Chứng nhận phân phối",
+    title: { vi: "Chứng nhận phân phối", en: "Distribution certificate" },
     type: "certificate",
-    description: "Tài liệu xác thực thương hiệu và giấy tờ nhập khẩu.",
+    description: {
+      vi: "Tài liệu xác thực thương hiệu và giấy tờ phân phối.",
+      en: "Brand verification and distribution documents.",
+    },
   },
   {
     id: "doc_attp",
-    title: "Công bố ATTP",
+    title: { vi: "Công bố ATTP", en: "Food safety declaration" },
     type: "attp",
-    description: "Bộ tài liệu minh bạch cho sản phẩm thực phẩm bổ sung.",
+    description: {
+      vi: "Bộ tài liệu minh bạch cho sản phẩm thực phẩm bổ sung.",
+      en: "Compliance documents for supplement products.",
+    },
   },
 ];
+
+export const blogPosts: BlogPost[] = [];
 
 export function getProductBySlug(slug: string) {
   return products.find((product) => product.slug === slug);

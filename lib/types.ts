@@ -1,38 +1,46 @@
+export type Locale = "vi" | "en";
+
+export type LocalizedText = {
+  vi: string;
+  en: string;
+};
+
 export type Category = {
   id: string;
-  name: string;
+  name: LocalizedText;
   slug: string;
-  description: string;
+  description: LocalizedText;
 };
 
 export type Product = {
   id: string;
-  name: string;
+  name: LocalizedText;
   slug: string;
   brand: string;
   categoryId: string;
-  categoryName: string;
+  categoryName: LocalizedText;
   origin: string;
+  price: number;
   sizes: string[];
-  flavors: string[];
-  primaryGoal: string;
-  shortDescription: string;
+  flavors: LocalizedText[];
+  primaryGoal: LocalizedText;
+  shortDescription: LocalizedText;
   visual: {
     packageType: "gel" | "tube" | "tub" | "pouch";
     accent: string;
     background: string;
-    badge: string;
+    badge: LocalizedText;
   };
-  benefits: string[];
-  ingredients: string[];
-  usage: string[];
-  audience: string[];
-  faq: Array<{
-    question: string;
-    answer: string;
+  benefits: LocalizedText[];
+  ingredients: Array<{
+    name: string;
+    amount: string;
   }>;
+  usage: LocalizedText[];
+  audience: LocalizedText[];
   relatedProductIds: string[];
   isFeatured: boolean;
+  isBestSeller: boolean;
 };
 
 export type Brand = {
@@ -40,7 +48,7 @@ export type Brand = {
   name: string;
   slug: string;
   origin: string;
-  description: string;
+  description: LocalizedText;
   documentCount: number;
 };
 
@@ -59,7 +67,7 @@ export type Testimonial = {
   name: string;
   role: string;
   rating: number;
-  quote: string;
+  quote: LocalizedText;
 };
 
 export type Dealer = {
@@ -72,7 +80,7 @@ export type Dealer = {
 
 export type DocumentAsset = {
   id: string;
-  title: string;
+  title: LocalizedText;
   type: "catalog" | "certificate" | "coa" | "attp";
-  description: string;
+  description: LocalizedText;
 };

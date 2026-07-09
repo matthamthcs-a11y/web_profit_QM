@@ -1,55 +1,65 @@
 import type { Metadata } from "next";
 import { Facebook, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { SectionHeading } from "@/components/section-heading";
+import { getLocale, HOTLINE, ZALO_URL } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Lien he tu van san pham Profitness.",
+  description: "Lien he Pro-Fitness Sports Nutrition.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const locale = await getLocale();
+
   return (
     <section className="container-px mx-auto grid max-w-7xl gap-10 py-14 lg:grid-cols-[0.8fr_1fr]">
       <div>
         <SectionHeading
           eyebrow="Contact"
-          title="Liên hệ tư vấn"
-          description="Bản preview hiển thị thông tin liên hệ và form mẫu. Form thật sẽ lưu vào Supabase sau khi chốt frontend."
+          title={locale === "vi" ? "Liên hệ tư vấn" : "Contact for advice"}
+          description={
+            locale === "vi"
+              ? "Khách hàng có thể gọi hotline hoặc nhắn Zalo để được tư vấn sản phẩm và mua hàng trực tiếp."
+              : "Customers can call the hotline or message Zalo for product advice and direct purchase."
+          }
         />
         <div className="grid gap-4">
-          <ContactLine icon={Phone} label="Hotline" value="0900 000 000" />
+          <ContactLine icon={Phone} label="Hotline" value={HOTLINE} />
           <ContactLine icon={Mail} label="Email" value="hello@profitness.vn" />
-          <ContactLine icon={MessageCircle} label="Zalo OA" value="Profitness" />
-          <ContactLine icon={Facebook} label="Facebook" value="Profitness Vietnam" />
+          <ContactLine icon={MessageCircle} label="Zalo" value="Pro-Fitness" />
+          <ContactLine icon={Facebook} label="Facebook" value="Pro-Fitness Vietnam" />
           <ContactLine
             icon={MapPin}
-            label="Văn phòng"
+            label={locale === "vi" ? "Văn phòng" : "Office"}
             value="Ho Chi Minh City, Vietnam"
           />
         </div>
       </div>
 
-      <form className="rounded border border-line bg-surface p-6">
-        <div className="grid gap-5">
-          <Field label="Họ tên" placeholder="Nguyễn Văn A" />
-          <Field label="Số điện thoại" placeholder="0900 000 000" />
-          <Field label="Nhu cầu tư vấn" placeholder="Gel năng lượng cho marathon" />
-          <label className="grid gap-2">
-            <span className="text-sm font-black text-ink">Nội dung</span>
-            <textarea
-              rows={5}
-              placeholder="Mô tả môn thể thao, cự ly, lịch tập hoặc sản phẩm bạn quan tâm"
-              className="rounded border border-line bg-white px-4 py-3 text-sm outline-none focus:border-brand-red"
-            />
-          </label>
-          <button
-            type="button"
-            className="h-12 rounded bg-brand-red px-5 text-sm font-black text-white hover:bg-red-700"
+      <div className="rounded border border-line bg-surface p-6">
+        <h2 className="text-2xl font-black text-ink">
+          {locale === "vi" ? "Liên hệ nhanh" : "Quick contact"}
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          {locale === "vi"
+            ? "Form lưu dữ liệu sẽ được triển khai sau khi kết nối Supabase. Giai đoạn này ưu tiên nút gọi và Zalo."
+            : "Lead form storage will be implemented after Supabase integration. This phase prioritizes call and Zalo buttons."}
+        </p>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <a
+            href={ZALO_URL}
+            className="flex h-12 items-center justify-center rounded bg-brand-red text-sm font-black text-white"
           >
-            Gửi thông tin
-          </button>
+            {locale === "vi" ? "Nhắn Zalo" : "Message Zalo"}
+          </a>
+          <a
+            href={`tel:${HOTLINE}`}
+            className="flex h-12 items-center justify-center rounded bg-ink text-sm font-black text-white"
+          >
+            {HOTLINE}
+          </a>
         </div>
-      </form>
+      </div>
     </section>
   );
 }
@@ -71,17 +81,5 @@ function ContactLine({
         <p className="font-bold text-ink">{value}</p>
       </div>
     </div>
-  );
-}
-
-function Field({ label, placeholder }: { label: string; placeholder: string }) {
-  return (
-    <label className="grid gap-2">
-      <span className="text-sm font-black text-ink">{label}</span>
-      <input
-        placeholder={placeholder}
-        className="h-12 rounded border border-line bg-white px-4 text-sm outline-none focus:border-brand-red"
-      />
-    </label>
   );
 }

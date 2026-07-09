@@ -2,19 +2,26 @@ import type { Metadata } from "next";
 import { MapPin, Phone } from "lucide-react";
 import { SectionHeading } from "@/components/section-heading";
 import { dealers } from "@/lib/mock-data";
+import { getLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Dealers",
-  description: "He thong dai ly va form dang ky dai ly Profitness.",
+  description: "He thong dai ly Pro-Fitness Sports Nutrition.",
 };
 
-export default function DealersPage() {
+export default async function DealersPage() {
+  const locale = await getLocale();
+
   return (
     <section className="container-px mx-auto max-w-7xl py-14">
       <SectionHeading
         eyebrow="Dealers"
-        title="Hệ thống đại lý"
-        description="Khách hàng có thể tìm điểm tư vấn gần nhất hoặc gửi thông tin để đăng ký đại lý."
+        title={locale === "vi" ? "Thông tin đại lý" : "Dealer information"}
+        description={
+          locale === "vi"
+            ? "Danh sách điểm tư vấn/phân phối sẽ được cập nhật khi khách cung cấp dữ liệu đại lý chính thức."
+            : "Consultation and distribution points will be updated when official dealer data is provided."
+        }
       />
       <div className="grid gap-5 md:grid-cols-2">
         {dealers.map((dealer) => (
@@ -33,13 +40,6 @@ export default function DealersPage() {
             </p>
           </article>
         ))}
-      </div>
-      <div className="mt-10 rounded bg-ink p-8 text-white">
-        <h2 className="text-3xl font-black">Đăng ký đại lý</h2>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-          Form thật sẽ được nối Supabase ở giai đoạn sau. Bản preview giữ CTA
-          rõ ràng để khách hàng duyệt luồng nội dung.
-        </p>
       </div>
     </section>
   );
