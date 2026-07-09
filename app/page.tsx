@@ -1,18 +1,19 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
   ClipboardCheck,
-  MessageCircle,
-  Phone,
+  Award,
+  FileText,
+  Star,
   ShieldCheck,
   Truck,
   UserRoundCheck,
 } from "lucide-react";
+import { HeroBanner } from "@/components/hero-banner";
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
-import { categories, products } from "@/lib/mock-data";
-import { copy, getLocale, HOTLINE, text } from "@/lib/i18n";
+import { categories, documents, products, testimonials } from "@/lib/mock-data";
+import { HOTLINE, copy, getLocale, text } from "@/lib/i18n";
 
 const trustItems = {
   vi: [
@@ -65,86 +66,33 @@ export default async function HomePage() {
   const locale = await getLocale();
   const c = copy[locale];
   const bestSellers = products.filter((product) => product.isBestSeller);
+  const isVi = locale === "vi";
+  const documentMeta = {
+    catalog: {
+      icon: FileText,
+      tone: "text-brand-red",
+    },
+    certificate: {
+      icon: Award,
+      tone: "text-brand-gold",
+    },
+    coa: {
+      icon: ShieldCheck,
+      tone: "text-emerald-600",
+    },
+    attp: {
+      icon: ClipboardCheck,
+      tone: "text-sky-600",
+    },
+  } as const;
 
   return (
     <>
-      <section className="bg-ink text-white">
-        <div className="container-px mx-auto grid min-h-[calc(100vh-136px)] max-w-7xl items-center gap-12 py-12 lg:grid-cols-[0.95fr_1fr]">
-          <div>
-            <p className="mb-4 text-sm font-black uppercase tracking-wide text-red-300">
-              {c.home.eyebrow}
-            </p>
-            <div className="relative mb-7 h-24 w-full max-w-xl bg-white p-3">
-              <Image
-                src="/logo-pro-fitness.svg"
-                alt="Pro-Fitness Sports Nutrition"
-                fill
-                priority
-                className="object-contain"
-              />
-            </div>
-            <h1 className="max-w-4xl text-4xl font-black leading-tight tracking-normal md:text-6xl">
-              {c.home.title}
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              {c.home.description}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/products"
-                className="inline-flex h-12 items-center gap-2 rounded bg-brand-red px-5 text-sm font-black text-white hover:bg-red-700"
-              >
-                {c.common.viewProducts}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <a
-                href={`tel:${HOTLINE}`}
-                className="inline-flex h-12 items-center gap-2 rounded border border-white/20 px-5 text-sm font-black text-white hover:border-white"
-              >
-                <Phone className="h-4 w-4" />
-                {HOTLINE}
-              </a>
-            </div>
-          </div>
+      <HeroBanner locale={locale} products={bestSellers} />
 
-          <div className="grid gap-4">
-            <div className="rounded border border-white/10 bg-white p-6 text-ink shadow-soft">
-              <div className="mb-6 flex items-center justify-between">
-                <span className="text-sm font-black uppercase text-brand-red">
-                  {c.home.bestSellersTitle}
-                </span>
-                <MessageCircle className="h-5 w-5 text-brand-red" />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {bestSellers.slice(0, 4).map((product) => (
-                  <Link
-                    href={`/products/${product.slug}`}
-                    key={product.id}
-                    className="rounded border border-line bg-surface p-4 hover:border-brand-red"
-                  >
-                    <p className="text-xs font-bold uppercase text-brand-red">
-                      {text(product.categoryName, locale)}
-                    </p>
-                    <p className="mt-2 font-black">{text(product.name, locale)}</p>
-                    <p className="mt-2 text-xs font-semibold text-muted">
-                      {text(product.primaryGoal, locale)}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <Metric value="6" label={c.common.category} />
-              <Metric value="4" label={c.common.bestSeller} />
-              <Metric value="1" label="Hotline" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="container-px mx-auto max-w-7xl py-16">
+      <section className="container-px mx-auto max-w-7xl py-14">
         <SectionHeading
-          eyebrow="Categories"
+          eyebrow={isVi ? "Danh mục" : "Categories"}
           title={c.home.categoriesTitle}
           description={c.home.categoriesDescription}
         />
@@ -166,11 +114,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-surface py-16">
+      <section className="bg-surface py-14">
         <div className="container-px mx-auto max-w-7xl">
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
             <SectionHeading
-              eyebrow="Best sellers"
+              eyebrow={isVi ? "Sản phẩm bán chạy" : "Best sellers"}
               title={c.home.bestSellersTitle}
               description={c.home.bestSellersDescription}
             />
@@ -190,9 +138,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="container-px mx-auto max-w-7xl py-16">
+      <section className="container-px mx-auto max-w-7xl py-14">
         <SectionHeading
-          eyebrow="Trust"
+          eyebrow={isVi ? "Tin cậy" : "Trust"}
           title={c.home.trustTitle}
           description={c.home.trustDescription}
         />
@@ -209,15 +157,120 @@ export default async function HomePage() {
           })}
         </div>
       </section>
-    </>
-  );
-}
 
-function Metric({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="rounded bg-white/10 p-4">
-      <p className="text-2xl font-black">{value}</p>
-      <p className="text-xs text-slate-300">{label}</p>
-    </div>
+      <section className="bg-white py-14">
+        <div className="container-px mx-auto max-w-7xl">
+          <SectionHeading
+            eyebrow={isVi ? "Tài liệu" : "Documents"}
+            title={isVi ? "Chứng nhận & tài liệu" : "Certificates & documents"}
+            description={
+              isVi
+                ? "Các tài liệu quan trọng để khách hàng tham khảo nhanh về catalog, chứng nhận và hồ sơ an toàn."
+                : "Important materials for quickly reviewing the catalog, certificates and safety documents."
+            }
+          />
+          <div className="grid gap-5 md:grid-cols-3">
+            {documents.map((doc) => {
+              const meta = documentMeta[doc.type];
+              const Icon = meta.icon;
+
+              return (
+                <article
+                  key={doc.id}
+                  className="rounded border border-line bg-surface p-6 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <Icon className={`h-8 w-8 ${meta.tone}`} />
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-black uppercase text-ink">
+                      {doc.type}
+                    </span>
+                  </div>
+                  <h3 className="mt-5 text-xl font-black text-ink">
+                    {text(doc.title, locale)}
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-muted">
+                    {text(doc.description, locale)}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-surface py-14">
+        <div className="container-px mx-auto max-w-7xl">
+          <SectionHeading
+            eyebrow={isVi ? "Phản hồi" : "Reviews"}
+            title={c.home.reviewsTitle}
+            description={c.home.reviewsDescription}
+          />
+          <div className="grid gap-5 lg:grid-cols-2">
+            {testimonials.map((item) => (
+              <article
+                key={item.id}
+                className="rounded border border-line bg-white p-6 shadow-sm"
+              >
+                <div className="flex flex-wrap items-center gap-1 text-brand-red">
+                  {Array.from({ length: item.rating }).map((_, index) => (
+                    <Star
+                      key={`${item.id}-star-${index}`}
+                      className="h-5 w-5 fill-current"
+                    />
+                  ))}
+                </div>
+                <p className="mt-4 text-base leading-7 text-ink">
+                  &ldquo;{text(item.quote, locale)}&rdquo;
+                </p>
+                <div className="mt-5 border-t border-line pt-4">
+                  <p className="font-black text-ink">{item.name}</p>
+                  <p className="text-sm text-muted">{item.role}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-brand-red py-12 text-white">
+        <div className="container-px mx-auto flex max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-white/75">
+              {isVi ? "Liên hệ nhanh" : "Fast contact"}
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-normal md:text-4xl">
+              {isVi
+                ? "Cần tư vấn sản phẩm ngay bây giờ?"
+                : "Need product advice now?"}
+            </h2>
+            <p className="mt-4 text-sm leading-7 text-white/80">
+              {isVi
+                ? "Gọi hotline hoặc xem toàn bộ sản phẩm để tìm đúng vị, đúng công dụng và liên hệ nhanh với sales."
+                : "Call the hotline or browse all products to find the right flavor, benefit and sales contact quickly."}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/products"
+              className="inline-flex h-12 items-center gap-2 rounded bg-white px-5 text-sm font-black text-brand-red hover:bg-white/90"
+            >
+              {isVi ? "Xem sản phẩm" : "View products"}
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex h-12 items-center gap-2 rounded border border-white/30 bg-white/10 px-5 text-sm font-black text-white hover:bg-white/15"
+            >
+              {isVi ? "Liên hệ" : "Contact"}
+            </Link>
+            <a
+              href={`tel:${HOTLINE}`}
+              className="inline-flex h-12 items-center gap-2 rounded border border-white/30 bg-slate-950/20 px-5 text-sm font-black text-white hover:bg-slate-950/30"
+            >
+              {isVi ? `Gọi hotline ${HOTLINE}` : `Call hotline ${HOTLINE}`}
+            </a>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

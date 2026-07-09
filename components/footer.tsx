@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Mail, MapPin, Phone } from "lucide-react";
 import { copy, getLocale, HOTLINE } from "@/lib/i18n";
@@ -26,16 +25,8 @@ export async function Footer() {
 
   return (
     <footer className="bg-ink pb-20 text-white md:pb-0">
-      <div className="container-px mx-auto grid max-w-7xl gap-10 py-14 lg:grid-cols-[1.2fr_1fr]">
+      <div className="container-px mx-auto grid max-w-7xl gap-10 py-14 lg:grid-cols-[1fr_1fr]">
         <div>
-          <div className="relative mb-5 h-16 w-72 bg-white p-2">
-            <Image
-              src="/logo-pro-fitness.svg"
-              alt="Pro-Fitness Sports Nutrition"
-              fill
-              className="object-contain"
-            />
-          </div>
           <p className="max-w-md text-sm leading-6 text-slate-300">
             {locale === "vi"
               ? "Catalog sản phẩm dinh dưỡng thể thao, tập trung vào giá bán, hương vị, công dụng, cách sử dụng và tư vấn nhanh qua hotline."

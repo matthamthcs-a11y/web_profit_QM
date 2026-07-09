@@ -59,6 +59,9 @@ export const copy = {
       trustTitle: "Tại sao chọn Pro-Fitness",
       trustDescription:
         "Tập trung vào sản phẩm chính hãng, thông tin rõ ràng và tư vấn nhanh qua hotline.",
+      reviewsTitle: "Phản hồi khách hàng",
+      reviewsDescription:
+        "Tổng hợp những nhận xét ngắn gọn từ người dùng để khách hàng tham khảo nhanh trước khi liên hệ.",
     },
     products: {
       title: "Danh sách sản phẩm",
@@ -117,6 +120,9 @@ export const copy = {
       trustTitle: "Why choose Pro-Fitness",
       trustDescription:
         "Official products, clear product information and fast hotline consultation.",
+      reviewsTitle: "Customer feedback",
+      reviewsDescription:
+        "A short summary of what customers say after reviewing product information and contacting the sales team.",
     },
     products: {
       title: "Product catalog",

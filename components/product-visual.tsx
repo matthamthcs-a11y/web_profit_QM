@@ -1,20 +1,32 @@
-import { text } from "@/lib/i18n";
+"use client";
+
 import type { Locale, Product } from "@/lib/types";
 
 type ProductVisualProps = {
   product: Product;
   locale: Locale;
-  size?: "card" | "hero";
+  size?: "card" | "hero" | "banner";
+  hideLabel?: boolean;
 };
 
 export function ProductVisual({
   product,
   locale,
   size = "card",
+  hideLabel = false,
 }: ProductVisualProps) {
   const isHero = size === "hero";
-  const shellSize = isHero ? "h-[27rem] w-full max-w-sm" : "h-52 w-full";
-  const packageSize = isHero ? "h-80 w-52" : "h-36 w-28";
+  const isBanner = size === "banner";
+  const shellSize = isHero
+    ? "h-[30rem] w-full max-w-[34rem]"
+    : isBanner
+      ? "h-[24rem] w-full max-w-[30rem]"
+      : "h-52 w-full";
+  const packageSize = isHero
+    ? "h-96 w-64"
+    : isBanner
+      ? "h-80 w-52"
+      : "h-36 w-28";
 
   return (
     <div
@@ -29,10 +41,17 @@ export function ProductVisual({
         className="absolute -bottom-12 -left-8 h-40 w-40 rounded-full opacity-15"
         style={{ backgroundColor: product.visual.accent }}
       />
+      {hideLabel ? null : (
       <div className="absolute left-5 top-5 rounded-full bg-white/80 px-3 py-1 text-xs font-black uppercase text-ink shadow-sm">
-        {text(product.visual.badge, locale)}
-      </div>
-      <PackageShape product={product} locale={locale} className={packageSize} />
+          {product.visual.badge[locale] ?? product.visual.badge.vi}
+        </div>
+      )}
+      <PackageShape
+        product={product}
+        locale={locale}
+        className={packageSize}
+        hideLabel={hideLabel}
+      />
     </div>
   );
 }
@@ -41,10 +60,12 @@ function PackageShape({
   product,
   locale,
   className,
+  hideLabel = false,
 }: {
   product: Product;
   locale: Locale;
   className: string;
+  hideLabel?: boolean;
 }) {
   const common =
     "relative flex flex-col justify-between border border-black/10 bg-white p-4 shadow-soft";
@@ -55,7 +76,7 @@ function PackageShape({
         className={`${className} ${common} rounded-full`}
         style={{ borderColor: product.visual.accent }}
       >
-        <ProductLabel product={product} locale={locale} compact />
+        {hideLabel ? null : <ProductLabel product={product} locale={locale} compact />}
       </div>
     );
   }
@@ -65,7 +86,7 @@ function PackageShape({
       <div className={`${className} relative flex items-end justify-center`}>
         <div className="absolute top-0 h-10 w-44 rounded-t border border-black/10 bg-slate-900" />
         <div className={`${common} h-64 w-52 rounded-b rounded-t-sm pt-12`}>
-          <ProductLabel product={product} locale={locale} />
+          {hideLabel ? null : <ProductLabel product={product} locale={locale} />}
         </div>
       </div>
     );
@@ -78,7 +99,7 @@ function PackageShape({
         style={{ borderColor: product.visual.accent }}
       >
         <div className="absolute left-5 right-5 top-4 h-2 rounded-full bg-black/10" />
-        <ProductLabel product={product} locale={locale} />
+        {hideLabel ? null : <ProductLabel product={product} locale={locale} />}
       </div>
     );
   }
@@ -88,7 +109,7 @@ function PackageShape({
       className={`${className} ${common} rounded-b-2xl rounded-t-md`}
       style={{ borderColor: product.visual.accent }}
     >
-      <ProductLabel product={product} locale={locale} />
+      {hideLabel ? null : <ProductLabel product={product} locale={locale} />}
     </div>
   );
 }
@@ -113,10 +134,10 @@ function ProductLabel({
       <span
         className={`${compact ? "text-lg" : "text-2xl"} font-black leading-tight text-ink`}
       >
-        {text(product.name, locale)}
+        {product.name[locale] ?? product.name.vi}
       </span>
       <span className="text-xs font-black uppercase text-muted">
-        {text(product.primaryGoal, locale)}
+        {product.primaryGoal[locale] ?? product.primaryGoal.vi}
       </span>
     </>
   );

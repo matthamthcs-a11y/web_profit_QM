@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/types";
 
 type LanguageToggleProps = {
@@ -7,21 +8,41 @@ type LanguageToggleProps = {
 };
 
 export function LanguageToggle({ locale }: LanguageToggleProps) {
-  const nextLocale = locale === "vi" ? "en" : "vi";
+  const router = useRouter();
 
-  function changeLanguage() {
+  function changeLanguage(nextLocale: Locale) {
     document.cookie = `profitness_locale=${nextLocale}; path=/; max-age=31536000`;
-    window.location.reload();
+    router.refresh();
   }
 
   return (
-    <button
-      type="button"
-      onClick={changeLanguage}
-      className="h-10 rounded border border-line bg-white px-3 text-xs font-black text-ink hover:border-brand-red hover:text-brand-red"
-      aria-label="Change language"
-    >
-      {locale.toUpperCase()} / {nextLocale.toUpperCase()}
-    </button>
+    <div className="inline-flex h-10 items-stretch overflow-hidden rounded border border-line bg-white text-xs font-black">
+      <button
+        type="button"
+        onClick={() => changeLanguage("vi")}
+        className={`min-w-12 px-3 ${
+          locale === "vi"
+            ? "bg-brand-red text-white"
+            : "bg-white text-ink hover:text-brand-red"
+        }`}
+        aria-pressed={locale === "vi"}
+        aria-label="Switch to Vietnamese"
+      >
+        VI
+      </button>
+      <button
+        type="button"
+        onClick={() => changeLanguage("en")}
+        className={`min-w-12 border-l border-line px-3 ${
+          locale === "en"
+            ? "bg-brand-red text-white"
+            : "bg-white text-ink hover:text-brand-red"
+        }`}
+        aria-pressed={locale === "en"}
+        aria-label="Switch to English"
+      >
+        EN
+      </button>
+    </div>
   );
 }

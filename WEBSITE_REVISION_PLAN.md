@@ -567,3 +567,12 @@ Nếu chưa có thêm yêu cầu, nên chọn mặc định như sau:
 - Làm song ngữ Việt/Anh bằng dictionary nội bộ trước.
 - Admin giai đoạn đầu chỉ cần một vai trò quản trị.
 - Backend Supabase làm sau khi khách duyệt giao diện catalog mới.
+
+## 14. Đính chính theo trao đổi mới
+
+Để tránh hiểu nhầm khi triển khai:
+
+- Hero ở trang chủ không dùng một tiêu đề ngắn riêng cho banner.
+- Hero sẽ ưu tiên list ảnh/banner tự chạy hoặc banner lớn theo đúng layout tham khảo.
+- Section phản hồi khách hàng là phần cần giữ trong homepage.
+- Phần phản hồi nên hiển thị ngắn gọn, dễ đọc, không cần slider phức tạp ở giai đoạn đầu.
