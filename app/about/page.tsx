@@ -13,7 +13,7 @@ export default async function AboutPage() {
   return (
     <section className="container-px mx-auto max-w-7xl py-14">
       <SectionHeading
-        eyebrow="About"
+        eyebrow={locale === "vi" ? "Giới thiệu" : "About"}
         title="Pro-Fitness Sports Nutrition"
         description={
           locale === "vi"

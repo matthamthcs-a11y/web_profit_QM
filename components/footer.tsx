@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { Facebook, Mail, MapPin, Phone } from "lucide-react";
-import { copy, getLocale, HOTLINE } from "@/lib/i18n";
+import { getSiteSettings } from "@/lib/data/site-settings";
+import { copy, getLocale } from "@/lib/i18n";
 
 export async function Footer() {
-  const locale = await getLocale();
+  const [locale, siteSettings] = await Promise.all([
+    getLocale(),
+    getSiteSettings(),
+  ]);
   const c = copy[locale];
   const footerGroups = [
     {
@@ -35,15 +39,15 @@ export async function Footer() {
           <div className="mt-6 grid gap-3 text-sm text-slate-300">
             <span className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-brand-red" />
-              {HOTLINE}
+              {siteSettings.hotline}
             </span>
             <span className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-brand-red" />
-              hello@profitness.vn
+              {siteSettings.email}
             </span>
             <span className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-brand-red" />
-              Ho Chi Minh City, Vietnam
+              {siteSettings.address}
             </span>
             <span className="flex items-center gap-2">
               <Facebook className="h-4 w-4 text-brand-red" />

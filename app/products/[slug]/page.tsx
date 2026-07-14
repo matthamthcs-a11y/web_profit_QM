@@ -7,11 +7,14 @@ import {
   copy,
   formatPrice,
   getLocale,
-  HOTLINE,
   text,
-  ZALO_URL,
 } from "@/lib/i18n";
-import { getProductBySlug, products } from "@/lib/mock-data";
+import { getSiteSettings } from "@/lib/data/site-settings";
+import {
+  getProductBySlug,
+  getProducts,
+  getRelatedProducts,
+} from "@/lib/data/products";
 
 type ProductDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -21,7 +24,7 @@ export async function generateMetadata({
   params,
 }: ProductDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     return {
@@ -36,6 +39,8 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams() {
+  const products = await getProducts();
+
   return products.map((product) => ({
     slug: product.slug,
   }));
@@ -44,18 +49,19 @@ export async function generateStaticParams() {
 export default async function ProductDetailPage({
   params,
 }: ProductDetailPageProps) {
-  const locale = await getLocale();
+  const [locale, siteSettings] = await Promise.all([
+    getLocale(),
+    getSiteSettings(),
+  ]);
   const c = copy[locale];
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();
   }
 
-  const relatedProducts = products.filter((item) =>
-    product.relatedProductIds.includes(item.id),
-  );
+  const relatedProducts = await getRelatedProducts(product.relatedProductIds);
 
   return (
     <article>
@@ -90,18 +96,18 @@ export default async function ProductDetailPage({
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
-                href={ZALO_URL}
+                href={siteSettings.zaloUrl}
                 className="inline-flex h-12 items-center gap-2 rounded bg-brand-red px-5 text-sm font-black text-white hover:bg-red-700"
               >
                 <MessageCircle className="h-4 w-4" />
                 {c.common.messageZalo}
               </a>
               <a
-                href={`tel:${HOTLINE}`}
+                href={`tel:${siteSettings.hotline}`}
                 className="inline-flex h-12 items-center gap-2 rounded bg-ink px-5 text-sm font-black text-white hover:bg-slate-800"
               >
                 <Phone className="h-4 w-4" />
-                {HOTLINE}
+                {siteSettings.hotline}
               </a>
             </div>
             <div className="mt-5 flex flex-wrap gap-3 text-sm font-bold text-muted">

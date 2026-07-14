@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { MapPin, Phone } from "lucide-react";
 import { SectionHeading } from "@/components/section-heading";
-import { dealers } from "@/lib/mock-data";
+import { getDealers } from "@/lib/data/dealers";
 import { getLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
@@ -11,15 +11,16 @@ export const metadata: Metadata = {
 
 export default async function DealersPage() {
   const locale = await getLocale();
+  const dealers = await getDealers();
 
   return (
     <section className="container-px mx-auto max-w-7xl py-14">
       <SectionHeading
-        eyebrow="Dealers"
+        eyebrow={locale === "vi" ? "Đại lý" : "Dealers"}
         title={locale === "vi" ? "Thông tin đại lý" : "Dealer information"}
         description={
           locale === "vi"
-            ? "Danh sách điểm tư vấn/phân phối sẽ được cập nhật khi khách cung cấp dữ liệu đại lý chính thức."
+            ? "Danh sách điểm tư vấn và phân phối sẽ được cập nhật khi khách cung cấp dữ liệu đại lý chính thức."
             : "Consultation and distribution points will be updated when official dealer data is provided."
         }
       />

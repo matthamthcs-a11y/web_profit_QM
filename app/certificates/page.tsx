@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { FileCheck2 } from "lucide-react";
 import { SectionHeading } from "@/components/section-heading";
-import { documents } from "@/lib/mock-data";
+import { getDocuments } from "@/lib/data/documents";
 import { getLocale, text } from "@/lib/i18n";
 
 export const metadata: Metadata = {
@@ -11,11 +11,12 @@ export const metadata: Metadata = {
 
 export default async function CertificatesPage() {
   const locale = await getLocale();
+  const documents = await getDocuments();
 
   return (
     <section className="container-px mx-auto max-w-7xl py-14">
       <SectionHeading
-        eyebrow="Certificates"
+        eyebrow={locale === "vi" ? "Chứng nhận" : "Certificates"}
         title={locale === "vi" ? "Chứng nhận & tài liệu" : "Certificates & documents"}
         description={
           locale === "vi"

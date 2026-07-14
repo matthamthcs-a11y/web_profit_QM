@@ -1,19 +1,23 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  ClipboardCheck,
   Award,
+  ClipboardCheck,
   FileText,
-  Star,
   ShieldCheck,
+  Star,
   Truck,
   UserRoundCheck,
 } from "lucide-react";
 import { HeroBanner } from "@/components/hero-banner";
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
-import { categories, documents, products, testimonials } from "@/lib/mock-data";
-import { HOTLINE, copy, getLocale, text } from "@/lib/i18n";
+import { getCategories } from "@/lib/data/categories";
+import { getDocuments } from "@/lib/data/documents";
+import { getBestSellerProducts } from "@/lib/data/products";
+import { getSiteSettings } from "@/lib/data/site-settings";
+import { getTestimonials } from "@/lib/data/testimonials";
+import { copy, getLocale, text } from "@/lib/i18n";
 
 const trustItems = {
   vi: [
@@ -62,29 +66,37 @@ const trustItems = {
   ],
 } as const;
 
+const documentMeta = {
+  catalog: {
+    icon: FileText,
+    tone: "text-brand-red",
+  },
+  certificate: {
+    icon: Award,
+    tone: "text-brand-gold",
+  },
+  coa: {
+    icon: ShieldCheck,
+    tone: "text-emerald-600",
+  },
+  attp: {
+    icon: ClipboardCheck,
+    tone: "text-sky-600",
+  },
+} as const;
+
 export default async function HomePage() {
   const locale = await getLocale();
   const c = copy[locale];
-  const bestSellers = products.filter((product) => product.isBestSeller);
   const isVi = locale === "vi";
-  const documentMeta = {
-    catalog: {
-      icon: FileText,
-      tone: "text-brand-red",
-    },
-    certificate: {
-      icon: Award,
-      tone: "text-brand-gold",
-    },
-    coa: {
-      icon: ShieldCheck,
-      tone: "text-emerald-600",
-    },
-    attp: {
-      icon: ClipboardCheck,
-      tone: "text-sky-600",
-    },
-  } as const;
+  const [categories, documents, bestSellers, testimonials, siteSettings] =
+    await Promise.all([
+      getCategories(),
+      getDocuments(),
+      getBestSellerProducts(),
+      getTestimonials(),
+      getSiteSettings(),
+    ]);
 
   return (
     <>
@@ -147,6 +159,7 @@ export default async function HomePage() {
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {trustItems[locale].map((item) => {
             const Icon = item.icon;
+
             return (
               <article key={item.title} className="rounded border border-line p-6">
                 <Icon className="mb-5 h-7 w-7 text-brand-red" />
@@ -263,10 +276,12 @@ export default async function HomePage() {
               {isVi ? "Liên hệ" : "Contact"}
             </Link>
             <a
-              href={`tel:${HOTLINE}`}
+              href={`tel:${siteSettings.hotline}`}
               className="inline-flex h-12 items-center gap-2 rounded border border-white/30 bg-slate-950/20 px-5 text-sm font-black text-white hover:bg-slate-950/30"
             >
-              {isVi ? `Gọi hotline ${HOTLINE}` : `Call hotline ${HOTLINE}`}
+              {isVi
+                ? `Gọi hotline ${siteSettings.hotline}`
+                : `Call hotline ${siteSettings.hotline}`}
             </a>
           </div>
         </div>

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { ProductCatalog } from "@/components/product-catalog";
 import { SectionHeading } from "@/components/section-heading";
-import { categories, products } from "@/lib/mock-data";
+import { getCategories } from "@/lib/data/categories";
+import { getProducts } from "@/lib/data/products";
 import { copy, getLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
@@ -12,6 +13,10 @@ export const metadata: Metadata = {
 export default async function ProductsPage() {
   const locale = await getLocale();
   const c = copy[locale];
+  const [categories, products] = await Promise.all([
+    getCategories(),
+    getProducts(),
+  ]);
 
   return (
     <section className="container-px mx-auto max-w-7xl py-14">

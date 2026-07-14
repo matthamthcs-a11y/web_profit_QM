@@ -2,11 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Menu, MessageCircle } from "lucide-react";
 import { LanguageToggle } from "@/components/language-toggle";
-import { categories } from "@/lib/mock-data";
-import { copy, getLocale, HOTLINE, text } from "@/lib/i18n";
+import { getCategories } from "@/lib/data/categories";
+import { getSiteSettings } from "@/lib/data/site-settings";
+import { copy, getLocale, text } from "@/lib/i18n";
 
 export async function Header() {
-  const locale = await getLocale();
+  const [locale, categories, siteSettings] = await Promise.all([
+    getLocale(),
+    getCategories(),
+    getSiteSettings(),
+  ]);
   const c = copy[locale];
   const navItems = [
     { href: "/", label: c.nav.home },
@@ -79,11 +84,11 @@ export async function Header() {
         <div className="flex items-center gap-2">
           <LanguageToggle locale={locale} />
           <a
-            href={`tel:${HOTLINE}`}
+            href={`tel:${siteSettings.hotline}`}
             className="hidden h-10 items-center gap-2 rounded bg-brand-red px-4 text-sm font-bold text-white hover:bg-red-700 sm:inline-flex"
           >
             <MessageCircle className="h-4 w-4" />
-            {HOTLINE}
+            {siteSettings.hotline}
           </a>
           <details className="relative lg:hidden">
             <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded border border-line text-ink">

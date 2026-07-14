@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Facebook, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ContactLeadForm } from "@/components/contact-lead-form";
 import { SectionHeading } from "@/components/section-heading";
-import { getLocale, HOTLINE, ZALO_URL } from "@/lib/i18n";
+import { getSiteSettings } from "@/lib/data/site-settings";
+import { getLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -9,54 +11,54 @@ export const metadata: Metadata = {
 };
 
 export default async function ContactPage() {
-  const locale = await getLocale();
+  const [locale, siteSettings] = await Promise.all([
+    getLocale(),
+    getSiteSettings(),
+  ]);
 
   return (
     <section className="container-px mx-auto grid max-w-7xl gap-10 py-14 lg:grid-cols-[0.8fr_1fr]">
       <div>
         <SectionHeading
-          eyebrow="Contact"
+          eyebrow={locale === "vi" ? "Liên hệ" : "Contact"}
           title={locale === "vi" ? "Liên hệ tư vấn" : "Contact for advice"}
           description={
             locale === "vi"
-              ? "Khách hàng có thể gọi hotline hoặc nhắn Zalo để được tư vấn sản phẩm và mua hàng trực tiếp."
+              ? "Khách hàng có thể gửi yêu cầu, gọi hotline hoặc nhắn Zalo để được tư vấn sản phẩm và mua hàng trực tiếp."
               : "Customers can call the hotline or message Zalo for product advice and direct purchase."
           }
         />
         <div className="grid gap-4">
-          <ContactLine icon={Phone} label="Hotline" value={HOTLINE} />
-          <ContactLine icon={Mail} label="Email" value="hello@profitness.vn" />
+          <ContactLine icon={Phone} label="Hotline" value={siteSettings.hotline} />
+          <ContactLine icon={Mail} label="Email" value={siteSettings.email} />
           <ContactLine icon={MessageCircle} label="Zalo" value="Pro-Fitness" />
-          <ContactLine icon={Facebook} label="Facebook" value="Pro-Fitness Vietnam" />
+          <ContactLine
+            icon={Facebook}
+            label="Facebook"
+            value={siteSettings.facebookLabel}
+          />
           <ContactLine
             icon={MapPin}
             label={locale === "vi" ? "Văn phòng" : "Office"}
-            value="Ho Chi Minh City, Vietnam"
+            value={siteSettings.address}
           />
         </div>
       </div>
 
-      <div className="rounded border border-line bg-surface p-6">
-        <h2 className="text-2xl font-black text-ink">
-          {locale === "vi" ? "Liên hệ nhanh" : "Quick contact"}
-        </h2>
-        <p className="mt-3 text-sm leading-6 text-muted">
-          {locale === "vi"
-            ? "Form lưu dữ liệu sẽ được triển khai sau khi kết nối Supabase. Giai đoạn này ưu tiên nút gọi và Zalo."
-            : "Lead form storage will be implemented after Supabase integration. This phase prioritizes call and Zalo buttons."}
-        </p>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-5">
+        <ContactLeadForm locale={locale} />
+        <div className="grid gap-3 sm:grid-cols-2">
           <a
-            href={ZALO_URL}
+            href={siteSettings.zaloUrl}
             className="flex h-12 items-center justify-center rounded bg-brand-red text-sm font-black text-white"
           >
             {locale === "vi" ? "Nhắn Zalo" : "Message Zalo"}
           </a>
           <a
-            href={`tel:${HOTLINE}`}
+            href={`tel:${siteSettings.hotline}`}
             className="flex h-12 items-center justify-center rounded bg-ink text-sm font-black text-white"
           >
-            {HOTLINE}
+            {siteSettings.hotline}
           </a>
         </div>
       </div>
