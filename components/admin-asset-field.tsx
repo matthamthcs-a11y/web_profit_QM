@@ -3,6 +3,7 @@
 import { AlertCircle, CheckCircle2, ExternalLink, Loader2, Upload } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import type { Locale } from "@/lib/types";
 
 type AdminAssetFieldProps = {
   label: string;
@@ -12,9 +13,40 @@ type AdminAssetFieldProps = {
   accept?: string;
   required?: boolean;
   maxSizeMb?: number;
+  locale?: Locale;
 };
 
 const BUCKET = "profitness-assets";
+const copy = {
+  vi: {
+    placeholder: "Dán đường dẫn ảnh hoặc chọn ảnh từ máy tính",
+    selectFile: "Chọn ảnh",
+    openFile: "Mở ảnh",
+    tooLarge: (maxSizeMb: number) =>
+      `File quá lớn. Giới hạn hiện tại là ${maxSizeMb}MB.`,
+    uploading: "Đang tải ảnh lên...",
+    uploadFailed: "Upload thất bại.",
+    uploadSuccess: "Đã upload và tự điền đường dẫn.",
+  },
+  en: {
+    placeholder: "Paste an image URL or choose a file from your computer",
+    selectFile: "Choose image",
+    openFile: "Open image",
+    tooLarge: (maxSizeMb: number) =>
+      `File is too large. Current limit is ${maxSizeMb}MB.`,
+    uploading: "Uploading image...",
+    uploadFailed: "Upload failed.",
+    uploadSuccess: "Uploaded and filled the URL automatically.",
+  },
+} satisfies Record<Locale, {
+  placeholder: string;
+  selectFile: string;
+  openFile: string;
+  tooLarge: (maxSizeMb: number) => string;
+  uploading: string;
+  uploadFailed: string;
+  uploadSuccess: string;
+}>;
 
 export function AdminAssetField({
   label,
@@ -24,7 +56,9 @@ export function AdminAssetField({
   accept = "image/*",
   required,
   maxSizeMb = 25,
+  locale = "vi",
 }: AdminAssetFieldProps) {
+  const t = copy[locale];
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(defaultValue ?? "");
   const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">(
@@ -42,12 +76,12 @@ export function AdminAssetField({
 
     if (file.size > maxBytes) {
       setStatus("error");
-      setMessage(`File qua lon. Gioi han hien tai la ${maxSizeMb}MB.`);
+      setMessage(t.tooLarge(maxSizeMb));
       return;
     }
 
     setStatus("uploading");
-    setMessage("Dang upload...");
+    setMessage(t.uploading);
 
     const supabase = createSupabaseBrowserClient();
     const path = `${cleanPathPart(folder)}/${Date.now()}-${crypto.randomUUID()}-${cleanFileName(
@@ -62,7 +96,7 @@ export function AdminAssetField({
 
     if (error || !data?.path) {
       setStatus("error");
-      setMessage(error?.message ?? "Upload that bai.");
+      setMessage(error?.message ?? t.uploadFailed);
       return;
     }
 
@@ -72,7 +106,7 @@ export function AdminAssetField({
 
     setValue(publicData.publicUrl);
     setStatus("success");
-    setMessage("Da upload va dien URL vao form.");
+    setMessage(t.uploadSuccess);
   }
 
   return (
@@ -88,7 +122,7 @@ export function AdminAssetField({
           setStatus("idle");
           setMessage("");
         }}
-        placeholder="Paste URL hoac upload file tu may"
+        placeholder={t.placeholder}
         className="h-10 rounded border border-line px-3 text-sm font-medium outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/15"
       />
       <div className="flex flex-wrap items-center gap-2">
@@ -116,7 +150,7 @@ export function AdminAssetField({
           ) : (
             <Upload className="h-4 w-4" />
           )}
-          Chon file
+          {t.selectFile}
         </button>
         {value ? (
           <a
@@ -125,7 +159,7 @@ export function AdminAssetField({
             rel="noreferrer"
             className="inline-flex h-9 items-center gap-2 rounded border border-line px-3 text-xs font-bold text-muted hover:text-brand-red"
           >
-            Mo file
+            {t.openFile}
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
         ) : null}

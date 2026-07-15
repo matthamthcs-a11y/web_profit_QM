@@ -7,6 +7,8 @@ type AdminSlugFieldProps = {
   name?: string;
   defaultValue?: string | null;
   sourceName: string;
+  placeholder?: string;
+  helpText?: string;
 };
 
 export function AdminSlugField({
@@ -14,6 +16,8 @@ export function AdminSlugField({
   name = "slug",
   defaultValue,
   sourceName,
+  placeholder = "tu-dong-tao-tu-ten-en",
+  helpText = "Tự tạo từ tên tiếng Anh. Có thể sửa thủ công nếu cần.",
 }: AdminSlugFieldProps) {
   const [value, setValue] = useState(defaultValue ?? "");
   const rootRef = useRef<HTMLLabelElement>(null);
@@ -57,12 +61,10 @@ export function AdminSlugField({
           setValue(slugify(event.target.value));
         }}
         onBlur={() => setValue((current) => slugify(current))}
-        placeholder="tu-dong-tao-tu-ten-en"
+        placeholder={placeholder}
         className="h-10 rounded border border-line px-3 text-sm font-medium outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/15"
       />
-      <span className="text-xs font-semibold text-muted">
-        Tự tạo từ tên tiếng Anh. Có thể sửa thủ công nếu cần.
-      </span>
+      <span className="text-xs font-semibold text-muted">{helpText}</span>
     </label>
   );
 }

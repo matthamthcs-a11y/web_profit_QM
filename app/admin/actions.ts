@@ -180,7 +180,7 @@ export async function upsertCategory(formData: FormData) {
   const slug = getString(formData, "slug") || slugify(name.en || name.vi);
 
   if (!hasLocalizedValue(name)) {
-    await setAdminNotice("error", "Danh muc: can nhap ten VI hoac EN.");
+    await setAdminNotice("error", "Danh mục: cần nhập tên VI hoặc EN.");
     return;
   }
 
@@ -255,7 +255,7 @@ export async function upsertBrand(formData: FormData) {
   const slug = getString(formData, "slug") || slugify(name);
 
   if (!name) {
-    await setAdminNotice("error", "Thuong hieu: can nhap ten.");
+    await setAdminNotice("error", "Thương hiệu: cần nhập tên.");
     return;
   }
 
@@ -336,7 +336,7 @@ export async function upsertProduct(formData: FormData) {
     getOptionalString(formData, "visual_background") ?? "#fff1f2";
 
   if (!hasLocalizedValue(name)) {
-    await setAdminNotice("error", "San pham: can nhap ten VI hoac EN.");
+    await setAdminNotice("error", "Sản phẩm: cần nhập tên VI hoặc EN.");
     return;
   }
 
@@ -351,12 +351,12 @@ export async function upsertProduct(formData: FormData) {
   }
 
   if (!isValidCurrency(currency)) {
-    await setAdminNotice("error", "San pham: tien te phai la ma 3 chu cai, vi du VND.");
+    await setAdminNotice("error", "Sản phẩm: tiền tệ phải là mã 3 chữ cái, ví dụ VND.");
     return;
   }
 
   if (!isValidHexColor(visualAccent) || !isValidHexColor(visualBackground)) {
-    await setAdminNotice("error", "San pham: ma mau phai co dang #ce1732.");
+    await setAdminNotice("error", "Sản phẩm: mã màu phải có dạng #ce1732.");
     return;
   }
 
@@ -540,7 +540,7 @@ export async function upsertBanner(formData: FormData) {
   const imagePath = getString(formData, "image_path");
 
   if (!imagePath) {
-    await setAdminNotice("error", "Banner: can co image path hoac upload anh.");
+    await setAdminNotice("error", "Banner: cần có ảnh banner hoặc upload ảnh.");
     return;
   }
 
@@ -602,7 +602,7 @@ export async function upsertDocument(formData: FormData) {
   const title = getLocalized(formData, "title");
 
   if (!hasLocalizedValue(title)) {
-    await setAdminNotice("error", "Tai lieu: can nhap tieu de VI hoac EN.");
+    await setAdminNotice("error", "Tài liệu: cần nhập tiêu đề VI hoặc EN.");
     return;
   }
 
@@ -665,7 +665,7 @@ export async function upsertDealer(formData: FormData) {
   const name = getString(formData, "name");
 
   if (!name) {
-    await setAdminNotice("error", "Dai ly: can nhap ten.");
+    await setAdminNotice("error", "Đại lý: cần nhập tên.");
     return;
   }
 
@@ -731,12 +731,12 @@ export async function upsertTestimonial(formData: FormData) {
   const quote = getLocalized(formData, "quote");
 
   if (!name) {
-    await setAdminNotice("error", "Phan hoi: can nhap ten khach hang.");
+    await setAdminNotice("error", "Phản hồi: cần nhập tên khách hàng.");
     return;
   }
 
   if (!hasLocalizedValue(quote)) {
-    await setAdminNotice("error", "Phan hoi: can nhap noi dung VI hoac EN.");
+    await setAdminNotice("error", "Phản hồi: cần nhập nội dung VI hoặc EN.");
     return;
   }
 
@@ -827,12 +827,12 @@ export async function updateSiteSettings(formData: FormData) {
   const email = getString(formData, "email");
 
   if (!hotline) {
-    await setAdminNotice("error", "Cai dat: hotline la bat buoc.");
+    await setAdminNotice("error", "Cài đặt: hotline là bắt buộc.");
     return;
   }
 
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    await setAdminNotice("error", "Cai dat: email khong dung dinh dang.");
+    await setAdminNotice("error", "Cài đặt: email không đúng định dạng.");
     return;
   }
 
