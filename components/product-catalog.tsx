@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, SlidersHorizontal } from "lucide-react";
+import { ProductVisual } from "@/components/product-visual";
 import type { Category, Locale, Product } from "@/lib/types";
 
 type ProductCatalogProps = {
@@ -185,29 +186,13 @@ function ProductResultCard({
   return (
     <article className="overflow-hidden rounded border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
       <Link href={`/products/${product.slug}`}>
-        <div
-          className="relative flex h-52 items-center justify-center overflow-hidden"
-          style={{ backgroundColor: product.visual.background }}
-        >
+        <div className="relative">
+          <ProductVisual product={product} locale={locale} />
           <div
             className="absolute right-6 top-6 rounded-full px-3 py-1 text-xs font-black uppercase text-white"
             style={{ backgroundColor: product.visual.accent }}
           >
             {product.isBestSeller ? labels.bestSeller : t(product.primaryGoal, locale)}
-          </div>
-          <div className="flex h-36 w-28 flex-col justify-between rounded border border-black/10 bg-white p-4 shadow-soft">
-            <span
-              className="text-xs font-black uppercase"
-              style={{ color: product.visual.accent }}
-            >
-              {product.brand}
-            </span>
-            <span className="text-lg font-black leading-tight text-ink">
-              {t(product.name, locale)}
-            </span>
-            <span className="text-xs font-black uppercase text-muted">
-              {t(product.primaryGoal, locale)}
-            </span>
           </div>
         </div>
         <div className="p-5">

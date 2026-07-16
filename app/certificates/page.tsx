@@ -6,7 +6,7 @@ import { getLocale, text } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Certificates",
-  description: "Chung nhan va tai lieu Pro-Fitness Sports Nutrition.",
+  description: "Chứng nhận và tài liệu Pro-Fitness Sports Nutrition.",
 };
 
 export default async function CertificatesPage() {

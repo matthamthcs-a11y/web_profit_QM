@@ -14,7 +14,8 @@ import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
 import { getCategories } from "@/lib/data/categories";
 import { getDocuments } from "@/lib/data/documents";
-import { getBestSellerProducts } from "@/lib/data/products";
+import { getHomeBanners } from "@/lib/data/home-banners";
+import { getBestSellerProductCards } from "@/lib/data/products";
 import { getSiteSettings } from "@/lib/data/site-settings";
 import { getTestimonials } from "@/lib/data/testimonials";
 import { copy, getLocale, text } from "@/lib/i18n";
@@ -89,18 +90,19 @@ export default async function HomePage() {
   const locale = await getLocale();
   const c = copy[locale];
   const isVi = locale === "vi";
-  const [categories, documents, bestSellers, testimonials, siteSettings] =
+  const [categories, documents, bestSellers, testimonials, siteSettings, banners] =
     await Promise.all([
       getCategories(),
       getDocuments(),
-      getBestSellerProducts(),
+      getBestSellerProductCards(),
       getTestimonials(),
       getSiteSettings(),
+      getHomeBanners(),
     ]);
 
   return (
     <>
-      <HeroBanner locale={locale} products={bestSellers} />
+      <HeroBanner locale={locale} products={bestSellers} banners={banners} />
 
       <section className="container-px mx-auto max-w-7xl py-14">
         <SectionHeading

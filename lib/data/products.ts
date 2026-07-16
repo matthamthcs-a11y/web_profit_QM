@@ -9,8 +9,18 @@ const getProductsCached = unstable_cache(
   { revalidate: 300, tags: ["products"] },
 );
 
+const getProductCardsCached = unstable_cache(
+  async () => getProductCardsUncached(),
+  ["profitness-product-cards"],
+  { revalidate: 300, tags: ["products"] },
+);
+
 export async function getProducts() {
   return getProductsCached();
+}
+
+export async function getProductCards() {
+  return getProductCardsCached();
 }
 
 async function getProductsUncached() {
@@ -105,6 +115,12 @@ export async function getBestSellerProducts() {
   return products.filter((product) => product.isBestSeller);
 }
 
+export async function getBestSellerProductCards() {
+  const products = await getProductCards();
+
+  return products.filter((product) => product.isBestSeller);
+}
+
 export async function getProductBySlug(slug: string) {
   const products = await getProducts();
 
@@ -115,4 +131,56 @@ export async function getRelatedProducts(productIds: string[]) {
   const products = await getProducts();
 
   return products.filter((product) => productIds.includes(product.id));
+}
+
+async function getProductCardsUncached() {
+  const supabase = getSupabaseDataClient();
+
+  if (!supabase) {
+    return mockProducts;
+  }
+
+  const [productsResult, categoriesResult, brandsResult, sizesResult, flavorsResult] =
+    await Promise.all([
+      supabase
+        .from("products")
+        .select("*")
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true }),
+      supabase.from("categories").select("*"),
+      supabase.from("brands").select("*"),
+      supabase
+        .from("product_sizes")
+        .select("id, product_id, label, sort_order")
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("product_flavors")
+        .select("id, product_id, name, sort_order")
+        .order("sort_order", { ascending: true }),
+    ]);
+
+  const hasError = [
+    productsResult,
+    categoriesResult,
+    brandsResult,
+    sizesResult,
+    flavorsResult,
+  ].some((result) => result.error);
+
+  if (hasError) {
+    return mockProducts;
+  }
+
+  return mapProductRows({
+    products: productsResult.data ?? [],
+    categories: categoriesResult.data ?? [],
+    brands: brandsResult.data ?? [],
+    sizes: sizesResult.data ?? [],
+    flavors: flavorsResult.data ?? [],
+    benefits: [],
+    usage: [],
+    audiences: [],
+    ingredients: [],
+    relatedProducts: [],
+  });
 }

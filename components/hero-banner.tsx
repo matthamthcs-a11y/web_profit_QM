@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { Locale, Product } from "@/lib/types";
+import type { HomeBanner, Locale, Product } from "@/lib/types";
 
 type HeroBannerProps = {
   locale: Locale;
   products: Product[];
+  banners?: HomeBanner[];
 };
 
 type SlideTheme = {
@@ -78,8 +79,8 @@ function SlideArt({ theme }: { theme: SlideTheme }) {
   );
 }
 
-export function HeroBanner({ locale, products }: HeroBannerProps) {
-  const slides = useMemo<SlideTheme[]>(() => {
+export function HeroBanner({ locale, products, banners = [] }: HeroBannerProps) {
+  const fallbackSlides = useMemo<SlideTheme[]>(() => {
     return products.slice(0, 3).map((product) => ({
       background: product.visual.background,
       accent: product.visual.accent,
@@ -89,16 +90,19 @@ export function HeroBanner({ locale, products }: HeroBannerProps) {
   }, [products]);
 
   const [index, setIndex] = useState(0);
-  const current = slides[index] ?? slides[0];
+  const hasBanners = banners.length > 0;
+  const totalSlides = hasBanners ? banners.length : fallbackSlides.length;
+  const currentBanner = hasBanners ? banners[index] ?? banners[0] : null;
+  const currentFallback = fallbackSlides[index] ?? fallbackSlides[0];
 
   const prev = () => {
-    if (!slides.length) return;
-    setIndex((value) => (value - 1 + slides.length) % slides.length);
+    if (!totalSlides) return;
+    setIndex((value) => (value - 1 + totalSlides) % totalSlides);
   };
 
   const next = () => {
-    if (!slides.length) return;
-    setIndex((value) => (value + 1) % slides.length);
+    if (!totalSlides) return;
+    setIndex((value) => (value + 1) % totalSlides);
   };
 
   const slogan =
@@ -113,9 +117,13 @@ export function HeroBanner({ locale, products }: HeroBannerProps) {
   return (
     <section className="bg-white">
       <div className="mx-auto max-w-[1600px] px-0">
-        <div className="relative overflow-hidden bg-slate-950">
-          <div className="relative h-[340px] sm:h-[420px] lg:h-[500px]">
-            {slides.length > 0 ? <SlideArt theme={current} /> : null}
+          <div className="relative overflow-hidden bg-slate-950">
+            <div className="relative h-[340px] sm:h-[420px] lg:h-[500px]">
+            {currentBanner ? (
+              <BannerImage banner={currentBanner} locale={locale} />
+            ) : currentFallback ? (
+              <SlideArt theme={currentFallback} />
+            ) : null}
 
             <button
               type="button"
@@ -162,5 +170,37 @@ export function HeroBanner({ locale, products }: HeroBannerProps) {
         </div>
       </div>
     </section>
+  );
+}
+
+function BannerImage({
+  banner,
+  locale,
+}: {
+  banner: HomeBanner;
+  locale: Locale;
+}) {
+  const image = (
+    <picture className="absolute inset-0 block h-full w-full">
+      {banner.mobileImagePath ? (
+        <source media="(max-width: 767px)" srcSet={banner.mobileImagePath} />
+      ) : null}
+      <img
+        src={banner.imagePath}
+        alt={banner.alt[locale] || banner.alt.vi}
+        className="h-full w-full object-cover"
+        loading="eager"
+      />
+    </picture>
+  );
+
+  if (!banner.linkUrl) {
+    return image;
+  }
+
+  return (
+    <a href={banner.linkUrl} className="absolute inset-0 block">
+      {image}
+    </a>
   );
 }

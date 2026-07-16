@@ -3,6 +3,7 @@ import type {
   Category,
   Dealer,
   DocumentAsset,
+  HomeBanner,
   LocalizedText,
   Product,
   Testimonial,
@@ -22,6 +23,7 @@ type ProductContentRow =
 type ProductIngredientRow = Tables<"product_ingredients">;
 type RelatedProductRow = Tables<"related_products">;
 type DocumentRow = Tables<"documents">;
+type HomeBannerRow = Tables<"home_banners">;
 type DealerRow = Tables<"dealers">;
 type TestimonialRow = Tables<"testimonials">;
 type SiteSettingRow = Tables<"site_settings">;
@@ -63,6 +65,7 @@ export function mapBrandRow(row: BrandRow): Brand {
     origin: row.origin ?? "",
     description: localizedText(row.description),
     documentCount: 0,
+    logoPath: row.logo_path,
   };
 }
 
@@ -72,6 +75,18 @@ export function mapDocumentRow(row: DocumentRow): DocumentAsset {
     title: localizedText(row.title),
     type: row.type as DocumentAsset["type"],
     description: localizedText(row.description),
+    filePath: row.file_path,
+    thumbnailPath: row.thumbnail_path,
+  };
+}
+
+export function mapHomeBannerRow(row: HomeBannerRow): HomeBanner {
+  return {
+    id: row.id,
+    imagePath: row.image_path,
+    mobileImagePath: row.mobile_image_path,
+    alt: localizedText(row.alt, "Pro-Fitness Sports Nutrition"),
+    linkUrl: row.link_url,
   };
 }
 
@@ -188,6 +203,8 @@ export function mapProductRows({
       ),
       primaryGoal,
       shortDescription: localizedText(product.short_description),
+      imagePath: product.image_path,
+      nutritionImagePath: product.nutrition_image_path,
       visual: {
         packageType: normalizePackageType(product.package_type),
         accent: product.visual_accent ?? "#ce1732",

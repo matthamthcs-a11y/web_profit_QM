@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { ProductCatalog } from "@/components/product-catalog";
 import { SectionHeading } from "@/components/section-heading";
 import { getCategories } from "@/lib/data/categories";
-import { getProducts } from "@/lib/data/products";
+import { getProductCards } from "@/lib/data/products";
 import { copy, getLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Products",
-  description: "Danh sach san pham Pro-Fitness Sports Nutrition.",
+  description: "Danh sách sản phẩm Pro-Fitness Sports Nutrition.",
 };
 
 export default async function ProductsPage() {
@@ -15,7 +15,7 @@ export default async function ProductsPage() {
   const c = copy[locale];
   const [categories, products] = await Promise.all([
     getCategories(),
-    getProducts(),
+    getProductCards(),
   ]);
 
   return (

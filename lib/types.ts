@@ -25,6 +25,8 @@ export type Product = {
   flavors: LocalizedText[];
   primaryGoal: LocalizedText;
   shortDescription: LocalizedText;
+  imagePath?: string | null;
+  nutritionImagePath?: string | null;
   visual: {
     packageType: "gel" | "tube" | "tub" | "pouch";
     accent: string;
@@ -50,6 +52,7 @@ export type Brand = {
   origin: string;
   description: LocalizedText;
   documentCount: number;
+  logoPath?: string | null;
 };
 
 export type BlogPost = {
@@ -83,4 +86,14 @@ export type DocumentAsset = {
   title: LocalizedText;
   type: "catalog" | "certificate" | "coa" | "attp";
   description: LocalizedText;
+  filePath?: string | null;
+  thumbnailPath?: string | null;
+};
+
+export type HomeBanner = {
+  id: string;
+  imagePath: string;
+  mobileImagePath?: string | null;
+  alt: LocalizedText;
+  linkUrl?: string | null;
 };

@@ -3,16 +3,11 @@ import { notFound } from "next/navigation";
 import { MessageCircle, Phone, ShieldCheck } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductVisual } from "@/components/product-visual";
-import {
-  copy,
-  formatPrice,
-  getLocale,
-  text,
-} from "@/lib/i18n";
+import { copy, formatPrice, getLocale, text } from "@/lib/i18n";
 import { getSiteSettings } from "@/lib/data/site-settings";
 import {
   getProductBySlug,
-  getProducts,
+  getProductCards,
   getRelatedProducts,
 } from "@/lib/data/products";
 
@@ -35,11 +30,16 @@ export async function generateMetadata({
   return {
     title: product.name.vi,
     description: product.shortDescription.vi,
+    openGraph: product.imagePath
+      ? {
+          images: [{ url: product.imagePath }],
+        }
+      : undefined,
   };
 }
 
 export async function generateStaticParams() {
-  const products = await getProducts();
+  const products = await getProductCards();
 
   return products.map((product) => ({
     slug: product.slug,
@@ -156,11 +156,23 @@ export default async function ProductDetailPage({
           <h2 className="text-2xl font-black text-ink">
             {c.detail.nutritionFacts}
           </h2>
-          <div className="mt-5 flex aspect-[4/3] items-center justify-center rounded border border-dashed border-slate-300 bg-white p-6 text-center text-sm font-bold text-muted">
-            {locale === "vi"
-              ? "Ảnh Nutrition Facts sẽ được upload trong admin sau."
-              : "Nutrition Facts image will be uploaded in admin later."}
-          </div>
+          {product.nutritionImagePath ? (
+            <div className="mt-5 overflow-hidden rounded border border-line bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={product.nutritionImagePath}
+                alt={c.detail.nutritionFacts}
+                className="h-full w-full object-contain"
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            <div className="mt-5 flex aspect-[4/3] items-center justify-center rounded border border-dashed border-slate-300 bg-white p-6 text-center text-sm font-bold text-muted">
+              {locale === "vi"
+                ? "Ảnh Nutrition Facts sẽ được upload trong admin sau."
+                : "Nutrition Facts image will be uploaded in admin later."}
+            </div>
+          )}
         </div>
       </section>
 

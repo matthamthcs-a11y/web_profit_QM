@@ -33,6 +33,18 @@ export function ProductVisual({
       className={`relative flex ${shellSize} items-center justify-center overflow-hidden rounded bg-surface`}
       style={{ backgroundColor: product.visual.background }}
     >
+      {product.imagePath ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={product.imagePath}
+            alt={product.name[locale] ?? product.name.vi}
+            className="relative z-10 h-full w-full object-contain p-6"
+            loading={isHero || isBanner ? "eager" : "lazy"}
+          />
+        </>
+      ) : (
+        <>
       <div
         className="absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-20"
         style={{ backgroundColor: product.visual.accent }}
@@ -52,6 +64,8 @@ export function ProductVisual({
         className={packageSize}
         hideLabel={hideLabel}
       />
+        </>
+      )}
     </div>
   );
 }

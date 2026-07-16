@@ -54,6 +54,7 @@ function revalidateAdminData() {
     "testimonials",
     "dealers",
     "site-settings",
+    "home-banners",
   ].forEach((tag) => revalidateTag(tag));
 
   adminPaths.forEach((path) => revalidatePath(path));

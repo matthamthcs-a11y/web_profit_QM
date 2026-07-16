@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | Pro-Fitness",
   },
   description:
-    "Catalog san pham Pro-Fitness Sports Nutrition: gia ban, huong vi, cong dung, cach su dung va lien he tu van.",
+    "Catalog sản phẩm Pro-Fitness Sports Nutrition: giá bán, hương vị, công dụng, cách sử dụng và liên hệ tư vấn.",
   metadataBase: new URL("https://profitness-preview.vercel.app"),
 };
 
