@@ -56,20 +56,9 @@ export async function getAdminCatalogOptions() {
   };
 }
 
-export async function getAdminProductEditorData() {
+export async function getAdminProductEditorData(editProductId?: string) {
   const supabase = await createSupabaseServerClient();
-  const [
-    products,
-    categories,
-    brands,
-    sizes,
-    flavors,
-    benefits,
-    usage,
-    audiences,
-    ingredients,
-    relatedProducts,
-  ] = await Promise.all([
+  const [products, categories, brands] = await Promise.all([
     supabase
       .from("products")
       .select("*")
@@ -82,35 +71,63 @@ export async function getAdminProductEditorData() {
       .from("brands")
       .select("id, slug, name")
       .order("sort_order", { ascending: true }),
-    supabase
-      .from("product_sizes")
-      .select("*")
-      .order("sort_order", { ascending: true }),
-    supabase
-      .from("product_flavors")
-      .select("*")
-      .order("sort_order", { ascending: true }),
-    supabase
-      .from("product_benefits")
-      .select("*")
-      .order("sort_order", { ascending: true }),
-    supabase
-      .from("product_usage")
-      .select("*")
-      .order("sort_order", { ascending: true }),
-    supabase
-      .from("product_audiences")
-      .select("*")
-      .order("sort_order", { ascending: true }),
-    supabase
-      .from("product_ingredients")
-      .select("*")
-      .order("sort_order", { ascending: true }),
-    supabase
-      .from("related_products")
-      .select("*")
-      .order("sort_order", { ascending: true }),
   ]);
+
+  const [
+    sizes,
+    flavors,
+    benefits,
+    usage,
+    audiences,
+    ingredients,
+    relatedProducts,
+  ] = editProductId
+    ? await Promise.all([
+        supabase
+          .from("product_sizes")
+          .select("*")
+          .eq("product_id", editProductId)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("product_flavors")
+          .select("*")
+          .eq("product_id", editProductId)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("product_benefits")
+          .select("*")
+          .eq("product_id", editProductId)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("product_usage")
+          .select("*")
+          .eq("product_id", editProductId)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("product_audiences")
+          .select("*")
+          .eq("product_id", editProductId)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("product_ingredients")
+          .select("*")
+          .eq("product_id", editProductId)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("related_products")
+          .select("*")
+          .eq("product_id", editProductId)
+          .order("sort_order", { ascending: true }),
+      ])
+    : [
+        { data: [] },
+        { data: [] },
+        { data: [] },
+        { data: [] },
+        { data: [] },
+        { data: [] },
+        { data: [] },
+      ];
 
   return {
     products: products.data ?? [],

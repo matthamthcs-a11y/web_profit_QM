@@ -1,8 +1,25 @@
+import { unstable_cache } from "next/cache";
 import { categories } from "@/lib/mock-data";
 import { mapCategoryRow } from "@/lib/data/mappers";
 import { getSupabaseDataClient } from "@/lib/data/source";
 
+const getCategoriesCached = unstable_cache(
+  async () => getCategoriesUncached(),
+  ["profitness-categories"],
+  { revalidate: 300, tags: ["categories"] },
+);
+
+const getFeaturedCategoriesCached = unstable_cache(
+  async () => getFeaturedCategoriesUncached(),
+  ["profitness-featured-categories"],
+  { revalidate: 300, tags: ["categories"] },
+);
+
 export async function getCategories() {
+  return getCategoriesCached();
+}
+
+async function getCategoriesUncached() {
   const supabase = getSupabaseDataClient();
 
   if (!supabase) {
@@ -22,6 +39,10 @@ export async function getCategories() {
 }
 
 export async function getFeaturedCategories() {
+  return getFeaturedCategoriesCached();
+}
+
+async function getFeaturedCategoriesUncached() {
   const supabase = getSupabaseDataClient();
 
   if (!supabase) {

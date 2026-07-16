@@ -1,8 +1,19 @@
+import { unstable_cache } from "next/cache";
 import { products as mockProducts } from "@/lib/mock-data";
 import { mapProductRows } from "@/lib/data/mappers";
 import { getSupabaseDataClient } from "@/lib/data/source";
 
+const getProductsCached = unstable_cache(
+  async () => getProductsUncached(),
+  ["profitness-products"],
+  { revalidate: 300, tags: ["products"] },
+);
+
 export async function getProducts() {
+  return getProductsCached();
+}
+
+async function getProductsUncached() {
   const supabase = getSupabaseDataClient();
 
   if (!supabase) {

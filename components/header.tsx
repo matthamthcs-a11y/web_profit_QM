@@ -48,7 +48,7 @@ export async function Header() {
               {item.label}
             </Link>
           ))}
-          <div className="group relative">
+          <div className="group relative py-3 -my-3">
             <Link
               href="/products"
               className="inline-flex items-center gap-1 rounded px-1 py-1 leading-none hover:text-brand-red"
@@ -56,7 +56,7 @@ export async function Header() {
               {c.nav.products}
               <ChevronDown className="h-4 w-4 transition group-hover:rotate-180 group-focus-within:rotate-180" />
             </Link>
-            <div className="invisible absolute left-0 top-full z-20 mt-3 w-72 rounded border border-line bg-white p-3 opacity-0 shadow-soft transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+            <div className="invisible absolute left-0 top-full z-20 w-72 rounded border border-line bg-white p-3 opacity-0 shadow-soft transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
               <div className="grid gap-1 text-sm font-semibold text-ink">
                 {categories.map((category) => (
                   <Link

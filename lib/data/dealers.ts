@@ -1,8 +1,19 @@
+import { unstable_cache } from "next/cache";
 import { dealers } from "@/lib/mock-data";
 import { mapDealerRow } from "@/lib/data/mappers";
 import { getSupabaseDataClient } from "@/lib/data/source";
 
+const getDealersCached = unstable_cache(
+  async () => getDealersUncached(),
+  ["profitness-dealers"],
+  { revalidate: 300, tags: ["dealers"] },
+);
+
 export async function getDealers() {
+  return getDealersCached();
+}
+
+async function getDealersUncached() {
   const supabase = getSupabaseDataClient();
 
   if (!supabase) {

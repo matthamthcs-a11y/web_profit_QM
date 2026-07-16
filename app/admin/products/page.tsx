@@ -48,6 +48,8 @@ const adminProductCopy = {
       empty: "Không có sản phẩm nào khớp với bộ lọc hiện tại.",
       delete: "Xóa sản phẩm",
       confirmDelete: "Bạn có chắc muốn xóa sản phẩm này không?",
+      edit: "Sửa",
+      cancelEdit: "Đóng form sửa",
     },
     filters: {
       title: "Tìm kiếm và lọc",
@@ -141,6 +143,8 @@ const adminProductCopy = {
       empty: "No products match the current filters.",
       delete: "Delete product",
       confirmDelete: "Are you sure you want to delete this product?",
+      edit: "Edit",
+      cancelEdit: "Close editor",
     },
     filters: {
       title: "Search and filters",
@@ -232,11 +236,14 @@ export default async function AdminProductsPage({
   searchParams?: AdminProductsSearchParams;
 }) {
   await requireAdmin();
-  const [locale, params, data] = await Promise.all([
+  const [locale, params] = await Promise.all([
     getLocale(),
-    searchParams ? searchParams : Promise.resolve({}),
-    getAdminProductEditorData(),
+    searchParams
+      ? searchParams
+      : Promise.resolve({} as Record<string, string | string[] | undefined>),
   ]);
+  const editProductId = getSingleParam(params.edit);
+  const data = await getAdminProductEditorData(editProductId);
   const t = adminProductCopy[locale];
   const sizes = groupBy(data.sizes, (row) => row.product_id);
   const flavors = groupBy(data.flavors, (row) => row.product_id);
@@ -281,37 +288,51 @@ export default async function AdminProductsPage({
         {filteredProducts.map((product) => {
           const position =
             data.products.findIndex((item) => item.id === product.id) + 1;
+          const isEditing = editProductId === product.id;
 
           return (
-            <details key={product.id} className="rounded border border-line p-5">
-              <summary className="cursor-pointer font-black">
-                {localized(product.name, locale)}{" "}
-                <span className="text-sm font-semibold text-muted">
-                  / {product.slug} / {formatPrice(Number(product.price), locale)}
-                </span>
-              </summary>
-              <ProductForm
-                data={data}
-                product={product}
-                sizes={sizes.get(product.id)}
-                flavors={flavors.get(product.id)}
-                benefits={benefits.get(product.id)}
-                usage={usage.get(product.id)}
-                audiences={audiences.get(product.id)}
-                ingredients={ingredients.get(product.id)}
-                relatedProducts={relatedProducts.get(product.id)}
-                position={position}
-                locale={locale}
-                t={t}
-              />
-              <form action={deleteProduct} className="mt-4">
-                <input type="hidden" name="id" value={product.id} />
-                <AdminDeleteButton
-                  label={t.page.delete}
-                  message={t.page.confirmDelete}
-                />
-              </form>
-            </details>
+            <article key={product.id} className="rounded border border-line p-5">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="font-black">
+                  {localized(product.name, locale)}{" "}
+                  <span className="text-sm font-semibold text-muted">
+                    / {product.slug} / {formatPrice(Number(product.price), locale)}
+                  </span>
+                </div>
+                <Link
+                  href={isEditing ? "/admin/products" : `/admin/products?edit=${product.id}`}
+                  className="inline-flex h-9 items-center justify-center rounded border border-line px-4 text-xs font-black uppercase text-ink hover:border-brand-red hover:text-brand-red"
+                >
+                  {isEditing ? t.page.cancelEdit : t.page.edit}
+                </Link>
+              </div>
+
+              {isEditing ? (
+                <>
+                  <ProductForm
+                    data={data}
+                    product={product}
+                    sizes={sizes.get(product.id)}
+                    flavors={flavors.get(product.id)}
+                    benefits={benefits.get(product.id)}
+                    usage={usage.get(product.id)}
+                    audiences={audiences.get(product.id)}
+                    ingredients={ingredients.get(product.id)}
+                    relatedProducts={relatedProducts.get(product.id)}
+                    position={position}
+                    locale={locale}
+                    t={t}
+                  />
+                  <form action={deleteProduct} className="mt-4">
+                    <input type="hidden" name="id" value={product.id} />
+                    <AdminDeleteButton
+                      label={t.page.delete}
+                      message={t.page.confirmDelete}
+                    />
+                  </form>
+                </>
+              ) : null}
+            </article>
           );
         })}
         {!filteredProducts.length ? (

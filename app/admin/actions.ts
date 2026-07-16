@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/admin/auth";
 import {
   getBool,
@@ -47,6 +47,15 @@ const adminPaths = [
 ];
 
 function revalidateAdminData() {
+  [
+    "products",
+    "categories",
+    "documents",
+    "testimonials",
+    "dealers",
+    "site-settings",
+  ].forEach((tag) => revalidateTag(tag));
+
   adminPaths.forEach((path) => revalidatePath(path));
 }
 
