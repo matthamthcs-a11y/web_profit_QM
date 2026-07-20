@@ -111,6 +111,7 @@ export const products: Product[] = [
       { name: "Sodium", amount: "90mg" },
       { name: "Potassium", amount: "35mg" },
     ],
+    variants: [],
     usage: [
       {
         vi: "Dùng 1 gói trước hoặc trong khi tập.",
@@ -174,6 +175,7 @@ export const products: Product[] = [
       { name: "Potassium", amount: "80mg" },
       { name: "Magnesium", amount: "45mg" },
     ],
+    variants: [],
     usage: [
       {
         vi: "Pha 1 viên với 500-750ml nước.",
@@ -237,6 +239,7 @@ export const products: Product[] = [
       { name: "BCAA", amount: "5.5g" },
       { name: "Sugar", amount: "1g" },
     ],
+    variants: [],
     usage: [
       {
         vi: "Pha 1 muỗng với 250ml nước hoặc sữa.",
@@ -299,6 +302,7 @@ export const products: Product[] = [
       { name: "Protein", amount: "12g" },
       { name: "Sodium", amount: "180mg" },
     ],
+    variants: [],
     usage: [
       {
         vi: "Dùng trong vòng 30-60 phút sau tập.",

@@ -6,10 +6,12 @@ import type {
   HomeBanner,
   LocalizedText,
   Product,
+  ProductVariant,
   Testimonial,
 } from "@/lib/types";
 import type { Json, Tables } from "@/lib/supabase/database.types";
 import type { SiteSettings } from "@/lib/data/site-settings";
+import { buildOptionKey, buildVariantKey } from "@/lib/product-variants";
 
 type ProductRow = Tables<"products">;
 type CategoryRow = Tables<"categories">;
@@ -21,6 +23,7 @@ type ProductContentRow =
   | Tables<"product_usage">
   | Tables<"product_audiences">;
 type ProductIngredientRow = Tables<"product_ingredients">;
+type ProductVariantRow = Tables<"product_variants">;
 type RelatedProductRow = Tables<"related_products">;
 type DocumentRow = Tables<"documents">;
 type HomeBannerRow = Tables<"home_banners">;
@@ -156,6 +159,7 @@ export function mapProductRows({
   usage,
   audiences,
   ingredients,
+  variants,
   relatedProducts,
 }: {
   products: ProductRow[];
@@ -167,6 +171,7 @@ export function mapProductRows({
   usage: ProductContentRow[];
   audiences: ProductContentRow[];
   ingredients: ProductIngredientRow[];
+  variants: ProductVariantRow[];
   relatedProducts: RelatedProductRow[];
 }): Product[] {
   const categoriesById = new Map(categories.map((row) => [row.id, row]));
@@ -177,6 +182,7 @@ export function mapProductRows({
   const usageByProduct = groupBy(usage, (row) => row.product_id);
   const audiencesByProduct = groupBy(audiences, (row) => row.product_id);
   const ingredientsByProduct = groupBy(ingredients, (row) => row.product_id);
+  const variantsByProduct = groupBy(variants, (row) => row.product_id);
   const relatedByProduct = groupBy(relatedProducts, (row) => row.product_id);
 
   return products.map((product) => {
@@ -184,23 +190,38 @@ export function mapProductRows({
       ? categoriesById.get(product.category_id)
       : undefined;
     const brand = product.brand_id ? brandsById.get(product.brand_id) : undefined;
-    const primaryGoal = localizedText(product.primary_goal);
+    const productName = localizedText(product.name);
+    const categoryName = category
+      ? localizedText(category.name)
+      : { vi: "", en: "" };
+    const primaryGoal = localizedText(
+      product.primary_goal,
+      categoryName.vi || productName.vi,
+    );
+
+    const productSizes = (sizesByProduct.get(product.id) ?? []).map((row) =>
+      localizedText(row.label_i18n, row.label),
+    );
+    const productFlavors = (flavorsByProduct.get(product.id) ?? []).map((row) =>
+      localizedText(row.name),
+    );
+    const productVariants = mapProductVariants(
+      variantsByProduct.get(product.id) ?? [],
+      productFlavors,
+      productSizes,
+    );
 
     return {
       id: product.id,
-      name: localizedText(product.name),
+      name: productName,
       slug: product.slug,
       brand: brand?.name ?? "",
       categoryId: category?.id ?? "",
-      categoryName: category
-        ? localizedText(category.name)
-        : { vi: "", en: "" },
+      categoryName,
       origin: product.origin ?? "",
       price: Number(product.price),
-      sizes: (sizesByProduct.get(product.id) ?? []).map((row) => row.label),
-      flavors: (flavorsByProduct.get(product.id) ?? []).map((row) =>
-        localizedText(row.name),
-      ),
+      sizes: productSizes.map((size) => size.vi),
+      flavors: productFlavors,
       primaryGoal,
       shortDescription: localizedText(product.short_description),
       imagePath: product.image_path,
@@ -218,6 +239,7 @@ export function mapProductRows({
         name: row.name,
         amount: row.amount,
       })),
+      variants: productVariants,
       usage: (usageByProduct.get(product.id) ?? []).map((row) =>
         localizedText(row.content),
       ),
@@ -231,6 +253,63 @@ export function mapProductRows({
       isBestSeller: product.is_best_seller,
     };
   });
+}
+
+function mapProductVariants(
+  rows: ProductVariantRow[],
+  flavors: Product["flavors"],
+  sizes: LocalizedText[],
+): ProductVariant[] {
+  const variants = rows
+    .map((row) => {
+      const flavor = localizedText(row.flavor_name);
+      const size = localizedText(row.size_name, row.size_label);
+
+      return {
+        id: row.id,
+        combinationKey: row.combination_key,
+        flavor,
+        flavorKey: buildOptionKey(flavor.vi || flavor.en),
+        size,
+        sizeKey: buildOptionKey(size.vi || size.en),
+        price: row.price === null ? null : Number(row.price),
+        currency: row.currency,
+        imagePath: row.image_path,
+        nutritionImagePath: row.nutrition_image_path,
+        isDefault: row.is_default,
+        isPublished: row.is_published,
+        sortOrder: row.sort_order,
+      };
+    })
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  if (variants.length || !flavors.length || !sizes.length) {
+    return variants;
+  }
+
+  return flavors.flatMap((flavor, flavorIndex) =>
+    sizes.map((size, sizeIndex) => {
+      const sortOrder = flavorIndex * sizes.length + sizeIndex + 1;
+
+      return {
+        id: `${buildOptionKey(flavor.vi || flavor.en)}-${buildOptionKey(
+          size.vi || size.en,
+        )}`,
+        combinationKey: buildVariantKey(flavor, size),
+        flavor,
+        flavorKey: buildOptionKey(flavor.vi || flavor.en),
+        size,
+        sizeKey: buildOptionKey(size.vi || size.en),
+        price: null,
+        currency: null,
+        imagePath: null,
+        nutritionImagePath: null,
+        isDefault: sortOrder === 1,
+        isPublished: true,
+        sortOrder,
+      };
+    }),
+  );
 }
 
 function normalizePackageType(value: string | null): Product["visual"]["packageType"] {

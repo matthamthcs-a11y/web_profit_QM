@@ -39,7 +39,7 @@ async function getProductsUncached() {
     benefitsResult,
     usageResult,
     audiencesResult,
-    ingredientsResult,
+    variantsResult,
     relatedProductsResult,
   ] = await Promise.all([
     supabase
@@ -69,7 +69,7 @@ async function getProductsUncached() {
       .select("*")
       .order("sort_order", { ascending: true }),
     supabase
-      .from("product_ingredients")
+      .from("product_variants")
       .select("*")
       .order("sort_order", { ascending: true }),
     supabase
@@ -87,7 +87,7 @@ async function getProductsUncached() {
     benefitsResult,
     usageResult,
     audiencesResult,
-    ingredientsResult,
+    variantsResult,
     relatedProductsResult,
   ].some((result) => result.error);
 
@@ -104,7 +104,8 @@ async function getProductsUncached() {
     benefits: benefitsResult.data ?? [],
     usage: usageResult.data ?? [],
     audiences: audiencesResult.data ?? [],
-    ingredients: ingredientsResult.data ?? [],
+    ingredients: [],
+    variants: variantsResult.data ?? [],
     relatedProducts: relatedProductsResult.data ?? [],
   });
 }
@@ -151,7 +152,7 @@ async function getProductCardsUncached() {
       supabase.from("brands").select("*"),
       supabase
         .from("product_sizes")
-        .select("id, product_id, label, sort_order")
+        .select("id, product_id, label, label_i18n, sort_order")
         .order("sort_order", { ascending: true }),
       supabase
         .from("product_flavors")
@@ -181,6 +182,7 @@ async function getProductCardsUncached() {
     usage: [],
     audiences: [],
     ingredients: [],
+    variants: [],
     relatedProducts: [],
   });
 }

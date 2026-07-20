@@ -209,7 +209,7 @@ function ProductResultCard({
             {labels.flavors}:{" "}
             {product.flavors.map((flavor) => t(flavor, locale)).join(", ")}
           </p>
-          <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted">
+          <p className="mt-3 line-clamp-2 whitespace-pre-line text-sm leading-6 text-muted">
             {t(product.shortDescription, locale)}
           </p>
           <span className="mt-5 inline-flex text-sm font-black text-brand-red">

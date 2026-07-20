@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { deleteProduct, upsertProduct } from "@/app/admin/actions";
 import { AdminAssetField } from "@/components/admin-asset-field";
+import { AdminProductVariantsField } from "@/components/admin-product-variants-field";
 import {
   AdminCheckbox,
   AdminDeleteButton,
@@ -43,7 +44,7 @@ const adminProductCopy = {
       eyebrow: "Catalog",
       title: "Sản phẩm",
       description:
-        "Quản lý thông tin sản phẩm, giá, vị, công dụng, cách dùng và trạng thái hiển thị.",
+        "Quản lý thông tin sản phẩm, giá, hương vị, quy cách, công dụng, cách dùng và trạng thái hiển thị.",
       addNew: "Thêm sản phẩm mới",
       empty: "Không có sản phẩm nào khớp với bộ lọc hiện tại.",
       delete: "Xóa sản phẩm",
@@ -61,7 +62,7 @@ const adminProductCopy = {
       brand: "Thương hiệu",
       status: "Trạng thái",
       all: "Tất cả",
-      published: "Đang xuất bản",
+      published: "Đang hiển thị",
       hidden: "Đang ẩn",
       featured: "Nổi bật",
       bestSeller: "Bán chạy",
@@ -70,26 +71,30 @@ const adminProductCopy = {
     form: {
       sections: {
         basic: {
-          title: "Thông tin cơ bản",
-          description: "Tên, mô tả, slug, giá và xuất xứ sản phẩm.",
+          title: "Thông tin cố định",
+          description: "Tên, mô tả, slug, giá mặc định, tiền tệ và xuất xứ sản phẩm.",
         },
         taxonomy: {
-          title: "Phân loại và hiển thị",
-          description:
-            "Gắn danh mục, thương hiệu, kiểu ảnh minh họa và vị trí trong danh sách.",
+          title: "Phân loại và thứ tự hiển thị",
+          description: "Chọn danh mục, thương hiệu và vị trí sắp xếp trong danh sách.",
         },
         assets: {
-          title: "Ảnh và tài sản",
+          title: "Ảnh sản phẩm",
           description:
-            "Upload ảnh sản phẩm và ảnh bảng thành phần. Nếu để trống, website dùng placeholder mặc định.",
+            "Upload ảnh chính của sản phẩm và ảnh bảng thành phần dùng chung. Nếu để trống, website sẽ dùng ảnh mặc định.",
         },
         specs: {
-          title: "Quy cách và trạng thái",
-          description: "Nhập size, thành phần và bật/tắt các trạng thái hiển thị.",
+          title: "Trạng thái hiển thị",
+          description: "Bật hoặc tắt các trạng thái hiển thị của sản phẩm.",
         },
         content: {
-          title: "Nội dung chi tiết",
-          description: "Nhập hương vị, công dụng, cách dùng và đối tượng phù hợp.",
+          title: "Thông tin mô tả chi tiết",
+          description: "Nhập công dụng, cách sử dụng và đối tượng phù hợp.",
+        },
+        variants: {
+          title: "Biến thể sản phẩm",
+          description:
+            "Nhập hương vị và quy cách, sau đó tạo tổ hợp biến thể. Mỗi tổ hợp có thể có giá và ảnh riêng.",
         },
         related: {
           title: "Sản phẩm liên quan",
@@ -99,26 +104,30 @@ const adminProductCopy = {
       fields: {
         name: "Tên sản phẩm",
         shortDescription: "Mô tả ngắn",
-        primaryGoal: "Mục tiêu chính",
         slug: "Slug",
-        price: "Giá",
+        price: "Giá mặc định",
         currency: "Tiền tệ",
         origin: "Xuất xứ",
         category: "Danh mục",
         brand: "Thương hiệu",
-        packageType: "Kiểu ảnh minh họa",
         sortOrder: "Vị trí hiển thị",
-        productImage: "Ảnh sản phẩm",
+        productImage: "Ảnh chính sản phẩm",
         nutritionImage: "Ảnh bảng thành phần",
-        sizes: "Quy cách, mỗi dòng một size",
-        ingredients: "Thành phần, dạng Tên|Hàm lượng",
-        featured: "Nổi bật",
-        bestSeller: "Bán chạy",
-        published: "Đang xuất bản",
-        flavors: "Vị, mỗi dòng một vị",
+        sizes: "Quy cách, mỗi dòng một quy cách",
+        featured: "Nổi bật trên trang chủ",
+        bestSeller: "Sản phẩm bán chạy",
+        published: "Đang hiển thị trên website",
+        flavors: "Hương vị, mỗi dòng một hương vị",
         benefits: "Công dụng, mỗi dòng một ý",
-        usage: "Cách dùng, mỗi dòng một ý",
+        usage: "Cách sử dụng, mỗi dòng một ý",
         audiences: "Đối tượng phù hợp, mỗi dòng một ý",
+        variantPrice: "Giá riêng của biến thể",
+        variantImage: "Ảnh riêng của biến thể",
+        variantPublished: "Hiển thị biến thể",
+        variantDefault: "Biến thể mặc định",
+        variantInputsTitle: "Nhập hương vị và quy cách",
+        variantListTitle: "Tổ hợp biến thể cần nhập",
+        variantCreate: "Tạo tổ hợp",
       },
       placeholders: {
         notSelected: "Chưa chọn",
@@ -127,6 +136,10 @@ const adminProductCopy = {
       help: {
         slug: "Tự tạo từ tên tiếng Anh. Có thể sửa thủ công nếu cần.",
         noRelated: "Cần có ít nhất một sản phẩm khác để chọn sản phẩm liên quan.",
+        variantsAfterSave:
+          "Nhập hương vị và quy cách, bấm Tạo tổ hợp, sau đó nhập giá và ảnh cho từng biến thể.",
+        variantFallback:
+          "Nếu để trống giá hoặc ảnh, website sẽ dùng giá và ảnh mặc định ở phần thông tin cố định.",
       },
       actions: {
         save: "Lưu",
@@ -138,7 +151,7 @@ const adminProductCopy = {
       eyebrow: "Catalog",
       title: "Products",
       description:
-        "Manage product information, price, flavors, benefits, usage and display status.",
+        "Manage product information, price, flavors, sizes, benefits, usage and display status.",
       addNew: "Add new product",
       empty: "No products match the current filters.",
       delete: "Delete product",
@@ -156,7 +169,7 @@ const adminProductCopy = {
       brand: "Brand",
       status: "Status",
       all: "All",
-      published: "Published",
+      published: "Visible",
       hidden: "Hidden",
       featured: "Featured",
       bestSeller: "Best seller",
@@ -165,26 +178,30 @@ const adminProductCopy = {
     form: {
       sections: {
         basic: {
-          title: "Basic information",
-          description: "Product name, description, slug, price and origin.",
+          title: "Fixed product information",
+          description: "Product name, description, slug, default price, currency and origin.",
         },
         taxonomy: {
-          title: "Classification and display",
-          description:
-            "Assign category, brand, visual type and display position.",
+          title: "Classification and display order",
+          description: "Choose category, brand and sorting position.",
         },
         assets: {
-          title: "Images and assets",
+          title: "Product images",
           description:
-            "Upload product and nutrition facts images. If empty, the website uses the default placeholder.",
+            "Upload the main product image and the shared nutrition facts image. If empty, the website uses the default placeholder.",
         },
         specs: {
-          title: "Specifications and status",
-          description: "Enter sizes, ingredients and display status settings.",
+          title: "Display status",
+          description: "Toggle how this product appears on the website.",
         },
         content: {
-          title: "Detail content",
-          description: "Enter flavors, benefits, usage and suitable audience.",
+          title: "Detailed product content",
+          description: "Enter benefits, usage instructions and suitable audience.",
+        },
+        variants: {
+          title: "Product variants",
+          description:
+            "Enter flavors and sizes, then generate variant combinations. Each combination can have its own price and product image.",
         },
         related: {
           title: "Related products",
@@ -194,26 +211,30 @@ const adminProductCopy = {
       fields: {
         name: "Product name",
         shortDescription: "Short description",
-        primaryGoal: "Primary goal",
         slug: "Slug",
-        price: "Price",
+        price: "Default price",
         currency: "Currency",
         origin: "Origin",
         category: "Category",
         brand: "Brand",
-        packageType: "Visual type",
         sortOrder: "Display position",
-        productImage: "Product image",
+        productImage: "Main product image",
         nutritionImage: "Nutrition facts image",
         sizes: "Sizes, one per line",
-        ingredients: "Ingredients, format Name|Amount",
-        featured: "Featured",
-        bestSeller: "Best seller",
-        published: "Published",
+        featured: "Featured on homepage",
+        bestSeller: "Best-selling product",
+        published: "Visible on website",
         flavors: "Flavors, one per line",
         benefits: "Benefits, one per line",
-        usage: "Usage, one per line",
+        usage: "Usage instructions, one per line",
         audiences: "Suitable audience, one per line",
+        variantPrice: "Variant-specific price",
+        variantImage: "Variant-specific image",
+        variantPublished: "Show this variant",
+        variantDefault: "Default variant",
+        variantInputsTitle: "Enter flavors and sizes",
+        variantListTitle: "Variant combinations to complete",
+        variantCreate: "Generate combinations",
       },
       placeholders: {
         notSelected: "Not selected",
@@ -222,6 +243,10 @@ const adminProductCopy = {
       help: {
         slug: "Generated from the English name. You can edit it manually if needed.",
         noRelated: "At least one other product is required to choose related products.",
+        variantsAfterSave:
+          "Enter flavors and sizes, generate combinations, then add price and image for each variant.",
+        variantFallback:
+          "Empty price or image fields use the fixed product price and product image above.",
       },
       actions: {
         save: "Save",
@@ -250,7 +275,7 @@ export default async function AdminProductsPage({
   const benefits = groupBy(data.benefits, (row) => row.product_id);
   const usage = groupBy(data.usage, (row) => row.product_id);
   const audiences = groupBy(data.audiences, (row) => row.product_id);
-  const ingredients = groupBy(data.ingredients, (row) => row.product_id);
+  const variants = groupBy(data.variants, (row) => row.product_id);
   const relatedProducts = groupBy(data.relatedProducts, (row) => row.product_id);
   const filters = getProductFilters(params);
   const filteredProducts = filterProducts(data.products, filters);
@@ -317,7 +342,7 @@ export default async function AdminProductsPage({
                     benefits={benefits.get(product.id)}
                     usage={usage.get(product.id)}
                     audiences={audiences.get(product.id)}
-                    ingredients={ingredients.get(product.id)}
+                    variants={variants.get(product.id)}
                     relatedProducts={relatedProducts.get(product.id)}
                     position={position}
                     locale={locale}
@@ -452,7 +477,7 @@ function ProductForm({
   benefits = [],
   usage = [],
   audiences = [],
-  ingredients = [],
+  variants = [],
   relatedProducts = [],
   position,
   locale,
@@ -465,7 +490,7 @@ function ProductForm({
   benefits?: ProductEditorData["benefits"];
   usage?: ProductEditorData["usage"];
   audiences?: ProductEditorData["audiences"];
-  ingredients?: ProductEditorData["ingredients"];
+  variants?: ProductEditorData["variants"];
   relatedProducts?: ProductEditorData["relatedProducts"];
   position: number;
   locale: Locale;
@@ -486,13 +511,23 @@ function ProductForm({
           value={product?.short_description}
           textarea
         />
-        <LocalizedFields
-          base="primary_goal"
-          label={t.form.fields.primaryGoal}
-          value={product?.primary_goal}
+        <input
+          type="hidden"
+          name="primary_goal_vi"
+          value={localized(product?.primary_goal, "vi")}
+        />
+        <input
+          type="hidden"
+          name="primary_goal_en"
+          value={localized(product?.primary_goal, "en")}
         />
 
-        <div className="grid gap-4 md:grid-cols-4">
+        <input
+          type="hidden"
+          name="package_type"
+          value={product?.package_type ?? "gel"}
+        />
+        <div className="grid gap-4 md:grid-cols-3">
           <AdminSlugField
             label={t.form.fields.slug}
             sourceName="name_en"
@@ -555,19 +590,6 @@ function ProductForm({
               ))}
             </select>
           </label>
-          <label className="grid gap-1.5 text-sm font-bold text-ink">
-            <span>{t.form.fields.packageType}</span>
-            <select
-              name="package_type"
-              defaultValue={product?.package_type ?? "gel"}
-              className="h-10 rounded border border-line px-3 text-sm font-medium outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/15"
-            >
-              <option value="gel">gel</option>
-              <option value="tube">tube</option>
-              <option value="tub">tub</option>
-              <option value="pouch">pouch</option>
-            </select>
-          </label>
           <AdminField
             label={t.form.fields.sortOrder}
             name="sort_order"
@@ -606,36 +628,22 @@ function ProductForm({
         title={t.form.sections.specs.title}
         description={t.form.sections.specs.description}
       >
-        <div className="grid gap-4 md:grid-cols-3">
-          <AdminTextarea
-            label={t.form.fields.sizes}
-            name="sizes"
-            defaultValue={sizes.map((row) => row.label).join("\n")}
+        <div className="grid content-start gap-3 rounded border border-line p-4 md:max-w-md">
+          <AdminCheckbox
+            label={t.form.fields.featured}
+            name="is_featured"
+            defaultChecked={product?.is_featured ?? false}
           />
-          <AdminTextarea
-            label={t.form.fields.ingredients}
-            name="ingredients"
-            defaultValue={ingredients
-              .map((row) => `${row.name}|${row.amount}`)
-              .join("\n")}
+          <AdminCheckbox
+            label={t.form.fields.bestSeller}
+            name="is_best_seller"
+            defaultChecked={product?.is_best_seller ?? false}
           />
-          <div className="grid content-start gap-3 rounded border border-line p-4">
-            <AdminCheckbox
-              label={t.form.fields.featured}
-              name="is_featured"
-              defaultChecked={product?.is_featured ?? false}
-            />
-            <AdminCheckbox
-              label={t.form.fields.bestSeller}
-              name="is_best_seller"
-              defaultChecked={product?.is_best_seller ?? false}
-            />
-            <AdminCheckbox
-              label={t.form.fields.published}
-              name="is_published"
-              defaultChecked={product?.is_published ?? true}
-            />
-          </div>
+          <AdminCheckbox
+            label={t.form.fields.published}
+            name="is_published"
+            defaultChecked={product?.is_published ?? true}
+          />
         </div>
       </ProductFormSection>
 
@@ -643,12 +651,6 @@ function ProductForm({
         title={t.form.sections.content.title}
         description={t.form.sections.content.description}
       >
-        <LocalizedLineFields
-          base="flavors"
-          label={t.form.fields.flavors}
-          viRows={flavors.map((row) => localized(row.name, "vi"))}
-          enRows={flavors.map((row) => localized(row.name, "en"))}
-        />
         <LocalizedLineFields
           base="benefits"
           label={t.form.fields.benefits}
@@ -666,6 +668,31 @@ function ProductForm({
           label={t.form.fields.audiences}
           viRows={audiences.map((row) => localized(row.content, "vi"))}
           enRows={audiences.map((row) => localized(row.content, "en"))}
+        />
+      </ProductFormSection>
+
+      <ProductFormSection
+        title={t.form.sections.variants.title}
+        description={t.form.sections.variants.description}
+      >
+        <AdminProductVariantsField
+          sizes={sizes}
+          flavors={flavors}
+          variants={variants}
+          locale={locale}
+          copy={{
+            inputsTitle: t.form.fields.variantInputsTitle,
+            listTitle: t.form.fields.variantListTitle,
+            flavorsLabel: t.form.fields.flavors,
+            sizesLabel: t.form.fields.sizes,
+            createButton: t.form.fields.variantCreate,
+            empty: t.form.help.variantsAfterSave,
+            fallback: t.form.help.variantFallback,
+            price: t.form.fields.variantPrice,
+            image: t.form.fields.variantImage,
+            defaultVariant: t.form.fields.variantDefault,
+            published: t.form.fields.variantPublished,
+          }}
         />
       </ProductFormSection>
 
@@ -867,3 +894,4 @@ function groupBy<T>(items: T[], getKey: (item: T) => string) {
 function formatPrice(price: number, locale: Locale) {
   return new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(price);
 }
+

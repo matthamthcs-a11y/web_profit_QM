@@ -9,8 +9,16 @@ type AdminNotice = {
 
 const cookieName = "admin_notice";
 
-export function AdminToast() {
-  const [notice, setNotice] = useState<AdminNotice | null>(null);
+export function AdminToast({
+  initialNotice = null,
+}: {
+  initialNotice?: AdminNotice | null;
+}) {
+  const [notice, setNotice] = useState<AdminNotice | null>(initialNotice);
+
+  useEffect(() => {
+    setNotice(initialNotice);
+  }, [initialNotice]);
 
   useEffect(() => {
     const cookie = document.cookie
@@ -60,7 +68,7 @@ export function AdminToast() {
           type="button"
           onClick={() => setNotice(null)}
           className="ml-auto text-lg leading-none"
-          aria-label="Dong thong bao"
+          aria-label="Đóng thông báo"
         >
           x
         </button>

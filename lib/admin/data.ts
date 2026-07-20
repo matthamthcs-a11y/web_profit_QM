@@ -79,7 +79,7 @@ export async function getAdminProductEditorData(editProductId?: string) {
     benefits,
     usage,
     audiences,
-    ingredients,
+    variants,
     relatedProducts,
   ] = editProductId
     ? await Promise.all([
@@ -109,7 +109,7 @@ export async function getAdminProductEditorData(editProductId?: string) {
           .eq("product_id", editProductId)
           .order("sort_order", { ascending: true }),
         supabase
-          .from("product_ingredients")
+          .from("product_variants")
           .select("*")
           .eq("product_id", editProductId)
           .order("sort_order", { ascending: true }),
@@ -138,7 +138,7 @@ export async function getAdminProductEditorData(editProductId?: string) {
     benefits: benefits.data ?? [],
     usage: usage.data ?? [],
     audiences: audiences.data ?? [],
-    ingredients: ingredients.data ?? [],
+    variants: variants.data ?? [],
     relatedProducts: relatedProducts.data ?? [],
   };
 }

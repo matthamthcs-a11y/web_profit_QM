@@ -38,11 +38,28 @@ export type Product = {
     name: string;
     amount: string;
   }>;
+  variants: ProductVariant[];
   usage: LocalizedText[];
   audience: LocalizedText[];
   relatedProductIds: string[];
   isFeatured: boolean;
   isBestSeller: boolean;
+};
+
+export type ProductVariant = {
+  id: string;
+  combinationKey: string;
+  flavor: LocalizedText;
+  flavorKey: string;
+  size: LocalizedText;
+  sizeKey: string;
+  price?: number | null;
+  currency?: string | null;
+  imagePath?: string | null;
+  nutritionImagePath?: string | null;
+  isDefault: boolean;
+  isPublished: boolean;
+  sortOrder: number;
 };
 
 export type Brand = {

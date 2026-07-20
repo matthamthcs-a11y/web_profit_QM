@@ -211,16 +211,52 @@ export type Database = {
         Row: {
           id: string;
           label: string;
+          label_i18n: Json | null;
           product_id: string;
           sort_order: number;
         };
         Insert: {
           id?: string;
           label: string;
+          label_i18n?: Json | null;
           product_id: string;
           sort_order?: number;
         };
         Update: Partial<Database["public"]["Tables"]["product_sizes"]["Insert"]>;
+        Relationships: [];
+      };
+      product_variants: {
+        Row: TimestampColumns & {
+          combination_key: string;
+          currency: string | null;
+          flavor_name: Json;
+          id: string;
+          image_path: string | null;
+          is_default: boolean;
+          is_published: boolean;
+          nutrition_image_path: string | null;
+          price: number | null;
+          product_id: string;
+          size_name: Json | null;
+          size_label: string;
+          sort_order: number;
+        };
+        Insert: OptionalTimestampColumns & {
+          combination_key: string;
+          currency?: string | null;
+          flavor_name?: Json;
+          id?: string;
+          image_path?: string | null;
+          is_default?: boolean;
+          is_published?: boolean;
+          nutrition_image_path?: string | null;
+          price?: number | null;
+          product_id: string;
+          size_name?: Json | null;
+          size_label?: string;
+          sort_order?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["product_variants"]["Insert"]>;
         Relationships: [];
       };
       product_usage: ProductJsonChildTable;

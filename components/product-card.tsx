@@ -33,7 +33,7 @@ export function ProductCard({ product, locale }: ProductCardProps) {
           <p className="mt-2 text-2xl font-black text-brand-red">
             {formatPrice(product.price)}
           </p>
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted">
+          <p className="mt-2 line-clamp-2 whitespace-pre-line text-sm leading-6 text-muted">
             {text(product.shortDescription, locale)}
           </p>
           <p className="mt-3 line-clamp-1 text-xs font-semibold text-muted">

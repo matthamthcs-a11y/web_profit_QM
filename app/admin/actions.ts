@@ -5,7 +5,6 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/admin/auth";
 import {
   getBool,
-  getIngredientLines,
   getLines,
   getLocalized,
   getLocalizedLines,
@@ -14,6 +13,7 @@ import {
   getString,
   slugify,
 } from "@/lib/admin/form";
+import { buildVariantKey } from "@/lib/product-variants";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type AdminNoticeType = "success" | "error";
@@ -145,7 +145,6 @@ async function ensureUniqueSlug({
 
   return true;
 }
-
 async function normalizeSortOrder({
   supabase,
   table,
@@ -444,15 +443,16 @@ async function syncProductChildren(
     supabase.from("product_benefits").delete().eq("product_id", productId),
     supabase.from("product_usage").delete().eq("product_id", productId),
     supabase.from("product_audiences").delete().eq("product_id", productId),
-    supabase.from("product_ingredients").delete().eq("product_id", productId),
+    supabase.from("product_variants").delete().eq("product_id", productId),
   ]);
 
-  const sizes = getLines(formData, "sizes").map((label, index) => ({
+  const sizes = getLocalizedLinesByVi(formData, "sizes").map((label, index) => ({
     product_id: productId,
-    label,
+    label: label.vi,
+    label_i18n: label,
     sort_order: index,
   }));
-  const flavors = getLocalizedLines(formData, "flavors").map((name, index) => ({
+  const flavors = getLocalizedLinesByVi(formData, "flavors").map((name, index) => ({
     product_id: productId,
     name,
     sort_order: index,
@@ -476,14 +476,7 @@ async function syncProductChildren(
       sort_order: index,
     }),
   );
-  const ingredients = getIngredientLines(formData, "ingredients").map(
-    (item, index) => ({
-      product_id: productId,
-      name: item.name,
-      amount: item.amount,
-      sort_order: index,
-    }),
-  );
+  const variants = buildProductVariantRows(productId, formData, flavors, sizes);
 
   await Promise.all([
     sizes.length ? supabase.from("product_sizes").insert(sizes) : undefined,
@@ -495,10 +488,79 @@ async function syncProductChildren(
     audiences.length
       ? supabase.from("product_audiences").insert(audiences)
       : undefined,
-    ingredients.length
-      ? supabase.from("product_ingredients").insert(ingredients)
+    variants.length
+      ? supabase.from("product_variants").insert(variants)
       : undefined,
   ]);
+}
+
+function buildProductVariantRows(
+  productId: string,
+  formData: FormData,
+  flavors: Array<{ name: { vi: string; en: string }; sort_order: number }>,
+  sizes: Array<{ label: string; label_i18n: { vi: string; en: string }; sort_order: number }>,
+) {
+  if (!flavors.length || !sizes.length) {
+    return [];
+  }
+
+  const defaultKey = getString(formData, "default_variant_key");
+  const rows = flavors.flatMap((flavor, flavorIndex) =>
+    sizes.map((size, sizeIndex) => {
+      const combinationKey = buildVariantKey(flavor.name, size.label_i18n);
+
+      return {
+        product_id: productId,
+        flavor_name: flavor.name,
+        size_label: size.label,
+        size_name: size.label_i18n,
+        combination_key: combinationKey,
+        price: getOptionalPositiveNumber(formData, `variant_price:${combinationKey}`),
+        currency: null,
+        image_path: getOptionalString(formData, `variant_image_path:${combinationKey}`),
+        nutrition_image_path: null,
+        is_default: false,
+        is_published: getBool(formData, `variant_is_published:${combinationKey}`),
+        sort_order: flavorIndex * sizes.length + sizeIndex + 1,
+      };
+    }),
+  );
+
+  if (!rows.some((row) => row.is_published)) {
+    rows[0].is_published = true;
+  }
+
+  const defaultRow =
+    rows.find((row) => row.is_published && row.combination_key === defaultKey) ??
+    rows.find((row) => row.is_published);
+
+  if (defaultRow) {
+    defaultRow.is_default = true;
+  }
+
+  return rows;
+}
+
+function getLocalizedLinesByVi(formData: FormData, baseKey: string) {
+  const viLines = getLines(formData, `${baseKey}_vi`);
+  const enLines = getLines(formData, `${baseKey}_en`);
+
+  return viLines.map((vi, index) => ({
+    vi,
+    en: enLines[index] ?? vi,
+  }));
+}
+
+function getOptionalPositiveNumber(formData: FormData, key: string) {
+  const value = getString(formData, key);
+
+  if (!value) {
+    return null;
+  }
+
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) && numberValue >= 0 ? numberValue : null;
 }
 
 async function syncRelatedProducts(

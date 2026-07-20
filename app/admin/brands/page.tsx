@@ -12,27 +12,63 @@ import {
 import { AdminSlugField } from "@/components/admin-slug-field";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAdminBrands } from "@/lib/admin/data";
+import { getLocale } from "@/lib/i18n";
+import type { Locale } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Admin Brands",
 };
 
+type BrandCopy = (typeof brandCopy)[Locale];
+
+const brandCopy = {
+  vi: {
+    eyebrow: "Catalog",
+    title: "Thương hiệu",
+    description: "Quản lý thương hiệu phân phối, xuất xứ và logo.",
+    addNew: "Thêm thương hiệu mới",
+    fields: {
+      name: "Tên",
+      origin: "Xuất xứ",
+      description: "Mô tả",
+      logo: "Logo thương hiệu",
+      sortOrder: "Vị trí hiển thị",
+      active: "Đang hiển thị",
+    },
+  },
+  en: {
+    eyebrow: "Catalog",
+    title: "Brands",
+    description: "Manage distributed brands, origin and logo.",
+    addNew: "Add new brand",
+    fields: {
+      name: "Name",
+      origin: "Origin",
+      description: "Description",
+      logo: "Brand logo",
+      sortOrder: "Display position",
+      active: "Visible",
+    },
+  },
+} as const;
+
 export default async function AdminBrandsPage() {
   await requireAdmin();
-  const brands = await getAdminBrands();
+  const [brands, locale] = await Promise.all([getAdminBrands(), getLocale()]);
+  const t = brandCopy[locale];
 
   return (
     <section className="container-px mx-auto max-w-7xl py-10">
       <AdminPageHeader
-        eyebrow="Catalog"
-        title="Thương hiệu"
-        description="Quản lý thương hiệu phân phối, xuất xứ và logo."
+        eyebrow={t.eyebrow}
+        title={t.title}
+        description={t.description}
       />
       <details className="mt-6 rounded border border-line p-5" open>
         <summary className="cursor-pointer text-lg font-black">
-          Thêm thương hiệu mới
+          {t.addNew}
         </summary>
-        <BrandForm position={brands.length + 1} />
+        <BrandForm position={brands.length + 1} locale={locale} t={t} />
       </details>
       <div className="mt-8 grid gap-4">
         {brands.map((brand, index) => (
@@ -43,7 +79,7 @@ export default async function AdminBrandsPage() {
                 / {brand.slug}
               </span>
             </summary>
-            <BrandForm brand={brand} position={index + 1} />
+            <BrandForm brand={brand} position={index + 1} locale={locale} t={t} />
             <form action={deleteBrand} className="mt-4">
               <input type="hidden" name="id" value={brand.id} />
               <AdminDeleteButton />
@@ -58,34 +94,39 @@ export default async function AdminBrandsPage() {
 function BrandForm({
   brand,
   position,
+  locale,
+  t,
 }: {
   brand?: Awaited<ReturnType<typeof getAdminBrands>>[number];
   position: number;
+  locale: Locale;
+  t: BrandCopy;
 }) {
   return (
     <form action={upsertBrand} className="mt-5 grid gap-4">
       <input type="hidden" name="id" value={brand?.id ?? ""} />
       <div className="grid gap-4 md:grid-cols-3">
-        <AdminField label="Tên" name="name" defaultValue={brand?.name} required />
+        <AdminField label={t.fields.name} name="name" defaultValue={brand?.name} required />
         <AdminSlugField sourceName="name" defaultValue={brand?.slug} />
-        <AdminField label="Xuất xứ" name="origin" defaultValue={brand?.origin} />
+        <AdminField label={t.fields.origin} name="origin" defaultValue={brand?.origin} />
       </div>
       <LocalizedFields
         base="description"
-        label="Mô tả"
+        label={t.fields.description}
         value={brand?.description}
         textarea
       />
       <div className="grid gap-4 md:grid-cols-3">
         <AdminAssetField
-          label="Logo path"
+          label={t.fields.logo}
           name="logo_path"
           defaultValue={brand?.logo_path}
           folder="brands"
           accept="image/*"
+          locale={locale}
         />
         <AdminField
-          label="Vị trí hiển thị"
+          label={t.fields.sortOrder}
           name="sort_order"
           type="number"
           defaultValue={position}
@@ -93,7 +134,7 @@ function BrandForm({
         />
         <div className="flex items-end pb-2">
           <AdminCheckbox
-            label="Đang hiển thị"
+            label={t.fields.active}
             name="is_active"
             defaultChecked={brand?.is_active ?? true}
           />

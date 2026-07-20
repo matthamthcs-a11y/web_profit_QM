@@ -1,5 +1,6 @@
 import type { Json } from "@/lib/supabase/database.types";
 import { AdminDeleteSubmit } from "@/components/admin-delete-submit";
+import { AdminSubmitButton } from "@/components/admin-submit-button";
 
 type InputProps = {
   label: string;
@@ -93,15 +94,14 @@ export function AdminCheckbox({
   );
 }
 
-export function AdminSubmit({ label = "Lưu" }: { label?: string }) {
-  return (
-    <button
-      type="submit"
-      className="h-10 rounded bg-brand-red px-4 text-sm font-black uppercase text-white hover:bg-red-700"
-    >
-      {label}
-    </button>
-  );
+export function AdminSubmit({
+  label = "Lưu",
+  pendingLabel,
+}: {
+  label?: string;
+  pendingLabel?: string;
+}) {
+  return <AdminSubmitButton label={label} pendingLabel={pendingLabel} />;
 }
 
 export function AdminDeleteButton({
@@ -185,3 +185,4 @@ export function AdminPageHeader({
     </div>
   );
 }
+
