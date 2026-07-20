@@ -21,10 +21,8 @@ const detailCopy = {
     origin: "Xuất xứ",
     messageZalo: "Nhắn Zalo",
     clearInfo: "Thông tin sản phẩm rõ ràng",
-    nutritionEyebrow: "Bảng thành phần",
-    nutritionNote: "Thông tin thành phần được hiển thị bằng ảnh do admin upload.",
-    nutritionFallback: "Ảnh bảng thành phần sẽ được upload trong admin sau.",
-    nutritionTitle: "Nutrition Facts",
+    readMore: "Xem thêm",
+    readLess: "Thu gọn",
   },
   en: {
     flavor: "Flavor",
@@ -33,10 +31,8 @@ const detailCopy = {
     origin: "Origin",
     messageZalo: "Message Zalo",
     clearInfo: "Clear product information",
-    nutritionEyebrow: "Nutrition",
-    nutritionNote: "Ingredient and nutrition information is shown from the uploaded image.",
-    nutritionFallback: "Nutrition facts image will be uploaded in admin later.",
-    nutritionTitle: "Nutrition Facts",
+    readMore: "Read more",
+    readLess: "Collapse",
   },
 } satisfies Record<Locale, Record<string, string>>;
 
@@ -87,7 +83,7 @@ export function ProductVariantSelector({
     imagePath: currentVariant?.imagePath || product.imagePath,
   };
   const price = currentVariant?.price ?? product.price;
-  const nutritionImage = product.nutritionImagePath;
+  const shortDescription = localized(product.shortDescription, locale);
 
   function selectFlavor(flavorKey: string) {
     const currentSizeStillExists = variants.some(
@@ -118,31 +114,37 @@ export function ProductVariantSelector({
   return (
     <>
       <section className="bg-surface">
-        <div className="container-px mx-auto grid max-w-7xl gap-10 py-14 lg:grid-cols-[0.85fr_1fr]">
-          <div className="rounded border border-line bg-white p-5 shadow-sm">
-            <ProductVisual product={productForImage} locale={locale} size="hero" />
+        <div className="container-px mx-auto grid max-w-7xl items-start gap-10 py-14 lg:grid-cols-[0.85fr_1fr]">
+          <div className="grid gap-5 self-start">
+            <div className="rounded border border-line bg-white p-5 shadow-sm">
+              <ProductVisual product={productForImage} locale={locale} size="hero" />
+            </div>
+            {shortDescription ? (
+              <DescriptionPanel
+                text={shortDescription}
+                readMoreLabel={c.readMore}
+                readLessLabel={c.readLess}
+              />
+            ) : null}
           </div>
-          <div>
+          <div className="self-start">
             <p className="text-sm font-black uppercase tracking-wide text-brand-red">
               {localized(product.categoryName, locale)}
             </p>
-            <h1 className="mt-3 text-4xl font-black tracking-normal text-ink md:text-6xl">
+            <h1 className="mt-3 max-w-3xl text-3xl font-black tracking-normal text-ink md:text-4xl md:leading-tight">
               {localized(product.name, locale)}
             </h1>
-            <p className="mt-5 whitespace-pre-line text-lg leading-8 text-muted">
-              {localized(product.shortDescription, locale)}
-            </p>
-            <p className="mt-6 text-4xl font-black text-brand-red">
+            <p className="mt-5 text-4xl font-black text-brand-red">
               {formatPrice(price)}
             </p>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <Info label={c.brand} value={product.brand} />
               <Info label={c.origin} value={product.origin} />
             </div>
 
             {variants.length ? (
-              <div className="mt-8 grid gap-5">
+              <div className="mt-6 grid gap-5">
                 <OptionGroup
                   label={c.flavor}
                   options={flavorOptions}
@@ -164,7 +166,7 @@ export function ProductVariantSelector({
                 />
               </div>
             ) : (
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <Info label={c.size} value={product.sizes.join(", ")} />
                 <Info
                   label={c.flavor}
@@ -175,7 +177,7 @@ export function ProductVariantSelector({
               </div>
             )}
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <a
                 href={siteSettings.zaloUrl}
                 className="inline-flex h-12 items-center gap-2 rounded bg-brand-red px-5 text-sm font-black text-white hover:bg-red-700"
@@ -201,38 +203,6 @@ export function ProductVariantSelector({
         </div>
       </section>
 
-      <section className="container-px mx-auto max-w-5xl pb-14">
-        <div className="rounded border border-line bg-surface p-5 sm:p-6">
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-brand-red">
-                {c.nutritionEyebrow}
-              </p>
-              <h2 className="mt-2 text-2xl font-black text-ink">
-                {c.nutritionTitle}
-              </h2>
-            </div>
-            <p className="max-w-md text-sm font-semibold text-muted">
-              {c.nutritionNote}
-            </p>
-          </div>
-          {nutritionImage ? (
-            <div className="overflow-auto rounded border border-line bg-white p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={nutritionImage}
-                alt={c.nutritionTitle}
-                className="mx-auto max-h-[720px] w-auto max-w-full object-contain"
-                loading="lazy"
-              />
-            </div>
-          ) : (
-            <div className="flex aspect-[4/3] items-center justify-center rounded border border-dashed border-slate-300 bg-white p-6 text-center text-sm font-bold text-muted">
-              {c.nutritionFallback}
-            </div>
-          )}
-        </div>
-      </section>
     </>
   );
 }
@@ -275,6 +245,44 @@ function OptionGroup({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function DescriptionPanel({
+  text,
+  readMoreLabel,
+  readLessLabel,
+}: {
+  text: string;
+  readMoreLabel: string;
+  readLessLabel: string;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hasLongContent = text.length > 260 || text.split(/\r?\n/).length > 5;
+
+  return (
+    <div className="rounded border border-line bg-white p-5 shadow-sm">
+      <div
+        className={`whitespace-pre-line pr-2 text-sm leading-7 text-muted ${
+          hasLongContent
+            ? isExpanded
+              ? "max-h-96 overflow-y-auto"
+              : "max-h-44 overflow-hidden"
+            : ""
+        }`}
+      >
+        {text}
+      </div>
+      {hasLongContent ? (
+        <button
+          type="button"
+          onClick={() => setIsExpanded((value) => !value)}
+          className="mt-3 text-sm font-black text-brand-red hover:text-red-700"
+        >
+          {isExpanded ? readLessLabel : readMoreLabel}
+        </button>
+      ) : null}
     </div>
   );
 }

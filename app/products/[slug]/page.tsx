@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/product-card";
+import { ProductInformationSection } from "@/components/product-information-section";
 import { ProductVariantSelector } from "@/components/product-variant-selector";
 import { copy, getLocale, text } from "@/lib/i18n";
 import { getSiteSettings } from "@/lib/data/site-settings";
@@ -70,20 +71,24 @@ export default async function ProductDetailPage({
         siteSettings={siteSettings}
       />
 
-      <section className="container-px mx-auto grid max-w-7xl gap-8 py-14 lg:grid-cols-3">
-        <DetailBlock
-          title={c.detail.benefits}
-          items={product.benefits.map((item) => text(item, locale))}
-        />
-        <DetailBlock
-          title={c.detail.usage}
-          items={product.usage.map((item) => text(item, locale))}
-        />
-        <DetailBlock
-          title={c.detail.audience}
-          items={product.audience.map((item) => text(item, locale))}
-        />
-      </section>
+      <ProductInformationSection
+        locale={locale}
+        nutritionImagePath={product.nutritionImagePath ?? null}
+        blocks={[
+          {
+            title: c.detail.benefits,
+            items: product.benefits.map((item) => text(item, locale)),
+          },
+          {
+            title: c.detail.usage,
+            items: product.usage.map((item) => text(item, locale)),
+          },
+          {
+            title: c.detail.audience,
+            items: product.audience.map((item) => text(item, locale)),
+          },
+        ]}
+      />
 
       {relatedProducts.length ? (
         <section className="bg-surface py-14">
@@ -104,20 +109,5 @@ export default async function ProductDetailPage({
         </section>
       ) : null}
     </article>
-  );
-}
-
-function DetailBlock({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div className="rounded border border-line p-6">
-      <h2 className="text-xl font-black text-ink">{title}</h2>
-      <ul className="mt-4 grid gap-3 text-sm leading-6 text-muted">
-        {items.map((item) => (
-          <li key={item} className="whitespace-pre-line">
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
