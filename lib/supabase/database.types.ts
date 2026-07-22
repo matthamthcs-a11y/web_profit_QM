@@ -262,6 +262,7 @@ export type Database = {
       product_usage: ProductJsonChildTable;
       products: {
         Row: TimestampColumns & {
+          badge_type: string;
           brand_id: string | null;
           category_id: string | null;
           currency: string;
@@ -283,6 +284,7 @@ export type Database = {
           visual_background: string | null;
         };
         Insert: OptionalTimestampColumns & {
+          badge_type?: string;
           brand_id?: string | null;
           category_id?: string | null;
           currency?: string;

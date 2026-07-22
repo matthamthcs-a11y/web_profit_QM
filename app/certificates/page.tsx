@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { FileCheck2 } from "lucide-react";
+import { DocumentCard, getDocumentFileKind } from "@/components/document-card";
 import { SectionHeading } from "@/components/section-heading";
 import { getDocuments } from "@/lib/data/documents";
-import { getLocale, text } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Certificates",
@@ -26,18 +26,17 @@ export default async function CertificatesPage() {
       />
       <div className="grid gap-5 md:grid-cols-3">
         {documents.map((document) => (
-          <article key={document.id} className="rounded border border-line p-6">
-            <FileCheck2 className="mb-5 h-8 w-8 text-brand-red" />
-            <p className="text-xs font-black uppercase text-brand-red">
-              {document.type}
-            </p>
-            <h2 className="mt-3 text-2xl font-black text-ink">
-              {text(document.title, locale)}
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-muted">
-              {text(document.description, locale)}
-            </p>
-          </article>
+          <DocumentCard
+            key={document.id}
+            id={document.id}
+            title={document.title}
+            description={document.description}
+            type={document.type}
+            locale={locale}
+            hasFile={Boolean(document.filePath)}
+            hasThumbnail={Boolean(document.thumbnailPath)}
+            fileKind={getDocumentFileKind(document.filePath)}
+          />
         ))}
       </div>
     </section>

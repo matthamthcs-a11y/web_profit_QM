@@ -130,6 +130,7 @@ export const products: Product[] = [
     relatedProductIds: ["prd_electrolyte-tabs", "prd_recovery-drink"],
     isFeatured: true,
     isBestSeller: true,
+    badgeType: "best_seller",
   },
   {
     id: "prd_electrolyte-tabs",
@@ -194,6 +195,7 @@ export const products: Product[] = [
     relatedProductIds: ["prd_energy-gel-citrus", "prd_recovery-drink"],
     isFeatured: true,
     isBestSeller: true,
+    badgeType: "best_seller",
   },
   {
     id: "prd_whey-protein",
@@ -257,6 +259,7 @@ export const products: Product[] = [
     relatedProductIds: ["prd_recovery-drink"],
     isFeatured: true,
     isBestSeller: true,
+    badgeType: "best_seller",
   },
   {
     id: "prd_recovery-drink",
@@ -321,6 +324,7 @@ export const products: Product[] = [
     relatedProductIds: ["prd_energy-gel-citrus", "prd_whey-protein"],
     isFeatured: true,
     isBestSeller: false,
+    badgeType: "none",
   },
 ];
 

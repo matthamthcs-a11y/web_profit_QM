@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { ProductVisual } from "@/components/product-visual";
+import { getProductBadgeLabel } from "@/lib/product-badges";
 import type { Category, Locale, Product } from "@/lib/types";
 
 type ProductCatalogProps = {
@@ -183,17 +184,24 @@ function ProductResultCard({
   locale: Locale;
   labels: ProductCatalogProps["labels"];
 }) {
+  const badgeLabel =
+    product.badgeType === "none"
+      ? ""
+      : getProductBadgeLabel(product.badgeType, locale);
+
   return (
     <article className="overflow-hidden rounded border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
       <Link href={`/products/${product.slug}`}>
         <div className="relative">
           <ProductVisual product={product} locale={locale} />
-          <div
-            className="absolute right-6 top-6 rounded-full px-3 py-1 text-xs font-black uppercase text-white"
-            style={{ backgroundColor: product.visual.accent }}
-          >
-            {product.isBestSeller ? labels.bestSeller : t(product.primaryGoal, locale)}
-          </div>
+          {badgeLabel ? (
+            <div
+              className="pointer-events-none absolute right-4 top-4 z-30 max-w-[calc(100%-2rem)] rounded-full px-3 py-1 text-center text-[11px] font-black uppercase leading-4 text-white shadow-sm ring-2 ring-white"
+              style={{ backgroundColor: product.visual.accent }}
+            >
+              {badgeLabel}
+            </div>
+          ) : null}
         </div>
         <div className="p-5">
           <p className="text-xs font-black uppercase text-brand-red">

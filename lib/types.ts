@@ -5,6 +5,13 @@ export type LocalizedText = {
   en: string;
 };
 
+export type ProductBadgeType =
+  | "none"
+  | "best_seller"
+  | "recommended"
+  | "new"
+  | "featured";
+
 export type Category = {
   id: string;
   name: LocalizedText;
@@ -44,6 +51,7 @@ export type Product = {
   relatedProductIds: string[];
   isFeatured: boolean;
   isBestSeller: boolean;
+  badgeType: ProductBadgeType;
 };
 
 export type ProductVariant = {

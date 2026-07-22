@@ -13,6 +13,7 @@ import {
   getString,
   slugify,
 } from "@/lib/admin/form";
+import { normalizeProductBadgeType } from "@/lib/product-badges";
 import { buildVariantKey } from "@/lib/product-variants";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -343,6 +344,7 @@ export async function upsertProduct(formData: FormData) {
   const visualAccent = getOptionalString(formData, "visual_accent") ?? "#ce1732";
   const visualBackground =
     getOptionalString(formData, "visual_background") ?? "#fff1f2";
+  const badgeType = normalizeProductBadgeType(formData.get("badge_type"));
 
   if (!hasLocalizedValue(name)) {
     await setAdminNotice("error", "Sản phẩm: cần nhập tên VI hoặc EN.");
@@ -397,7 +399,8 @@ export async function upsertProduct(formData: FormData) {
     visual_accent: visualAccent,
     visual_background: visualBackground,
     is_featured: getBool(formData, "is_featured"),
-    is_best_seller: getBool(formData, "is_best_seller"),
+    is_best_seller: badgeType === "best_seller",
+    badge_type: badgeType,
     is_published: getBool(formData, "is_published"),
     sort_order: desiredPosition,
   };

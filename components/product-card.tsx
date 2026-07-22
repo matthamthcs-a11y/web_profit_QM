@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProductVisual } from "@/components/product-visual";
 import { copy, formatPrice, text } from "@/lib/i18n";
+import { getProductBadgeLabel } from "@/lib/product-badges";
 import type { Locale, Product } from "@/lib/types";
 
 type ProductCardProps = {
@@ -11,6 +12,10 @@ type ProductCardProps = {
 
 export function ProductCard({ product, locale }: ProductCardProps) {
   const c = copy[locale];
+  const badgeLabel =
+    product.badgeType === "none"
+      ? ""
+      : getProductBadgeLabel(product.badgeType, locale);
 
   return (
     <article className="group overflow-hidden rounded border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
@@ -21,9 +26,9 @@ export function ProductCard({ product, locale }: ProductCardProps) {
             <span className="rounded bg-red-50 px-2.5 py-1 text-xs font-bold text-brand-red">
               {text(product.categoryName, locale)}
             </span>
-            {product.isBestSeller ? (
+            {badgeLabel ? (
               <span className="text-xs font-black uppercase text-brand-gold">
-                {c.common.bestSeller}
+                {badgeLabel}
               </span>
             ) : null}
           </div>

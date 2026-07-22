@@ -1,14 +1,13 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Award,
   ClipboardCheck,
-  FileText,
   ShieldCheck,
   Star,
   Truck,
   UserRoundCheck,
 } from "lucide-react";
+import { DocumentCard, getDocumentFileKind } from "@/components/document-card";
 import { HeroBanner } from "@/components/hero-banner";
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
@@ -65,25 +64,6 @@ const trustItems = {
       text: "The dealer page helps customers find suitable consultation points.",
     },
   ],
-} as const;
-
-const documentMeta = {
-  catalog: {
-    icon: FileText,
-    tone: "text-brand-red",
-  },
-  certificate: {
-    icon: Award,
-    tone: "text-brand-gold",
-  },
-  coa: {
-    icon: ShieldCheck,
-    tone: "text-emerald-600",
-  },
-  attp: {
-    icon: ClipboardCheck,
-    tone: "text-sky-600",
-  },
 } as const;
 
 export default async function HomePage() {
@@ -185,30 +165,20 @@ export default async function HomePage() {
             }
           />
           <div className="grid gap-5 md:grid-cols-3">
-            {documents.map((doc) => {
-              const meta = documentMeta[doc.type];
-              const Icon = meta.icon;
-
-              return (
-                <article
-                  key={doc.id}
-                  className="rounded border border-line bg-surface p-6 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <Icon className={`h-8 w-8 ${meta.tone}`} />
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-black uppercase text-ink">
-                      {doc.type}
-                    </span>
-                  </div>
-                  <h3 className="mt-5 text-xl font-black text-ink">
-                    {text(doc.title, locale)}
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-muted">
-                    {text(doc.description, locale)}
-                  </p>
-                </article>
-              );
-            })}
+            {documents.map((doc) => (
+              <DocumentCard
+                key={doc.id}
+                id={doc.id}
+                title={doc.title}
+                description={doc.description}
+                type={doc.type}
+                locale={locale}
+                compact
+                hasFile={Boolean(doc.filePath)}
+                hasThumbnail={Boolean(doc.thumbnailPath)}
+                fileKind={getDocumentFileKind(doc.filePath)}
+              />
+            ))}
           </div>
         </div>
       </section>

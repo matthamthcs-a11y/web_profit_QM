@@ -11,6 +11,7 @@ import type {
 } from "@/lib/types";
 import type { Json, Tables } from "@/lib/supabase/database.types";
 import type { SiteSettings } from "@/lib/data/site-settings";
+import { normalizeProductBadgeType } from "@/lib/product-badges";
 import { buildOptionKey, buildVariantKey } from "@/lib/product-variants";
 
 type ProductRow = Tables<"products">;
@@ -251,6 +252,7 @@ export function mapProductRows({
       ),
       isFeatured: product.is_featured,
       isBestSeller: product.is_best_seller,
+      badgeType: normalizeProductBadgeType(product.badge_type),
     };
   });
 }

@@ -18,6 +18,11 @@ import { AdminSlugField } from "@/components/admin-slug-field";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAdminProductEditorData } from "@/lib/admin/data";
 import { getLocale } from "@/lib/i18n";
+import {
+  getProductBadgeLabel,
+  normalizeProductBadgeType,
+  productBadgeTypes,
+} from "@/lib/product-badges";
 import type { Locale } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -114,6 +119,7 @@ const adminProductCopy = {
         productImage: "Ảnh chính sản phẩm",
         nutritionImage: "Ảnh bảng thành phần",
         sizes: "Quy cách, mỗi dòng một quy cách",
+        badge: "Huy hiệu sản phẩm",
         featured: "Nổi bật trên trang chủ",
         bestSeller: "Sản phẩm bán chạy",
         published: "Đang hiển thị trên website",
@@ -221,6 +227,7 @@ const adminProductCopy = {
         productImage: "Main product image",
         nutritionImage: "Nutrition facts image",
         sizes: "Sizes, one per line",
+        badge: "Product badge",
         featured: "Featured on homepage",
         bestSeller: "Best-selling product",
         published: "Visible on website",
@@ -628,22 +635,41 @@ function ProductForm({
         title={t.form.sections.specs.title}
         description={t.form.sections.specs.description}
       >
-        <div className="grid content-start gap-3 rounded border border-line p-4 md:max-w-md">
-          <AdminCheckbox
-            label={t.form.fields.featured}
-            name="is_featured"
-            defaultChecked={product?.is_featured ?? false}
-          />
-          <AdminCheckbox
-            label={t.form.fields.bestSeller}
-            name="is_best_seller"
-            defaultChecked={product?.is_best_seller ?? false}
-          />
-          <AdminCheckbox
-            label={t.form.fields.published}
-            name="is_published"
-            defaultChecked={product?.is_published ?? true}
-          />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid content-start gap-3 rounded border border-line p-4">
+            <AdminCheckbox
+              label={t.form.fields.featured}
+              name="is_featured"
+              defaultChecked={product?.is_featured ?? false}
+            />
+            <AdminCheckbox
+              label={t.form.fields.published}
+              name="is_published"
+              defaultChecked={product?.is_published ?? true}
+            />
+          </div>
+          <label className="grid content-start gap-2 rounded border border-line p-4 text-sm font-bold text-ink">
+            <span>{t.form.fields.badge}</span>
+            <select
+              name="badge_type"
+              defaultValue={normalizeProductBadgeType(
+                product?.badge_type ??
+                  (product?.is_best_seller ? "best_seller" : "none"),
+              )}
+              className="h-10 rounded border border-line px-3 text-sm font-medium outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/15"
+            >
+              {productBadgeTypes.map((badgeType) => (
+                <option key={badgeType} value={badgeType}>
+                  {getProductBadgeLabel(badgeType, locale)}
+                </option>
+              ))}
+            </select>
+            <span className="text-xs font-semibold leading-5 text-muted">
+              {locale === "vi"
+                ? "Chỉ một huy hiệu được hiển thị trên card sản phẩm."
+                : "Only one badge is shown on the product card."}
+            </span>
+          </label>
         </div>
       </ProductFormSection>
 
