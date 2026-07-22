@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/product-card";
-import { ProductInformationSection } from "@/components/product-information-section";
 import { ProductVariantSelector } from "@/components/product-variant-selector";
 import { copy, getLocale, text } from "@/lib/i18n";
 import { getSiteSettings } from "@/lib/data/site-settings";
@@ -69,12 +68,7 @@ export default async function ProductDetailPage({
         product={product}
         locale={locale}
         siteSettings={siteSettings}
-      />
-
-      <ProductInformationSection
-        locale={locale}
-        nutritionImagePath={product.nutritionImagePath ?? null}
-        blocks={[
+        informationBlocks={[
           {
             title: c.detail.benefits,
             items: product.benefits.map((item) => text(item, locale)),

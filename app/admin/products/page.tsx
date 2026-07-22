@@ -129,6 +129,7 @@ const adminProductCopy = {
         audiences: "Đối tượng phù hợp, mỗi dòng một ý",
         variantPrice: "Giá riêng của biến thể",
         variantImage: "Ảnh riêng của biến thể",
+        variantNutritionImage: "Ảnh bảng thành phần riêng",
         variantPublished: "Hiển thị biến thể",
         variantDefault: "Biến thể mặc định",
         variantInputsTitle: "Nhập hương vị và quy cách",
@@ -237,6 +238,7 @@ const adminProductCopy = {
         audiences: "Suitable audience, one per line",
         variantPrice: "Variant-specific price",
         variantImage: "Variant-specific image",
+        variantNutritionImage: "Variant nutrition facts image",
         variantPublished: "Show this variant",
         variantDefault: "Default variant",
         variantInputsTitle: "Enter flavors and sizes",
@@ -716,6 +718,7 @@ function ProductForm({
             fallback: t.form.help.variantFallback,
             price: t.form.fields.variantPrice,
             image: t.form.fields.variantImage,
+            nutritionImage: t.form.fields.variantNutritionImage,
             defaultVariant: t.form.fields.variantDefault,
             published: t.form.fields.variantPublished,
           }}

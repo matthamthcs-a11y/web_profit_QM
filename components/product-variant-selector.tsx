@@ -2,6 +2,7 @@
 
 import { MessageCircle, Phone, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
+import { ProductInformationSection } from "@/components/product-information-section";
 import { ProductVisual } from "@/components/product-visual";
 import { buildOptionKey, getDefaultVariant } from "@/lib/product-variants";
 import type { SiteSettings } from "@/lib/data/site-settings";
@@ -11,6 +12,10 @@ type ProductVariantSelectorProps = {
   product: Product;
   locale: Locale;
   siteSettings: SiteSettings;
+  informationBlocks: Array<{
+    title: string;
+    items: string[];
+  }>;
 };
 
 const detailCopy = {
@@ -40,6 +45,7 @@ export function ProductVariantSelector({
   product,
   locale,
   siteSettings,
+  informationBlocks,
 }: ProductVariantSelectorProps) {
   const c = detailCopy[locale];
   const variants = useMemo(
@@ -82,6 +88,8 @@ export function ProductVariantSelector({
     ...product,
     imagePath: currentVariant?.imagePath || product.imagePath,
   };
+  const nutritionImagePath =
+    currentVariant?.nutritionImagePath || product.nutritionImagePath || null;
   const price = currentVariant?.price ?? product.price;
   const shortDescription = localized(product.shortDescription, locale);
 
@@ -203,6 +211,11 @@ export function ProductVariantSelector({
         </div>
       </section>
 
+      <ProductInformationSection
+        locale={locale}
+        nutritionImagePath={nutritionImagePath}
+        blocks={informationBlocks}
+      />
     </>
   );
 }

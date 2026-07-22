@@ -13,6 +13,7 @@ type AdminProductVariantsFieldProps = {
     combination_key: string;
     price: number | null;
     image_path: string | null;
+    nutrition_image_path: string | null;
     is_default: boolean;
     is_published: boolean;
   }>;
@@ -27,6 +28,7 @@ type AdminProductVariantsFieldProps = {
     fallback: string;
     price: string;
     image: string;
+    nutritionImage: string;
     defaultVariant: string;
     published: string;
   };
@@ -38,6 +40,7 @@ type VariantDraft = {
   size: LocalizedText;
   price?: number | null;
   imagePath?: string | null;
+  nutritionImagePath?: string | null;
   isDefault: boolean;
   isPublished: boolean;
 };
@@ -169,7 +172,7 @@ export function AdminProductVariantsField({
                   </label>
                 </div>
               </div>
-              <div className="grid gap-4 md:grid-cols-[0.45fr_1fr]">
+              <div className="grid gap-4 md:grid-cols-[0.42fr_1fr_1fr]">
                 <label className="grid gap-1.5 text-sm font-bold text-ink">
                   <span>{copy.price}</span>
                   <input
@@ -185,6 +188,14 @@ export function AdminProductVariantsField({
                   name={`variant_image_path:${draft.key}`}
                   defaultValue={draft.imagePath}
                   folder="products/variants"
+                  accept="image/*"
+                  locale={locale}
+                />
+                <AdminAssetField
+                  label={copy.nutritionImage}
+                  name={`variant_nutrition_image_path:${draft.key}`}
+                  defaultValue={draft.nutritionImagePath}
+                  folder="products/variant-nutrition"
                   accept="image/*"
                   locale={locale}
                 />
@@ -223,6 +234,7 @@ function buildDrafts(
         size,
         price: existing?.price,
         imagePath: existing?.image_path,
+        nutritionImagePath: existing?.nutrition_image_path,
         isDefault: existing?.is_default ?? sortOrder === 1,
         isPublished: existing?.is_published ?? true,
       };

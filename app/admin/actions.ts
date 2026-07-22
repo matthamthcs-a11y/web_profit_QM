@@ -521,7 +521,10 @@ function buildProductVariantRows(
         price: getOptionalPositiveNumber(formData, `variant_price:${combinationKey}`),
         currency: null,
         image_path: getOptionalString(formData, `variant_image_path:${combinationKey}`),
-        nutrition_image_path: null,
+        nutrition_image_path: getOptionalString(
+          formData,
+          `variant_nutrition_image_path:${combinationKey}`,
+        ),
         is_default: false,
         is_published: getBool(formData, `variant_is_published:${combinationKey}`),
         sort_order: flavorIndex * sizes.length + sizeIndex + 1,
