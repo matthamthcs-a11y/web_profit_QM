@@ -17,6 +17,7 @@ export function ProductVisual({
 }: ProductVisualProps) {
   const isHero = size === "hero";
   const isBanner = size === "banner";
+  const hasRealImage = Boolean(product.imagePath);
   const shellSize = isHero
     ? "h-[30rem] w-full max-w-[34rem]"
     : isBanner
@@ -30,8 +31,10 @@ export function ProductVisual({
 
   return (
     <div
-      className={`relative flex ${shellSize} items-center justify-center overflow-hidden rounded bg-surface`}
-      style={{ backgroundColor: product.visual.background }}
+      className={`relative flex ${shellSize} items-center justify-center overflow-hidden rounded ${
+        hasRealImage ? "bg-white" : "bg-surface"
+      }`}
+      style={hasRealImage ? undefined : { backgroundColor: product.visual.background }}
     >
       {product.imagePath ? (
         <>
@@ -39,31 +42,33 @@ export function ProductVisual({
           <img
             src={product.imagePath}
             alt={product.name[locale] ?? product.name.vi}
-            className="relative z-10 h-full w-full object-contain p-6"
+            className={`relative z-10 h-full w-full object-contain ${
+              isHero || isBanner ? "p-3 sm:p-4" : "p-2"
+            }`}
             loading={isHero || isBanner ? "eager" : "lazy"}
           />
         </>
       ) : (
         <>
-      <div
-        className="absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-20"
-        style={{ backgroundColor: product.visual.accent }}
-      />
-      <div
-        className="absolute -bottom-12 -left-8 h-40 w-40 rounded-full opacity-15"
-        style={{ backgroundColor: product.visual.accent }}
-      />
-      {hideLabel ? null : (
-      <div className="absolute left-5 top-5 rounded-full bg-white/80 px-3 py-1 text-xs font-black uppercase text-ink shadow-sm">
-          {product.visual.badge[locale] ?? product.visual.badge.vi}
-        </div>
-      )}
-      <PackageShape
-        product={product}
-        locale={locale}
-        className={packageSize}
-        hideLabel={hideLabel}
-      />
+          <div
+            className="absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-20"
+            style={{ backgroundColor: product.visual.accent }}
+          />
+          <div
+            className="absolute -bottom-12 -left-8 h-40 w-40 rounded-full opacity-15"
+            style={{ backgroundColor: product.visual.accent }}
+          />
+          {hideLabel ? null : (
+            <div className="absolute left-5 top-5 rounded-full bg-white/80 px-3 py-1 text-xs font-black uppercase text-ink shadow-sm">
+              {product.visual.badge[locale] ?? product.visual.badge.vi}
+            </div>
+          )}
+          <PackageShape
+            product={product}
+            locale={locale}
+            className={packageSize}
+            hideLabel={hideLabel}
+          />
         </>
       )}
     </div>
