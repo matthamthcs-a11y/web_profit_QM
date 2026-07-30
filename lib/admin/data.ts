@@ -58,7 +58,7 @@ export async function getAdminCatalogOptions() {
 
 export async function getAdminProductEditorData(editProductId?: string) {
   const supabase = await createSupabaseServerClient();
-  const [products, categories, brands] = await Promise.all([
+  const [products, categories, brands, productBadges] = await Promise.all([
     supabase
       .from("products")
       .select("*")
@@ -70,6 +70,11 @@ export async function getAdminProductEditorData(editProductId?: string) {
     supabase
       .from("brands")
       .select("id, slug, name")
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("product_badges")
+      .select("*")
+      .eq("is_active", true)
       .order("sort_order", { ascending: true }),
   ]);
 
@@ -133,6 +138,7 @@ export async function getAdminProductEditorData(editProductId?: string) {
     products: products.data ?? [],
     categories: categories.data ?? [],
     brands: brands.data ?? [],
+    productBadges: productBadges.data ?? [],
     sizes: sizes.data ?? [],
     flavors: flavors.data ?? [],
     benefits: benefits.data ?? [],

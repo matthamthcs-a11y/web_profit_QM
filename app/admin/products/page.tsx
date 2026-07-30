@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { deleteProduct, upsertProduct } from "@/app/admin/actions";
+import {
+  addProductBadge,
+  deleteProduct,
+  deleteProductBadge,
+  upsertProduct,
+} from "@/app/admin/actions";
 import { AdminAssetField } from "@/components/admin-asset-field";
 import { AdminProductVariantsField } from "@/components/admin-product-variants-field";
 import {
@@ -18,11 +23,6 @@ import { AdminSlugField } from "@/components/admin-slug-field";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAdminProductEditorData } from "@/lib/admin/data";
 import { getLocale } from "@/lib/i18n";
-import {
-  getProductBadgeLabel,
-  normalizeProductBadgeType,
-  productBadgeTypes,
-} from "@/lib/product-badges";
 import type { Locale } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -110,7 +110,8 @@ const adminProductCopy = {
         name: "Tên sản phẩm",
         shortDescription: "Mô tả ngắn",
         slug: "Slug",
-        price: "Giá mặc định",
+        listPrice: "Giá niêm yết mặc định",
+        price: "Giá khuyến mãi mặc định",
         currency: "Tiền tệ",
         origin: "Xuất xứ",
         category: "Danh mục",
@@ -127,7 +128,8 @@ const adminProductCopy = {
         benefits: "Công dụng, mỗi dòng một ý",
         usage: "Cách sử dụng, mỗi dòng một ý",
         audiences: "Đối tượng phù hợp, mỗi dòng một ý",
-        variantPrice: "Giá riêng của biến thể",
+        variantListPrice: "Giá niêm yết riêng của biến thể",
+        variantPrice: "Giá khuyến mãi riêng của biến thể",
         variantImage: "Ảnh riêng của biến thể",
         variantNutritionImage: "Ảnh bảng thành phần riêng",
         variantPublished: "Hiển thị biến thể",
@@ -219,7 +221,8 @@ const adminProductCopy = {
         name: "Product name",
         shortDescription: "Short description",
         slug: "Slug",
-        price: "Default price",
+        listPrice: "Default retail price",
+        price: "Default sale price",
         currency: "Currency",
         origin: "Origin",
         category: "Category",
@@ -236,7 +239,8 @@ const adminProductCopy = {
         benefits: "Benefits, one per line",
         usage: "Usage instructions, one per line",
         audiences: "Suitable audience, one per line",
-        variantPrice: "Variant-specific price",
+        variantListPrice: "Variant-specific retail price",
+        variantPrice: "Variant-specific sale price",
         variantImage: "Variant-specific image",
         variantNutritionImage: "Variant nutrition facts image",
         variantPublished: "Show this variant",
@@ -536,13 +540,20 @@ function ProductForm({
           name="package_type"
           value={product?.package_type ?? "gel"}
         />
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <AdminSlugField
             label={t.form.fields.slug}
             sourceName="name_en"
             defaultValue={product?.slug}
             placeholder={t.form.placeholders.slug}
             helpText={t.form.help.slug}
+          />
+          <AdminField
+            label={t.form.fields.listPrice}
+            name="list_price"
+            type="number"
+            defaultValue={product?.list_price == null ? "" : Number(product.list_price)}
+            min={0}
           />
           <AdminField
             label={t.form.fields.price}
@@ -650,28 +661,70 @@ function ProductForm({
               defaultChecked={product?.is_published ?? true}
             />
           </div>
-          <label className="grid content-start gap-2 rounded border border-line p-4 text-sm font-bold text-ink">
+          <div className="grid content-start gap-3 rounded border border-line p-4 text-sm font-bold text-ink">
             <span>{t.form.fields.badge}</span>
             <select
-              name="badge_type"
-              defaultValue={normalizeProductBadgeType(
-                product?.badge_type ??
-                  (product?.is_best_seller ? "best_seller" : "none"),
-              )}
+              name="badge_id"
+              defaultValue={product?.badge_id ?? ""}
               className="h-10 rounded border border-line px-3 text-sm font-medium outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/15"
             >
-              {productBadgeTypes.map((badgeType) => (
-                <option key={badgeType} value={badgeType}>
-                  {getProductBadgeLabel(badgeType, locale)}
+              <option value="">
+                {locale === "vi" ? "Không có" : "None"}
+              </option>
+              {data.productBadges.map((badge) => (
+                <option key={badge.id} value={badge.id}>
+                  {localized(badge.label, locale) || localized(badge.label, "vi")}
                 </option>
               ))}
             </select>
+            <div className="grid gap-2 md:grid-cols-2">
+              <label className="grid gap-1.5">
+                <span className="text-xs uppercase text-muted">
+                  {locale === "vi" ? "Tên huy hiệu VI" : "Badge label VI"}
+                </span>
+                <input
+                  name="new_badge_label_vi"
+                  placeholder={
+                    locale === "vi" ? "Ví dụ: Khuyên dùng" : "Example: Khuyên dùng"
+                  }
+                  className="h-10 rounded border border-line px-3 text-sm font-medium outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/15"
+                />
+              </label>
+              <label className="grid gap-1.5">
+                <span className="text-xs uppercase text-muted">
+                  {locale === "vi" ? "Tên huy hiệu EN" : "Badge label EN"}
+                </span>
+                <input
+                  name="new_badge_label_en"
+                  placeholder={
+                    locale === "vi" ? "Ví dụ: Recommended" : "Example: Recommended"
+                  }
+                  className="h-10 rounded border border-line px-3 text-sm font-medium outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/15"
+                />
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                formAction={addProductBadge}
+                className="h-10 rounded bg-ink px-4 text-xs font-black uppercase text-white hover:bg-slate-700"
+              >
+                {locale === "vi" ? "Thêm huy hiệu" : "Add badge"}
+              </button>
+              <button
+                formAction={deleteProductBadge}
+                className="h-10 rounded border border-brand-red px-4 text-xs font-black uppercase text-brand-red hover:bg-red-50"
+              >
+                {locale === "vi"
+                  ? "Xóa huy hiệu đang chọn"
+                  : "Delete selected badge"}
+              </button>
+            </div>
             <span className="text-xs font-semibold leading-5 text-muted">
               {locale === "vi"
                 ? "Chỉ một huy hiệu được hiển thị trên card sản phẩm."
                 : "Only one badge is shown on the product card."}
             </span>
-          </label>
+          </div>
         </div>
       </ProductFormSection>
 
@@ -716,6 +769,7 @@ function ProductForm({
             createButton: t.form.fields.variantCreate,
             empty: t.form.help.variantsAfterSave,
             fallback: t.form.help.variantFallback,
+            listPrice: t.form.fields.variantListPrice,
             price: t.form.fields.variantPrice,
             image: t.form.fields.variantImage,
             nutritionImage: t.form.fields.variantNutritionImage,

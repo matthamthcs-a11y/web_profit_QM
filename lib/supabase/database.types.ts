@@ -188,6 +188,22 @@ export type Database = {
       };
       product_audiences: ProductJsonChildTable;
       product_benefits: ProductJsonChildTable;
+      product_badges: {
+        Row: TimestampColumns & {
+          id: string;
+          is_active: boolean;
+          label: Json;
+          sort_order: number;
+        };
+        Insert: OptionalTimestampColumns & {
+          id?: string;
+          is_active?: boolean;
+          label?: Json;
+          sort_order?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["product_badges"]["Insert"]>;
+        Relationships: [];
+      };
       product_flavors: ProductJsonNameChildTable;
       product_ingredients: {
         Row: {
@@ -234,6 +250,7 @@ export type Database = {
           image_path: string | null;
           is_default: boolean;
           is_published: boolean;
+          list_price: number | null;
           nutrition_image_path: string | null;
           price: number | null;
           product_id: string;
@@ -249,6 +266,7 @@ export type Database = {
           image_path?: string | null;
           is_default?: boolean;
           is_published?: boolean;
+          list_price?: number | null;
           nutrition_image_path?: string | null;
           price?: number | null;
           product_id: string;
@@ -262,6 +280,7 @@ export type Database = {
       product_usage: ProductJsonChildTable;
       products: {
         Row: TimestampColumns & {
+          badge_id: string | null;
           badge_type: string;
           brand_id: string | null;
           category_id: string | null;
@@ -275,6 +294,7 @@ export type Database = {
           nutrition_image_path: string | null;
           origin: string | null;
           package_type: "gel" | "tube" | "tub" | "pouch" | string | null;
+          list_price: number | null;
           price: number;
           primary_goal: Json | null;
           short_description: Json | null;
@@ -284,6 +304,7 @@ export type Database = {
           visual_background: string | null;
         };
         Insert: OptionalTimestampColumns & {
+          badge_id?: string | null;
           badge_type?: string;
           brand_id?: string | null;
           category_id?: string | null;
@@ -297,6 +318,7 @@ export type Database = {
           nutrition_image_path?: string | null;
           origin?: string | null;
           package_type?: "gel" | "tube" | "tub" | "pouch" | string | null;
+          list_price?: number | null;
           price?: number;
           primary_goal?: Json | null;
           short_description?: Json | null;

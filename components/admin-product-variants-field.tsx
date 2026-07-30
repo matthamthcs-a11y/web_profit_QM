@@ -12,6 +12,7 @@ type AdminProductVariantsFieldProps = {
   variants: Array<{
     combination_key: string;
     price: number | null;
+    list_price: number | null;
     image_path: string | null;
     nutrition_image_path: string | null;
     is_default: boolean;
@@ -26,6 +27,7 @@ type AdminProductVariantsFieldProps = {
     createButton: string;
     empty: string;
     fallback: string;
+    listPrice: string;
     price: string;
     image: string;
     nutritionImage: string;
@@ -39,6 +41,7 @@ type VariantDraft = {
   flavor: LocalizedText;
   size: LocalizedText;
   price?: number | null;
+  listPrice?: number | null;
   imagePath?: string | null;
   nutritionImagePath?: string | null;
   isDefault: boolean;
@@ -172,7 +175,17 @@ export function AdminProductVariantsField({
                   </label>
                 </div>
               </div>
-              <div className="grid gap-4 md:grid-cols-[0.42fr_1fr_1fr]">
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="grid gap-1.5 text-sm font-bold text-ink">
+                  <span>{copy.listPrice}</span>
+                  <input
+                    name={`variant_list_price:${draft.key}`}
+                    type="number"
+                    min={0}
+                    defaultValue={draft.listPrice ?? ""}
+                    className="h-10 rounded border border-line px-3 text-sm font-medium outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/15"
+                  />
+                </label>
                 <label className="grid gap-1.5 text-sm font-bold text-ink">
                   <span>{copy.price}</span>
                   <input
@@ -183,6 +196,8 @@ export function AdminProductVariantsField({
                     className="h-10 rounded border border-line px-3 text-sm font-medium outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/15"
                   />
                 </label>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
                 <AdminAssetField
                   label={copy.image}
                   name={`variant_image_path:${draft.key}`}
@@ -232,6 +247,7 @@ function buildDrafts(
         key,
         flavor,
         size,
+        listPrice: existing?.list_price,
         price: existing?.price,
         imagePath: existing?.image_path,
         nutritionImagePath: existing?.nutrition_image_path,

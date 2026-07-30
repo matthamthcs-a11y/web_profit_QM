@@ -6,12 +6,17 @@ import type {
   HomeBanner,
   LocalizedText,
   Product,
+  ProductBadge,
   ProductVariant,
   Testimonial,
 } from "@/lib/types";
 import type { Json, Tables } from "@/lib/supabase/database.types";
 import type { SiteSettings } from "@/lib/data/site-settings";
-import { normalizeProductBadgeType } from "@/lib/product-badges";
+import {
+  getLegacyBadgeLabel,
+  normalizeBadgeLabel,
+  normalizeProductBadgeType,
+} from "@/lib/product-badges";
 import { buildOptionKey, buildVariantKey } from "@/lib/product-variants";
 
 type ProductRow = Tables<"products">;
@@ -19,6 +24,7 @@ type CategoryRow = Tables<"categories">;
 type BrandRow = Tables<"brands">;
 type ProductSizeRow = Tables<"product_sizes">;
 type ProductFlavorRow = Tables<"product_flavors">;
+type ProductBadgeRow = Tables<"product_badges">;
 type ProductContentRow =
   | Tables<"product_benefits">
   | Tables<"product_usage">
@@ -162,10 +168,12 @@ export function mapProductRows({
   ingredients,
   variants,
   relatedProducts,
+  badges = [],
 }: {
   products: ProductRow[];
   categories: CategoryRow[];
   brands: BrandRow[];
+  badges?: ProductBadgeRow[];
   sizes: ProductSizeRow[];
   flavors: ProductFlavorRow[];
   benefits: ProductContentRow[];
@@ -185,6 +193,7 @@ export function mapProductRows({
   const ingredientsByProduct = groupBy(ingredients, (row) => row.product_id);
   const variantsByProduct = groupBy(variants, (row) => row.product_id);
   const relatedByProduct = groupBy(relatedProducts, (row) => row.product_id);
+  const badgesById = new Map(badges.map((row) => [row.id, row]));
 
   return products.map((product) => {
     const category = product.category_id
@@ -211,6 +220,8 @@ export function mapProductRows({
       productFlavors,
       productSizes,
     );
+    const badgeType = normalizeProductBadgeType(product.badge_type);
+    const productBadge = mapProductBadge(product, badgesById.get(product.badge_id ?? ""));
 
     return {
       id: product.id,
@@ -221,6 +232,7 @@ export function mapProductRows({
       categoryName,
       origin: product.origin ?? "",
       price: Number(product.price),
+      listPrice: product.list_price === null ? null : Number(product.list_price),
       sizes: productSizes.map((size) => size.vi),
       flavors: productFlavors,
       primaryGoal,
@@ -252,9 +264,45 @@ export function mapProductRows({
       ),
       isFeatured: product.is_featured,
       isBestSeller: product.is_best_seller,
-      badgeType: normalizeProductBadgeType(product.badge_type),
+      badge: productBadge ?? mapLegacyProductBadge(badgeType),
+      badgeType,
     };
   });
+}
+
+export function mapProductBadgeRow(row: ProductBadgeRow): ProductBadge {
+  return {
+    id: row.id,
+    label: normalizeBadgeLabel(row.label),
+    isActive: row.is_active,
+    sortOrder: row.sort_order,
+  };
+}
+
+function mapProductBadge(
+  product: ProductRow,
+  badge: ProductBadgeRow | undefined,
+): ProductBadge | null {
+  if (!product.badge_id || !badge || !badge.is_active) {
+    return null;
+  }
+
+  return mapProductBadgeRow(badge);
+}
+
+function mapLegacyProductBadge(type: Product["badgeType"]): ProductBadge | null {
+  const label = getLegacyBadgeLabel(type);
+
+  if (!label) {
+    return null;
+  }
+
+  return {
+    id: `legacy_${type}`,
+    label,
+    isActive: true,
+    sortOrder: 0,
+  };
 }
 
 function mapProductVariants(
@@ -275,6 +323,7 @@ function mapProductVariants(
         size,
         sizeKey: buildOptionKey(size.vi || size.en),
         price: row.price === null ? null : Number(row.price),
+        listPrice: row.list_price === null ? null : Number(row.list_price),
         currency: row.currency,
         imagePath: row.image_path,
         nutritionImagePath: row.nutrition_image_path,
@@ -303,6 +352,7 @@ function mapProductVariants(
         size,
         sizeKey: buildOptionKey(size.vi || size.en),
         price: null,
+        listPrice: null,
         currency: null,
         imagePath: null,
         nutritionImagePath: null,

@@ -5,6 +5,7 @@ create table if not exists public.product_variants (
   size_label text not null default '',
   size_name jsonb,
   combination_key text not null,
+  list_price numeric null check (list_price is null or list_price >= 0),
   price numeric null check (price is null or price >= 0),
   currency text null,
   image_path text null,
@@ -96,6 +97,7 @@ with combinations as (
         'g'
       )
     ) as combination_key,
+    null::numeric as list_price,
     null::numeric as price,
     null::text as currency,
     null::text as image_path,
@@ -119,6 +121,7 @@ insert into public.product_variants (
   size_label,
   size_name,
   combination_key,
+  list_price,
   price,
   currency,
   image_path,
@@ -133,6 +136,7 @@ select
   size_label,
   size_name,
   combination_key,
+  list_price,
   price,
   currency,
   image_path,

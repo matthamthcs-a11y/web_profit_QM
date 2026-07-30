@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, SlidersHorizontal } from "lucide-react";
+import { PriceDisplay } from "@/components/price-display";
 import { ProductVisual } from "@/components/product-visual";
-import { getProductBadgeLabel } from "@/lib/product-badges";
+import { getLocalizedBadgeLabel } from "@/lib/product-badges";
 import type { Category, Locale, Product } from "@/lib/types";
 
 type ProductCatalogProps = {
@@ -25,10 +26,6 @@ type ProductCatalogProps = {
 
 function t(value: { vi: string; en: string }, locale: Locale) {
   return value[locale] || value.vi;
-}
-
-function formatPrice(value: number) {
-  return new Intl.NumberFormat("vi-VN").format(value) + "đ";
 }
 
 function normalize(value: string) {
@@ -184,10 +181,9 @@ function ProductResultCard({
   locale: Locale;
   labels: ProductCatalogProps["labels"];
 }) {
-  const badgeLabel =
-    product.badgeType === "none"
-      ? ""
-      : getProductBadgeLabel(product.badgeType, locale);
+  const badgeLabel = product.badge
+    ? getLocalizedBadgeLabel(product.badge.label, locale)
+    : "";
 
   return (
     <article className="overflow-hidden rounded border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
@@ -210,9 +206,13 @@ function ProductResultCard({
           <h2 className="mt-2 text-lg font-black text-ink">
             {t(product.name, locale)}
           </h2>
-          <p className="mt-2 text-2xl font-black text-brand-red">
-            {formatPrice(product.price)}
-          </p>
+          <div className="mt-2">
+            <PriceDisplay
+              price={product.price}
+              listPrice={product.listPrice}
+              locale={locale}
+            />
+          </div>
           <p className="mt-3 line-clamp-1 text-xs font-semibold text-muted">
             {labels.flavors}:{" "}
             {product.flavors.map((flavor) => t(flavor, locale)).join(", ")}

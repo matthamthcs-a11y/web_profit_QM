@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { PriceDisplay } from "@/components/price-display";
 import { ProductVisual } from "@/components/product-visual";
-import { copy, formatPrice, text } from "@/lib/i18n";
-import { getProductBadgeLabel } from "@/lib/product-badges";
+import { copy, text } from "@/lib/i18n";
+import { getLocalizedBadgeLabel } from "@/lib/product-badges";
 import type { Locale, Product } from "@/lib/types";
 
 type ProductCardProps = {
@@ -12,10 +13,9 @@ type ProductCardProps = {
 
 export function ProductCard({ product, locale }: ProductCardProps) {
   const c = copy[locale];
-  const badgeLabel =
-    product.badgeType === "none"
-      ? ""
-      : getProductBadgeLabel(product.badgeType, locale);
+  const badgeLabel = product.badge
+    ? getLocalizedBadgeLabel(product.badge.label, locale)
+    : "";
 
   return (
     <article className="group overflow-hidden rounded border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
@@ -35,9 +35,13 @@ export function ProductCard({ product, locale }: ProductCardProps) {
           <h3 className="text-lg font-black text-ink">
             {text(product.name, locale)}
           </h3>
-          <p className="mt-2 text-2xl font-black text-brand-red">
-            {formatPrice(product.price)}
-          </p>
+          <div className="mt-2">
+            <PriceDisplay
+              price={product.price}
+              listPrice={product.listPrice}
+              locale={locale}
+            />
+          </div>
           <p className="mt-2 line-clamp-2 whitespace-pre-line text-sm leading-6 text-muted">
             {text(product.shortDescription, locale)}
           </p>

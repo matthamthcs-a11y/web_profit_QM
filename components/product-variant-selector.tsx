@@ -2,6 +2,7 @@
 
 import { MessageCircle, Phone, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
+import { PriceDisplay } from "@/components/price-display";
 import { ProductInformationSection } from "@/components/product-information-section";
 import { ProductVisual } from "@/components/product-visual";
 import { buildOptionKey, getDefaultVariant } from "@/lib/product-variants";
@@ -91,6 +92,7 @@ export function ProductVariantSelector({
   const nutritionImagePath =
     currentVariant?.nutritionImagePath || product.nutritionImagePath || null;
   const price = currentVariant?.price ?? product.price;
+  const listPrice = currentVariant?.listPrice ?? product.listPrice;
   const shortDescription = localized(product.shortDescription, locale);
 
   function selectFlavor(flavorKey: string) {
@@ -142,9 +144,14 @@ export function ProductVariantSelector({
             <h1 className="mt-3 max-w-3xl text-3xl font-black tracking-normal text-ink md:text-4xl md:leading-tight">
               {localized(product.name, locale)}
             </h1>
-            <p className="mt-5 text-4xl font-black text-brand-red">
-              {formatPrice(price)}
-            </p>
+            <div className="mt-5">
+              <PriceDisplay
+                price={price}
+                listPrice={listPrice}
+                locale={locale}
+                size="detail"
+              />
+            </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <Info label={c.brand} value={product.brand} />
@@ -326,8 +333,4 @@ function getUniqueOptions(options: Array<{ key: string; label: string }>) {
 
 function localized(value: LocalizedText, locale: Locale) {
   return value[locale] || value.vi || value.en;
-}
-
-function formatPrice(value: number) {
-  return new Intl.NumberFormat("vi-VN").format(value) + "đ";
 }

@@ -41,6 +41,7 @@ async function getProductsUncached() {
     audiencesResult,
     variantsResult,
     relatedProductsResult,
+    badgesResult,
   ] = await Promise.all([
     supabase
       .from("products")
@@ -76,6 +77,11 @@ async function getProductsUncached() {
       .from("related_products")
       .select("*")
       .order("sort_order", { ascending: true }),
+    supabase
+      .from("product_badges")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
   ]);
 
   const hasError = [
@@ -89,6 +95,7 @@ async function getProductsUncached() {
     audiencesResult,
     variantsResult,
     relatedProductsResult,
+    badgesResult,
   ].some((result) => result.error);
 
   if (hasError) {
@@ -99,6 +106,7 @@ async function getProductsUncached() {
     products: productsResult.data ?? [],
     categories: categoriesResult.data ?? [],
     brands: brandsResult.data ?? [],
+    badges: badgesResult.data ?? [],
     sizes: sizesResult.data ?? [],
     flavors: flavorsResult.data ?? [],
     benefits: benefitsResult.data ?? [],
@@ -141,8 +149,14 @@ async function getProductCardsUncached() {
     return mockProducts;
   }
 
-  const [productsResult, categoriesResult, brandsResult, sizesResult, flavorsResult] =
-    await Promise.all([
+  const [
+    productsResult,
+    categoriesResult,
+    brandsResult,
+    sizesResult,
+    flavorsResult,
+    badgesResult,
+  ] = await Promise.all([
       supabase
         .from("products")
         .select("*")
@@ -158,6 +172,11 @@ async function getProductCardsUncached() {
         .from("product_flavors")
         .select("id, product_id, name, sort_order")
         .order("sort_order", { ascending: true }),
+      supabase
+        .from("product_badges")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true }),
     ]);
 
   const hasError = [
@@ -166,6 +185,7 @@ async function getProductCardsUncached() {
     brandsResult,
     sizesResult,
     flavorsResult,
+    badgesResult,
   ].some((result) => result.error);
 
   if (hasError) {
@@ -176,6 +196,7 @@ async function getProductCardsUncached() {
     products: productsResult.data ?? [],
     categories: categoriesResult.data ?? [],
     brands: brandsResult.data ?? [],
+    badges: badgesResult.data ?? [],
     sizes: sizesResult.data ?? [],
     flavors: flavorsResult.data ?? [],
     benefits: [],

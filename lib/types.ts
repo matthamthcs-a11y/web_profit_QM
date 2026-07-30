@@ -12,6 +12,13 @@ export type ProductBadgeType =
   | "new"
   | "featured";
 
+export type ProductBadge = {
+  id: string;
+  label: LocalizedText;
+  isActive: boolean;
+  sortOrder: number;
+};
+
 export type Category = {
   id: string;
   name: LocalizedText;
@@ -28,6 +35,7 @@ export type Product = {
   categoryName: LocalizedText;
   origin: string;
   price: number;
+  listPrice?: number | null;
   sizes: string[];
   flavors: LocalizedText[];
   primaryGoal: LocalizedText;
@@ -51,6 +59,7 @@ export type Product = {
   relatedProductIds: string[];
   isFeatured: boolean;
   isBestSeller: boolean;
+  badge: ProductBadge | null;
   badgeType: ProductBadgeType;
 };
 
@@ -62,6 +71,7 @@ export type ProductVariant = {
   size: LocalizedText;
   sizeKey: string;
   price?: number | null;
+  listPrice?: number | null;
   currency?: string | null;
   imagePath?: string | null;
   nutritionImagePath?: string | null;

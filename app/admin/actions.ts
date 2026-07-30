@@ -13,7 +13,10 @@ import {
   getString,
   slugify,
 } from "@/lib/admin/form";
-import { normalizeProductBadgeType } from "@/lib/product-badges";
+import {
+  isBestSellerBadgeLabel,
+  normalizeBadgeLabel,
+} from "@/lib/product-badges";
 import { buildVariantKey } from "@/lib/product-variants";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -56,6 +59,7 @@ function revalidateAdminData() {
     "dealers",
     "site-settings",
     "home-banners",
+    "product-badges",
   ].forEach((tag) => revalidateTag(tag));
 
   adminPaths.forEach((path) => revalidatePath(path));
@@ -339,12 +343,17 @@ export async function upsertProduct(formData: FormData) {
   const name = getLocalized(formData, "name");
   const desiredPosition = getDesiredPosition(formData);
   const price = getNumber(formData, "price");
+  const listPrice = getOptionalPositiveNumber(formData, "list_price");
   const slug = getString(formData, "slug") || slugify(name.en || name.vi);
   const currency = (getString(formData, "currency") || "VND").toUpperCase();
   const visualAccent = getOptionalString(formData, "visual_accent") ?? "#ce1732";
   const visualBackground =
     getOptionalString(formData, "visual_background") ?? "#fff1f2";
-  const badgeType = normalizeProductBadgeType(formData.get("badge_type"));
+  const badgeId = getOptionalString(formData, "badge_id");
+  const selectedBadge = await getSelectedProductBadge(supabase, badgeId);
+  const isBestSeller = selectedBadge
+    ? isBestSellerBadgeLabel(normalizeBadgeLabel(selectedBadge.label))
+    : false;
 
   if (!hasLocalizedValue(name)) {
     await setAdminNotice("error", "Sản phẩm: cần nhập tên VI hoặc EN.");
@@ -358,6 +367,24 @@ export async function upsertProduct(formData: FormData) {
 
   if (price < 0) {
     await setAdminNotice("error", "Sản phẩm: giá không được âm.");
+    return;
+  }
+
+  if (listPrice !== null && listPrice < price) {
+    await setAdminNotice(
+      "error",
+      "Sản phẩm: giá niêm yết phải lớn hơn hoặc bằng giá khuyến mãi.",
+    );
+    return;
+  }
+
+  const invalidVariantPriceKey = findInvalidVariantPriceKey(formData, price);
+
+  if (invalidVariantPriceKey) {
+    await setAdminNotice(
+      "error",
+      `Biến thể ${invalidVariantPriceKey}: giá niêm yết phải lớn hơn hoặc bằng giá khuyến mãi.`,
+    );
     return;
   }
 
@@ -391,6 +418,7 @@ export async function upsertProduct(formData: FormData) {
     short_description: getLocalized(formData, "short_description"),
     primary_goal: getLocalized(formData, "primary_goal"),
     origin: getOptionalString(formData, "origin"),
+    list_price: listPrice,
     price,
     currency,
     image_path: getOptionalString(formData, "image_path"),
@@ -399,8 +427,9 @@ export async function upsertProduct(formData: FormData) {
     visual_accent: visualAccent,
     visual_background: visualBackground,
     is_featured: getBool(formData, "is_featured"),
-    is_best_seller: badgeType === "best_seller",
-    badge_type: badgeType,
+    is_best_seller: isBestSeller,
+    badge_id: badgeId,
+    badge_type: isBestSeller ? "best_seller" : "none",
     is_published: getBool(formData, "is_published"),
     sort_order: desiredPosition,
   };
@@ -433,6 +462,119 @@ export async function upsertProduct(formData: FormData) {
     revalidatePath(`/products/${payload.slug}`);
   }
   await setAdminNotice("success", "Đã lưu sản phẩm.");
+}
+
+async function getSelectedProductBadge(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  badgeId: string | null,
+) {
+  if (!badgeId) {
+    return null;
+  }
+
+  const { data } = await supabase
+    .from("product_badges")
+    .select("id, label, is_active")
+    .eq("id", badgeId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  return data ?? null;
+}
+
+export async function addProductBadge(formData: FormData) {
+  const supabase = await getAdminClient();
+  const label = getLocalized(formData, "new_badge_label");
+  const normalizedLabel = {
+    vi: label.vi || label.en,
+    en: label.en || label.vi,
+  };
+
+  if (!hasLocalizedValue(normalizedLabel)) {
+    await setAdminNotice(
+      "error",
+      "Huy hiệu: cần nhập tên tiếng Việt hoặc tiếng Anh.",
+    );
+    return;
+  }
+
+  const { data: badges } = await supabase
+    .from("product_badges")
+    .select("id, label, sort_order")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  const duplicated = (badges ?? []).some((badge) => {
+    const existingLabel = normalizeBadgeLabel(badge.label);
+
+    return (
+      normalizeForCompare(existingLabel.vi) ===
+        normalizeForCompare(normalizedLabel.vi) ||
+      normalizeForCompare(existingLabel.en) ===
+        normalizeForCompare(normalizedLabel.en)
+    );
+  });
+
+  if (duplicated) {
+    await setAdminNotice("error", "Huy hiệu: tên này đã tồn tại.");
+    return;
+  }
+
+  const nextSortOrder =
+    (badges ?? []).reduce(
+      (max, badge) => Math.max(max, badge.sort_order ?? 0),
+      0,
+    ) + 10;
+
+  const { error } = await supabase.from("product_badges").insert({
+    label: normalizedLabel,
+    is_active: true,
+    sort_order: nextSortOrder,
+  });
+
+  if (error) {
+    await setAdminNotice("error", `Huy hiệu: không thể thêm (${error.message}).`);
+    return;
+  }
+
+  revalidateAdminData();
+  await setAdminNotice("success", "Đã thêm huy hiệu sản phẩm.");
+}
+
+export async function deleteProductBadge(formData: FormData) {
+  const supabase = await getAdminClient();
+  const badgeId = getOptionalString(formData, "badge_id");
+
+  if (!badgeId) {
+    await setAdminNotice("error", "Huy hiệu: hãy chọn huy hiệu cần xóa.");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("product_badges")
+    .update({ is_active: false })
+    .eq("id", badgeId);
+
+  if (error) {
+    await setAdminNotice("error", `Huy hiệu: không thể xóa (${error.message}).`);
+    return;
+  }
+
+  await supabase
+    .from("products")
+    .update({ badge_id: null, badge_type: "none", is_best_seller: false })
+    .eq("badge_id", badgeId);
+
+  revalidateAdminData();
+  await setAdminNotice("success", "Đã xóa huy hiệu khỏi danh sách chọn.");
+}
+
+function normalizeForCompare(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
 async function syncProductChildren(
@@ -518,6 +660,10 @@ function buildProductVariantRows(
         size_label: size.label,
         size_name: size.label_i18n,
         combination_key: combinationKey,
+        list_price: getOptionalPositiveNumber(
+          formData,
+          `variant_list_price:${combinationKey}`,
+        ),
         price: getOptionalPositiveNumber(formData, `variant_price:${combinationKey}`),
         currency: null,
         image_path: getOptionalString(formData, `variant_image_path:${combinationKey}`),
@@ -567,6 +713,26 @@ function getOptionalPositiveNumber(formData: FormData, key: string) {
   const numberValue = Number(value);
 
   return Number.isFinite(numberValue) && numberValue >= 0 ? numberValue : null;
+}
+
+function findInvalidVariantPriceKey(formData: FormData, defaultPrice: number) {
+  for (const key of formData.keys()) {
+    if (!key.startsWith("variant_list_price:")) {
+      continue;
+    }
+
+    const combinationKey = key.replace("variant_list_price:", "");
+    const listPrice = getOptionalPositiveNumber(formData, key);
+    const salePrice =
+      getOptionalPositiveNumber(formData, `variant_price:${combinationKey}`) ??
+      defaultPrice;
+
+    if (listPrice !== null && listPrice < salePrice) {
+      return combinationKey;
+    }
+  }
+
+  return null;
 }
 
 async function syncRelatedProducts(

@@ -75,6 +75,7 @@ export const products: Product[] = [
     categoryName: { vi: "Gel năng lượng", en: "Energy Gel" },
     origin: "USA",
     price: 45000,
+    listPrice: 55000,
     sizes: ["35g", "Box 24"],
     flavors: [
       { vi: "Cam chanh", en: "Citrus" },
@@ -130,6 +131,12 @@ export const products: Product[] = [
     relatedProductIds: ["prd_electrolyte-tabs", "prd_recovery-drink"],
     isFeatured: true,
     isBestSeller: true,
+    badge: {
+      id: "mock_best_seller",
+      label: { vi: "Bán chạy", en: "Best seller" },
+      isActive: true,
+      sortOrder: 10,
+    },
     badgeType: "best_seller",
   },
   {
@@ -141,6 +148,7 @@ export const products: Product[] = [
     categoryName: { vi: "Điện giải", en: "Electrolyte" },
     origin: "Germany",
     price: 320000,
+    listPrice: 360000,
     sizes: ["Tube 20 tablets"],
     flavors: [
       { vi: "Chanh vàng", en: "Lemon" },
@@ -195,6 +203,12 @@ export const products: Product[] = [
     relatedProductIds: ["prd_energy-gel-citrus", "prd_recovery-drink"],
     isFeatured: true,
     isBestSeller: true,
+    badge: {
+      id: "mock_best_seller",
+      label: { vi: "Bán chạy", en: "Best seller" },
+      isActive: true,
+      sortOrder: 10,
+    },
     badgeType: "best_seller",
   },
   {
@@ -206,6 +220,7 @@ export const products: Product[] = [
     categoryName: { vi: "Protein", en: "Protein" },
     origin: "New Zealand",
     price: 1250000,
+    listPrice: 1390000,
     sizes: ["900g", "2.2kg"],
     flavors: [
       { vi: "Chocolate", en: "Chocolate" },
@@ -259,6 +274,12 @@ export const products: Product[] = [
     relatedProductIds: ["prd_recovery-drink"],
     isFeatured: true,
     isBestSeller: true,
+    badge: {
+      id: "mock_best_seller",
+      label: { vi: "Bán chạy", en: "Best seller" },
+      isActive: true,
+      sortOrder: 10,
+    },
     badgeType: "best_seller",
   },
   {
@@ -270,6 +291,7 @@ export const products: Product[] = [
     categoryName: { vi: "Phục hồi", en: "Recovery" },
     origin: "USA",
     price: 780000,
+    listPrice: null,
     sizes: ["600g"],
     flavors: [
       { vi: "Dâu rừng", en: "Berry" },
@@ -324,6 +346,7 @@ export const products: Product[] = [
     relatedProductIds: ["prd_energy-gel-citrus", "prd_whey-protein"],
     isFeatured: true,
     isBestSeller: false,
+    badge: null,
     badgeType: "none",
   },
 ];
