@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { PriceDisplay } from "@/components/price-display";
 import { ProductVisual } from "@/components/product-visual";
@@ -12,6 +13,7 @@ type ProductCatalogProps = {
   locale: Locale;
   products: Product[];
   categories: Category[];
+  initialCategory?: string;
   labels: {
     all: string;
     filters: string;
@@ -21,6 +23,8 @@ type ProductCatalogProps = {
     flavors: string;
     viewDetail: string;
     bestSeller: string;
+    category: string;
+    brand: string;
   };
 };
 
@@ -65,16 +69,44 @@ export function ProductCatalog({
   locale,
   products,
   categories,
+  initialCategory,
   labels,
 }: ProductCatalogProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("all");
+  const [category, setCategory] = useState(() =>
+    resolveCategoryParam(categories, initialCategory),
+  );
   const [brand, setBrand] = useState("all");
 
   const brands = useMemo(
     () => Array.from(new Set(products.map((product) => product.brand))),
     [products],
   );
+
+  useEffect(() => {
+    setCategory(resolveCategoryParam(categories, searchParams.get("category")));
+  }, [categories, searchParams]);
+
+  function updateCategory(nextCategoryId: string) {
+    setCategory(nextCategoryId);
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    const selectedCategory = categories.find((item) => item.id === nextCategoryId);
+
+    if (selectedCategory) {
+      nextParams.set("category", selectedCategory.slug);
+    } else {
+      nextParams.delete("category");
+    }
+
+    const queryString = nextParams.toString();
+    router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
+      scroll: false,
+    });
+  }
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = normalize(query);
@@ -108,10 +140,12 @@ export function ProductCatalog({
         </div>
         <div className="grid gap-4">
           <label className="grid gap-2">
-            <span className="text-xs font-black uppercase text-muted">Category</span>
+            <span className="text-xs font-black uppercase text-muted">
+              {labels.category}
+            </span>
             <select
               value={category}
-              onChange={(event) => setCategory(event.target.value)}
+              onChange={(event) => updateCategory(event.target.value)}
               className="h-11 rounded border border-line bg-white px-3 text-sm font-bold text-ink outline-none focus:border-brand-red"
             >
               <option value="all">{labels.all}</option>
@@ -123,7 +157,9 @@ export function ProductCatalog({
             </select>
           </label>
           <label className="grid gap-2">
-            <span className="text-xs font-black uppercase text-muted">Brand</span>
+            <span className="text-xs font-black uppercase text-muted">
+              {labels.brand}
+            </span>
             <select
               value={brand}
               onChange={(event) => setBrand(event.target.value)}
@@ -172,6 +208,16 @@ export function ProductCatalog({
   );
 }
 
+function resolveCategoryParam(categories: Category[], value?: string | null) {
+  if (!value) return "all";
+
+  const category = categories.find(
+    (item) => item.id === value || item.slug === value,
+  );
+
+  return category?.id ?? "all";
+}
+
 function ProductResultCard({
   product,
   locale,
@@ -203,7 +249,7 @@ function ProductResultCard({
           <p className="text-xs font-black uppercase text-brand-red">
             {t(product.categoryName, locale)}
           </p>
-          <h2 className="mt-2 text-lg font-black text-ink">
+          <h2 className="mt-2 text-lg font-black uppercase text-ink">
             {t(product.name, locale)}
           </h2>
           <div className="mt-2">

@@ -32,7 +32,7 @@ export function ProductCard({ product, locale }: ProductCardProps) {
               </span>
             ) : null}
           </div>
-          <h3 className="text-lg font-black text-ink">
+          <h3 className="text-lg font-black uppercase text-ink">
             {text(product.name, locale)}
           </h3>
           <div className="mt-2">

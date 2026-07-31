@@ -331,9 +331,9 @@ export default async function AdminProductsPage({
           return (
             <article key={product.id} className="rounded border border-line p-5">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="font-black">
+                <div className="font-black uppercase">
                   {localized(product.name, locale)}{" "}
-                  <span className="text-sm font-semibold text-muted">
+                  <span className="text-sm font-semibold normal-case text-muted">
                     / {product.slug} / {formatPrice(Number(product.price), locale)}
                   </span>
                 </div>

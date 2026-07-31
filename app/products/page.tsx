@@ -10,9 +10,18 @@ export const metadata: Metadata = {
   description: "Danh sách sản phẩm Pro-Fitness Sports Nutrition.",
 };
 
-export default async function ProductsPage() {
+type ProductsPageProps = {
+  searchParams?: Promise<{
+    category?: string | string[];
+  }>;
+};
+
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const locale = await getLocale();
   const c = copy[locale];
+  const params = await searchParams;
+  const initialCategory =
+    typeof params?.category === "string" ? params.category : params?.category?.[0];
   const [categories, products] = await Promise.all([
     getCategories(),
     getProductCards(),
@@ -21,7 +30,7 @@ export default async function ProductsPage() {
   return (
     <section className="container-px mx-auto max-w-7xl py-14">
       <SectionHeading
-        eyebrow="Products"
+        eyebrow={locale === "vi" ? "Sản phẩm" : "Products"}
         title={c.products.title}
         description={c.products.description}
       />
@@ -29,6 +38,7 @@ export default async function ProductsPage() {
         locale={locale}
         products={products}
         categories={categories}
+        initialCategory={initialCategory}
         labels={{
           all: c.common.all,
           filters: c.products.filters,
@@ -38,6 +48,8 @@ export default async function ProductsPage() {
           flavors: c.common.flavors,
           viewDetail: c.common.viewDetail,
           bestSeller: c.common.bestSeller,
+          category: c.common.category,
+          brand: c.common.brand,
         }}
       />
     </section>

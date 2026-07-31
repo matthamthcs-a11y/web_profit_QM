@@ -141,7 +141,7 @@ export function ProductVariantSelector({
             <p className="text-sm font-black uppercase tracking-wide text-brand-red">
               {localized(product.categoryName, locale)}
             </p>
-            <h1 className="mt-3 max-w-3xl text-3xl font-black tracking-normal text-ink md:text-4xl md:leading-tight">
+            <h1 className="mt-3 max-w-3xl text-3xl font-black uppercase tracking-normal text-ink md:text-4xl md:leading-tight">
               {localized(product.name, locale)}
             </h1>
             <div className="mt-5">

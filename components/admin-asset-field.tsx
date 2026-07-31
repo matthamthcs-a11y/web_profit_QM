@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, ExternalLink, Loader2, Upload } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  Upload,
+} from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Locale } from "@/lib/types";
@@ -14,9 +20,15 @@ type AdminAssetFieldProps = {
   required?: boolean;
   maxSizeMb?: number;
   locale?: Locale;
+  optimizeImage?: {
+    maxWidth: number;
+    maxHeight: number;
+    quality?: number;
+  };
 };
 
 const BUCKET = "profitness-assets";
+
 const copy = {
   vi: {
     placeholder: "Dán đường dẫn ảnh hoặc chọn ảnh từ máy tính",
@@ -24,9 +36,13 @@ const copy = {
     openFile: "Mở ảnh",
     tooLarge: (maxSizeMb: number) =>
       `File quá lớn. Giới hạn hiện tại là ${maxSizeMb}MB.`,
+    optimizing: "Đang tối ưu ảnh...",
     uploading: "Đang tải ảnh lên...",
     uploadFailed: "Upload thất bại.",
+    optimizeFailed:
+      "Không thể tối ưu ảnh. Vui lòng thử file JPG, PNG hoặc WebP khác.",
     uploadSuccess: "Đã upload và tự điền đường dẫn.",
+    optimizedUploadSuccess: "Đã tối ưu WebP và upload ảnh.",
   },
   en: {
     placeholder: "Paste an image URL or choose a file from your computer",
@@ -34,19 +50,29 @@ const copy = {
     openFile: "Open image",
     tooLarge: (maxSizeMb: number) =>
       `File is too large. Current limit is ${maxSizeMb}MB.`,
+    optimizing: "Optimizing image...",
     uploading: "Uploading image...",
     uploadFailed: "Upload failed.",
+    optimizeFailed:
+      "Could not optimize this image. Please try another JPG, PNG or WebP file.",
     uploadSuccess: "Uploaded and filled the URL automatically.",
+    optimizedUploadSuccess: "Optimized to WebP and uploaded.",
   },
-} satisfies Record<Locale, {
-  placeholder: string;
-  selectFile: string;
-  openFile: string;
-  tooLarge: (maxSizeMb: number) => string;
-  uploading: string;
-  uploadFailed: string;
-  uploadSuccess: string;
-}>;
+} satisfies Record<
+  Locale,
+  {
+    placeholder: string;
+    selectFile: string;
+    openFile: string;
+    tooLarge: (maxSizeMb: number) => string;
+    optimizing: string;
+    uploading: string;
+    uploadFailed: string;
+    optimizeFailed: string;
+    uploadSuccess: string;
+    optimizedUploadSuccess: string;
+  }
+>;
 
 export function AdminAssetField({
   label,
@@ -57,13 +83,14 @@ export function AdminAssetField({
   required,
   maxSizeMb = 25,
   locale = "vi",
+  optimizeImage,
 }: AdminAssetFieldProps) {
   const t = copy[locale];
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(defaultValue ?? "");
-  const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">(
-    "idle",
-  );
+  const [status, setStatus] = useState<
+    "idle" | "uploading" | "success" | "error"
+  >("idle");
   const [message, setMessage] = useState("");
 
   const isImage = useMemo(() => {
@@ -81,18 +108,40 @@ export function AdminAssetField({
     }
 
     setStatus("uploading");
+    setMessage(optimizeImage ? t.optimizing : t.uploading);
+
+    let uploadTarget = file;
+    let wasOptimized = false;
+
+    if (optimizeImage && isRasterImage(file)) {
+      try {
+        uploadTarget = await optimizeImageFile(file, {
+          maxWidth: optimizeImage.maxWidth,
+          maxHeight: optimizeImage.maxHeight,
+          quality: optimizeImage.quality ?? 0.84,
+        });
+        wasOptimized = true;
+      } catch {
+        setStatus("error");
+        setMessage(t.optimizeFailed);
+        return;
+      }
+    }
+
     setMessage(t.uploading);
 
     const supabase = createSupabaseBrowserClient();
     const path = `${cleanPathPart(folder)}/${Date.now()}-${crypto.randomUUID()}-${cleanFileName(
-      file.name,
+      uploadTarget.name,
     )}`;
 
-    const { data, error } = await supabase.storage.from(BUCKET).upload(path, file, {
-      cacheControl: "31536000",
-      contentType: file.type || undefined,
-      upsert: false,
-    });
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, uploadTarget, {
+        cacheControl: "31536000",
+        contentType: uploadTarget.type || undefined,
+        upsert: false,
+      });
 
     if (error || !data?.path) {
       setStatus("error");
@@ -106,7 +155,7 @@ export function AdminAssetField({
 
     setValue(publicData.publicUrl);
     setStatus("success");
-    setMessage(t.uploadSuccess);
+    setMessage(wasOptimized ? t.optimizedUploadSuccess : t.uploadSuccess);
   }
 
   return (
@@ -207,4 +256,77 @@ function cleanFileName(value: string) {
     .replace(/^-+|-+$/g, "");
 
   return `${name || fallback}${extension ? `.${extension}` : ""}`;
+}
+
+function isRasterImage(file: File) {
+  return ["image/jpeg", "image/png", "image/webp"].includes(file.type);
+}
+
+async function optimizeImageFile(
+  file: File,
+  options: {
+    maxWidth: number;
+    maxHeight: number;
+    quality: number;
+  },
+) {
+  const image = await loadImage(file);
+  const scale = Math.min(
+    1,
+    options.maxWidth / image.naturalWidth,
+    options.maxHeight / image.naturalHeight,
+  );
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d", { alpha: true });
+  if (!context) {
+    throw new Error("Canvas is not supported.");
+  }
+
+  context.drawImage(image, 0, 0, width, height);
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, "image/webp", options.quality);
+  });
+
+  if (!blob) {
+    throw new Error("WebP conversion failed.");
+  }
+
+  return new File([blob], `${stripExtension(file.name) || "banner"}.webp`, {
+    type: "image/webp",
+    lastModified: Date.now(),
+  });
+}
+
+function loadImage(file: File) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Image load failed."));
+    };
+    image.src = url;
+  });
+}
+
+function stripExtension(value: string) {
+  const dotIndex = value.lastIndexOf(".");
+  const name = dotIndex > 0 ? value.slice(0, dotIndex) : value;
+
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Facebook, Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
+import { FacebookBrandIcon, ZaloBrandIcon } from "@/components/brand-social-icons";
 import { getSiteSettings } from "@/lib/data/site-settings";
 import { copy, getLocale } from "@/lib/i18n";
 
@@ -9,6 +10,13 @@ export async function Footer() {
     getSiteSettings(),
   ]);
   const c = copy[locale];
+  const phoneHref = `tel:${toPhoneHref(siteSettings.hotline)}`;
+  const emailHref = siteSettings.email ? `mailto:${siteSettings.email}` : undefined;
+  const addressHref = siteSettings.address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        siteSettings.address,
+      )}`
+    : undefined;
   const footerGroups = [
     {
       title: c.nav.products,
@@ -37,22 +45,43 @@ export async function Footer() {
               : "Sports nutrition product catalog focused on prices, flavors, benefits, usage instructions and quick hotline consultation."}
           </p>
           <div className="mt-6 grid gap-3 text-sm text-slate-300">
-            <span className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-brand-red" />
+            <FooterContactLink
+              href={phoneHref}
+              icon={Phone}
+              iconClassName="text-emerald-400"
+            >
               {siteSettings.hotline}
-            </span>
-            <span className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-brand-red" />
+            </FooterContactLink>
+            <FooterContactLink
+              href={emailHref}
+              icon={Mail}
+              iconClassName="text-sky-400"
+            >
               {siteSettings.email}
-            </span>
-            <span className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-brand-red" />
+            </FooterContactLink>
+            <FooterContactLink
+              href={addressHref}
+              icon={MapPin}
+              iconClassName="text-brand-red"
+            >
               {siteSettings.address}
-            </span>
-            <span className="flex items-center gap-2">
-              <Facebook className="h-4 w-4 text-brand-red" />
-              Facebook / Zalo / Messenger
-            </span>
+            </FooterContactLink>
+            <div className="flex items-center gap-2 pt-1">
+              <SocialIconLink
+                href={siteSettings.facebookUrl}
+                label="Facebook"
+                className="text-white hover:text-brand-red"
+              >
+                <FacebookBrandIcon className="h-5 w-5" />
+              </SocialIconLink>
+              <SocialIconLink
+                href={siteSettings.zaloUrl}
+                label="Zalo"
+                className="text-white hover:text-brand-red"
+              >
+                <ZaloBrandIcon className="h-8 w-8" />
+              </SocialIconLink>
+            </div>
           </div>
         </div>
 
@@ -80,4 +109,82 @@ export async function Footer() {
       </div>
     </footer>
   );
+}
+
+function FooterContactLink({
+  href,
+  icon: Icon,
+  iconClassName,
+  children,
+}: {
+  href?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  iconClassName: string;
+  children: React.ReactNode;
+}) {
+  const content = (
+    <>
+      <Icon className={`h-4 w-4 shrink-0 ${iconClassName}`} />
+      <span>{children}</span>
+    </>
+  );
+  const className =
+    "flex items-start gap-2 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-red";
+
+  if (!href) {
+    return <span className={className}>{content}</span>;
+  }
+
+  return (
+    <a
+      href={href}
+      target={isExternalHref(href) ? "_blank" : undefined}
+      rel={isExternalHref(href) ? "noreferrer" : undefined}
+      className={className}
+    >
+      {content}
+    </a>
+  );
+}
+
+function SocialIconLink({
+  href,
+  label,
+  className,
+  children,
+}: {
+  href?: string;
+  label: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  const baseClassName = `flex h-8 w-8 items-center justify-center bg-transparent transition ${className}`;
+
+  if (!href) {
+    return (
+      <span aria-label={label} className={`${baseClassName} opacity-40`}>
+        {children}
+      </span>
+    );
+  }
+
+  return (
+    <a
+      href={href}
+      target={isExternalHref(href) ? "_blank" : undefined}
+      rel={isExternalHref(href) ? "noreferrer" : undefined}
+      aria-label={label}
+      className={baseClassName}
+    >
+      {children}
+    </a>
+  );
+}
+
+function toPhoneHref(phone: string) {
+  return phone.replace(/[^\d+]/g, "");
+}
+
+function isExternalHref(href?: string) {
+  return Boolean(href?.startsWith("http://") || href?.startsWith("https://"));
 }

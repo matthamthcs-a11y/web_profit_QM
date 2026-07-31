@@ -24,7 +24,7 @@ const copy = {
     eyebrow: "Home",
     title: "Banner trang chủ",
     description:
-      "Quản lý các ảnh slide hero. Chữ nếu có nên nằm sẵn trong file ảnh.",
+      "Quản lý ảnh slide hero. Ảnh upload sẽ tự tối ưu WebP, giữ tỷ lệ gốc, rộng tối đa 1920px và cao tối đa 1080px.",
     addNew: "Thêm banner mới",
     image: "Ảnh banner",
     mobileImage: "Ảnh banner mobile",
@@ -40,7 +40,7 @@ const copy = {
     eyebrow: "Home",
     title: "Homepage banners",
     description:
-      "Manage hero slider images. Any text should be designed inside the image file.",
+      "Manage hero slider images. Uploaded banners are optimized to WebP, keep their original ratio, and are limited to 1920px wide and 1080px tall.",
     addNew: "Add new banner",
     image: "Banner image",
     mobileImage: "Mobile banner image",
@@ -53,6 +53,18 @@ const copy = {
     confirmDelete: "Are you sure you want to delete this banner?",
   },
 } as const;
+
+const DESKTOP_BANNER_OPTIMIZE = {
+  maxWidth: 1920,
+  maxHeight: 1080,
+  quality: 0.84,
+};
+
+const MOBILE_BANNER_OPTIMIZE = {
+  maxWidth: 900,
+  maxHeight: 1200,
+  quality: 0.84,
+};
 
 export default async function AdminBannersPage() {
   await requireAdmin();
@@ -113,6 +125,7 @@ function BannerForm({
           accept="image/*"
           required
           locale={locale}
+          optimizeImage={DESKTOP_BANNER_OPTIMIZE}
         />
         <AdminAssetField
           label={t.mobileImage}
@@ -121,6 +134,7 @@ function BannerForm({
           folder="banners-mobile"
           accept="image/*"
           locale={locale}
+          optimizeImage={MOBILE_BANNER_OPTIMIZE}
         />
       </div>
       <LocalizedFields base="alt" label={t.altText} value={banner?.alt} />

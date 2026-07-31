@@ -151,7 +151,7 @@ function ProductLabel({
         {product.brand}
       </span>
       <span
-        className={`${compact ? "text-lg" : "text-2xl"} font-black leading-tight text-ink`}
+        className={`${compact ? "text-lg" : "text-2xl"} font-black uppercase leading-tight text-ink`}
       >
         {product.name[locale] ?? product.name.vi}
       </span>

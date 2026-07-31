@@ -105,20 +105,24 @@ export function HeroBanner({ locale, products, banners = [] }: HeroBannerProps) 
     setIndex((value) => (value + 1) % totalSlides);
   };
 
-  const slogan =
-    locale === "vi" ? "Năng lượng đúng lúc" : "Fuel right, perform better";
   const bannerLine =
     locale === "vi"
-      ? "Năng lượng · Sức bền · Phục hồi · Từ 1987"
-      : "Energy · Endurance · Recovery · Since 1987";
+      ? "Nạp đúng năng lượng, cảm nhận tuyệt vời!"
+      : "Fuel right, feel great!";
   const productLabel = locale === "vi" ? "Sản phẩm" : "Products";
   const contactLabel = locale === "vi" ? "Liên hệ" : "Contact";
 
   return (
     <section className="bg-white">
-      <div className="mx-auto max-w-[1600px] px-0">
-          <div className="relative overflow-hidden bg-slate-950">
-            <div className="relative h-[340px] sm:h-[420px] lg:h-[500px]">
+      <div className="mx-auto max-w-[1920px] px-0">
+        <div className="relative overflow-hidden bg-white">
+          <div
+            className={
+              currentBanner
+                ? "relative flex max-h-[75vh] items-center justify-center bg-white"
+                : "relative h-[340px] bg-slate-950 sm:h-[420px] lg:h-[500px]"
+            }
+          >
             {currentBanner ? (
               <BannerImage banner={currentBanner} locale={locale} />
             ) : currentFallback ? (
@@ -129,7 +133,7 @@ export function HeroBanner({ locale, products, banners = [] }: HeroBannerProps) 
               type="button"
               onClick={prev}
               aria-label="Previous banner"
-              className="absolute left-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
+              className="absolute left-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded border border-white/40 bg-black/15 text-white backdrop-blur hover:bg-black/25"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -137,7 +141,7 @@ export function HeroBanner({ locale, products, banners = [] }: HeroBannerProps) 
               type="button"
               onClick={next}
               aria-label="Next banner"
-              className="absolute right-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
+              className="absolute right-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded border border-white/40 bg-black/15 text-white backdrop-blur hover:bg-black/25"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
@@ -145,9 +149,6 @@ export function HeroBanner({ locale, products, banners = [] }: HeroBannerProps) 
 
           <div className="border-t border-line bg-white px-6 py-5 sm:py-6">
             <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 text-center">
-              <p className="text-sm font-semibold leading-7 text-slate-800 sm:text-base">
-                {slogan}
-              </p>
               <p className="text-xs font-black uppercase tracking-[0.28em] text-slate-900/80 sm:text-sm">
                 {bannerLine}
               </p>
@@ -181,14 +182,14 @@ function BannerImage({
   locale: Locale;
 }) {
   const image = (
-    <picture className="absolute inset-0 block h-full w-full">
+    <picture className="block max-h-[75vh] max-w-full">
       {banner.mobileImagePath ? (
         <source media="(max-width: 767px)" srcSet={banner.mobileImagePath} />
       ) : null}
       <img
         src={banner.imagePath}
         alt={banner.alt[locale] || banner.alt.vi}
-        className="h-full w-full object-cover"
+        className="mx-auto block h-auto max-h-[75vh] w-auto max-w-full object-contain"
         loading="eager"
       />
     </picture>
@@ -199,7 +200,7 @@ function BannerImage({
   }
 
   return (
-    <a href={banner.linkUrl} className="absolute inset-0 block">
+    <a href={banner.linkUrl} className="block max-h-[75vh] max-w-full">
       {image}
     </a>
   );

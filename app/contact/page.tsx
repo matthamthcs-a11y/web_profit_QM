@@ -15,6 +15,15 @@ export default async function ContactPage() {
     getLocale(),
     getSiteSettings(),
   ]);
+  const phoneHref = `tel:${toPhoneHref(siteSettings.hotline)}`;
+  const emailHref = siteSettings.email ? `mailto:${siteSettings.email}` : undefined;
+  const zaloHref = siteSettings.zaloUrl || undefined;
+  const facebookHref = siteSettings.facebookUrl || undefined;
+  const addressHref = siteSettings.address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        siteSettings.address,
+      )}`
+    : undefined;
 
   return (
     <section className="container-px mx-auto grid max-w-7xl gap-10 py-14 lg:grid-cols-[0.8fr_1fr]">
@@ -29,18 +38,45 @@ export default async function ContactPage() {
           }
         />
         <div className="grid gap-4">
-          <ContactLine icon={Phone} label="Hotline" value={siteSettings.hotline} />
-          <ContactLine icon={Mail} label="Email" value={siteSettings.email} />
-          <ContactLine icon={MessageCircle} label="Zalo" value="Pro-Fitness" />
+          <ContactLine
+            icon={Phone}
+            label="Hotline"
+            value={siteSettings.hotline}
+            href={phoneHref}
+            iconClassName="text-emerald-600"
+            iconBackgroundClassName="bg-emerald-50"
+          />
+          <ContactLine
+            icon={Mail}
+            label="Email"
+            value={siteSettings.email}
+            href={emailHref}
+            iconClassName="text-sky-600"
+            iconBackgroundClassName="bg-sky-50"
+          />
+          <ContactLine
+            icon={MessageCircle}
+            label="Zalo"
+            value={locale === "vi" ? "Nhắn Zalo" : "Message on Zalo"}
+            href={zaloHref}
+            iconClassName="text-[#0068ff]"
+            iconBackgroundClassName="bg-blue-50"
+          />
           <ContactLine
             icon={Facebook}
             label="Facebook"
             value={siteSettings.facebookLabel}
+            href={facebookHref}
+            iconClassName="text-[#1877f2]"
+            iconBackgroundClassName="bg-blue-50"
           />
           <ContactLine
             icon={MapPin}
             label={locale === "vi" ? "Văn phòng" : "Office"}
             value={siteSettings.address}
+            href={addressHref}
+            iconClassName="text-brand-red"
+            iconBackgroundClassName="bg-red-50"
           />
         </div>
       </div>
@@ -49,13 +85,15 @@ export default async function ContactPage() {
         <ContactLeadForm locale={locale} />
         <div className="grid gap-3 sm:grid-cols-2">
           <a
-            href={siteSettings.zaloUrl}
+            href={zaloHref}
+            target={isExternalHref(zaloHref) ? "_blank" : undefined}
+            rel={isExternalHref(zaloHref) ? "noreferrer" : undefined}
             className="flex h-12 items-center justify-center rounded bg-brand-red text-sm font-black text-white"
           >
             {locale === "vi" ? "Nhắn Zalo" : "Message Zalo"}
           </a>
           <a
-            href={`tel:${siteSettings.hotline}`}
+            href={phoneHref}
             className="flex h-12 items-center justify-center rounded bg-ink text-sm font-black text-white"
           >
             {siteSettings.hotline}
@@ -70,18 +108,54 @@ function ContactLine({
   icon: Icon,
   label,
   value,
+  href,
+  iconClassName,
+  iconBackgroundClassName,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
+  href?: string;
+  iconClassName: string;
+  iconBackgroundClassName: string;
 }) {
-  return (
-    <div className="flex items-center gap-3 rounded border border-line p-4">
-      <Icon className="h-5 w-5 text-brand-red" />
+  const content = (
+    <>
+      <span
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconBackgroundClassName}`}
+      >
+        <Icon className={`h-5 w-5 ${iconClassName}`} />
+      </span>
       <div>
         <p className="text-xs font-black uppercase text-muted">{label}</p>
         <p className="font-bold text-ink">{value}</p>
       </div>
-    </div>
+    </>
   );
+
+  const className =
+    "flex items-center gap-3 rounded border border-line p-4 transition hover:border-brand-red hover:bg-red-50/40";
+
+  if (!href) {
+    return <div className={className}>{content}</div>;
+  }
+
+  return (
+    <a
+      href={href}
+      target={isExternalHref(href) ? "_blank" : undefined}
+      rel={isExternalHref(href) ? "noreferrer" : undefined}
+      className={className}
+    >
+      {content}
+    </a>
+  );
+}
+
+function toPhoneHref(phone: string) {
+  return phone.replace(/[^\d+]/g, "");
+}
+
+function isExternalHref(href?: string) {
+  return Boolean(href?.startsWith("http://") || href?.startsWith("https://"));
 }

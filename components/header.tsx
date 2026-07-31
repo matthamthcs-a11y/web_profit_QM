@@ -24,10 +24,10 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur">
-      <div className="container-px mx-auto grid max-w-7xl grid-cols-[minmax(220px,320px)_1fr_auto] items-center gap-3 py-3 lg:gap-5 lg:py-4">
+      <div className="container-px mx-auto flex max-w-[1500px] items-center gap-4 py-3 lg:gap-6 lg:py-4">
         <Link
           href="/"
-          className="relative h-12 w-full shrink-0 justify-self-start md:h-14 lg:h-16"
+          className="relative h-12 w-[230px] shrink-0 md:h-14 md:w-[300px] xl:h-16 xl:w-[330px]"
         >
           <Image
             src="/logo.webp"
@@ -38,12 +38,12 @@ export async function Header() {
           />
         </Link>
 
-        <nav className="hidden min-w-0 items-center justify-center gap-4 whitespace-nowrap text-[13px] font-extrabold uppercase tracking-tight text-ink xl:flex">
+        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-4 whitespace-nowrap text-[clamp(18px,1.15vw,22px)] font-extrabold uppercase tracking-tight text-ink xl:flex 2xl:gap-5">
           {navItems.slice(0, 1).map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded px-1 py-1 leading-none hover:text-brand-red"
+              className="rounded px-0.5 py-1 leading-none hover:text-brand-red"
             >
               {item.label}
             </Link>
@@ -51,7 +51,7 @@ export async function Header() {
           <div className="group relative py-3 -my-3">
             <Link
               href="/products"
-              className="inline-flex items-center gap-1 rounded px-1 py-1 leading-none hover:text-brand-red"
+              className="inline-flex items-center gap-1 rounded px-0.5 py-1 leading-none hover:text-brand-red"
             >
               {c.nav.products}
               <ChevronDown className="h-4 w-4 transition group-hover:rotate-180 group-focus-within:rotate-180" />
@@ -74,14 +74,14 @@ export async function Header() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded px-1 py-1 leading-none hover:text-brand-red"
+              className="rounded px-0.5 py-1 leading-none hover:text-brand-red"
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <LanguageToggle locale={locale} />
           <a
             href={`tel:${siteSettings.hotline}`}
@@ -90,7 +90,7 @@ export async function Header() {
             <MessageCircle className="h-4 w-4" />
             {siteSettings.hotline}
           </a>
-          <details className="relative lg:hidden">
+          <details className="relative xl:hidden">
             <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded border border-line text-ink">
               <Menu className="h-5 w-5" />
             </summary>

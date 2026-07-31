@@ -1,6 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
+  FlaskConical,
+  MessagesSquare,
+  PackageCheck,
   ClipboardCheck,
   ShieldCheck,
   Star,
@@ -66,6 +70,71 @@ const trustItems = {
   ],
 } as const;
 
+const founderStory = {
+  vi: {
+    founder: "Brian Frank, Founder & CEO",
+    title: "Sự khác biệt của Hammer",
+    description:
+      "Chúng tôi là những con người thật, tạo ra các sản phẩm thật, tự nhiên và lành mạnh với rất nhiều thông tin hữu ích, cùng một mục tiêu rõ ràng: giúp bạn đạt trạng thái tốt nhất.",
+    link: "Câu chuyện thương hiệu",
+    sections: [
+      {
+        key: "products",
+        icon: PackageCheck,
+        title: "Sản phẩm",
+        text: "Hơn 39 năm phát triển các sản phẩm tự nhiên, hiệu quả, không thêm đường, màu nhân tạo, hương liệu, hóa chất hay chất bảo quản. Công thức ưu tiên chất lượng, thành phần rõ ràng và sản xuất tại Hoa Kỳ.",
+        links: [],
+      },
+      {
+        key: "knowledge",
+        icon: FlaskConical,
+        title: "Kiến thức",
+        text: "Hammer hiểu rõ cách nạp năng lượng đúng cho vận động sức bền. Các hướng dẫn thực tế, dựa trên trải nghiệm thi đấu và tập luyện, giúp hạn chế chuột rút, mệt mỏi, khó chịu tiêu hóa và các vấn đề do nạp sai cách.",
+        links: [{ label: "Xem danh mục sản phẩm", href: "/products" }],
+      },
+      {
+        key: "service",
+        icon: MessagesSquare,
+        title: "Dịch vụ",
+        text: "Tư vấn tận tâm, phản hồi nhanh và luôn xem nhu cầu của khách hàng là trọng tâm. Pro-Fitness hỗ trợ khách chọn đúng sản phẩm, đúng hương vị và đúng cách dùng.",
+        links: [{ label: "Liên hệ tư vấn", href: "/contact" }],
+      },
+    ],
+    closing: "Đồng hành cùng sức bền và sức khỏe tối ưu từ năm 1987",
+  },
+  en: {
+    founder: "Brian Frank, Founder & CEO",
+    title: "The Hammer Difference",
+    description:
+      "We're real people making real, natural, healthy products with helpful information and one clear goal: helping you be your best.",
+    link: "Our company",
+    sections: [
+      {
+        key: "products",
+        icon: PackageCheck,
+        title: "Products",
+        text: "39 years of developing effective, natural products free of added sugars, artificial colors, flavors, chemicals and preservatives. We use clean carbohydrates, high quality proteins and ingredients in our 100% USA-made products.",
+        links: [],
+      },
+      {
+        key: "knowledge",
+        icon: FlaskConical,
+        title: "Knowledge",
+        text: "No one knows more about properly fueling for endurance exercise than Hammer. We share proven fueling techniques to help eliminate cramping, GI distress, fatigue and other symptoms caused by poor fueling practices.",
+        links: [{ label: "Visit the product catalog", href: "/products" }],
+      },
+      {
+        key: "service",
+        icon: MessagesSquare,
+        title: "Service",
+        text: "Second to none, the best you've ever had. We treat every customer like they are important to us, because they are.",
+        links: [{ label: "Contact us", href: "/contact" }],
+      },
+    ],
+    closing: "Promoting endurance & optimum health since 1987",
+  },
+} as const;
+
 export default async function HomePage() {
   const locale = await getLocale();
   const c = copy[locale];
@@ -79,6 +148,10 @@ export default async function HomePage() {
       getSiteSettings(),
       getHomeBanners(),
     ]);
+  const founderCategoryLinks = categories.slice(0, 3).map((category) => ({
+    label: text(category.name, locale),
+    href: `/products?category=${category.slug}`,
+  }));
 
   return (
     <>
@@ -213,6 +286,84 @@ export default async function HomePage() {
                 </div>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-16">
+        <div className="container-px mx-auto max-w-5xl">
+          <div className="overflow-hidden rounded border border-line bg-white shadow-soft md:grid md:grid-cols-[0.9fr_1.5fr]">
+            <aside className="bg-[#f4eee9]">
+              <div className="relative aspect-square w-full overflow-hidden bg-slate-100">
+                <Image
+                  src="/founder-brian-frank.jpg"
+                  alt="Brian Frank, Founder and CEO"
+                  fill
+                  sizes="(min-width: 768px) 360px, 100vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-7 md:p-8">
+                <p className="text-xs font-semibold text-muted">
+                  {founderStory[locale].founder}
+                </p>
+                <h2 className="mt-7 max-w-xs text-3xl font-black uppercase leading-none tracking-normal text-ink">
+                  {founderStory[locale].title}
+                </h2>
+                <p className="mt-7 max-w-sm text-sm leading-6 text-ink">
+                  {founderStory[locale].description}
+                </p>
+                <Link
+                  href="/about"
+                  className="mt-5 inline-flex text-sm font-black text-brand-red hover:text-red-700"
+                >
+                  {founderStory[locale].link}
+                </Link>
+              </div>
+            </aside>
+
+            <div className="grid gap-8 p-7 md:p-10">
+              {founderStory[locale].sections.map((item) => {
+                const Icon = item.icon;
+                const itemLinks =
+                  item.key === "products" ? founderCategoryLinks : item.links;
+
+                return (
+                  <article
+                    key={item.title}
+                    className="grid gap-5 sm:grid-cols-[3rem_1fr]"
+                  >
+                    <Icon className="h-9 w-9 text-slate-500" />
+                    <div>
+                      <h3 className="text-xl font-black uppercase tracking-normal text-ink">
+                        {item.title}
+                      </h3>
+                      <p className="mt-4 max-w-xl text-sm leading-6 text-ink">
+                        {item.text}
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-sm font-black text-brand-red">
+                        {itemLinks.map((link, index) => (
+                          <span
+                            key={`${item.key}-${link.href}`}
+                            className="inline-flex items-center"
+                          >
+                            {index > 0 ? (
+                              <span className="mr-3 text-slate-300">|</span>
+                            ) : null}
+                            <Link href={link.href} className="hover:text-red-700">
+                              {link.label}
+                            </Link>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+              <p className="pl-0 text-2xl font-black uppercase leading-none tracking-normal text-ink sm:pl-[4.25rem]">
+                {founderStory[locale].closing}
+              </p>
+            </div>
           </div>
         </div>
       </section>
