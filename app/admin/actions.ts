@@ -85,6 +85,50 @@ async function setAdminNotice(type: AdminNoticeType, message: string) {
   );
 }
 
+type AdminMutationResult = {
+  error: { message: string } | null;
+};
+
+type AdminSelectIdResult = AdminMutationResult & {
+  data: { id: string } | null;
+};
+
+function getAdminActionErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
+async function expectMutation(
+  label: string,
+  mutation: PromiseLike<AdminMutationResult>,
+) {
+  const { error } = await mutation;
+
+  if (error) {
+    throw new Error(`${label}: ${error.message}`);
+  }
+}
+
+async function expectSelectedId(
+  label: string,
+  mutation: PromiseLike<AdminSelectIdResult>,
+) {
+  const { data, error } = await mutation;
+
+  if (error) {
+    throw new Error(`${label}: ${error.message}`);
+  }
+
+  if (!data?.id) {
+    throw new Error(`${label}: không tìm thấy bản ghi hoặc không có quyền ghi.`);
+  }
+
+  return data.id;
+}
+
 function getDesiredPosition(formData: FormData) {
   return getNumber(formData, "sort_order", 1);
 }
@@ -137,7 +181,16 @@ async function ensureUniqueSlug({
     query = query.neq("id", id);
   }
 
-  const { data } = await query;
+  const { data, error } = await query;
+
+  if (error) {
+    await setAdminNotice(
+      "error",
+      `${label}: không thể kiểm tra slug (${error.message}).`,
+    );
+
+    return false;
+  }
 
   if (data && data.length > 0) {
     await setAdminNotice(
@@ -161,17 +214,21 @@ async function normalizeSortOrder({
   id: string;
   desiredPosition: number;
 }) {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from(table)
     .select("id")
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
 
+  if (error) {
+    throw new Error(`Không thể đọc thứ tự ${table}: ${error.message}`);
+  }
+
   const rows = data ?? [];
   const currentIndex = rows.findIndex((row) => row.id === id);
 
   if (currentIndex === -1) {
-    return;
+    throw new Error(`Không tìm thấy bản ghi ${table} vừa lưu để cập nhật thứ tự.`);
   }
 
   const [current] = rows.splice(currentIndex, 1);
@@ -179,11 +236,17 @@ async function normalizeSortOrder({
 
   rows.splice(clampedPosition - 1, 0, current);
 
-  await Promise.all(
+  const updates = await Promise.all(
     rows.map((row, index) =>
       supabase.from(table).update({ sort_order: index + 1 }).eq("id", row.id),
     ),
   );
+
+  const failed = updates.find((result) => result.error);
+
+  if (failed?.error) {
+    throw new Error(`Không thể cập nhật thứ tự ${table}: ${failed.error.message}`);
+  }
 }
 
 export async function upsertCategory(formData: FormData) {
@@ -225,24 +288,31 @@ export async function upsertCategory(formData: FormData) {
   };
   let categoryId = id;
 
-  if (id) {
-    await supabase.from("categories").update(payload).eq("id", id);
-  } else {
-    const { data } = await supabase
-      .from("categories")
-      .insert(payload)
-      .select("id")
-      .single();
-    categoryId = data?.id ?? "";
-  }
+  try {
+    if (id) {
+      categoryId = await expectSelectedId(
+        "Danh mục: không thể cập nhật",
+        supabase.from("categories").update(payload).eq("id", id).select("id").single(),
+      );
+    } else {
+      categoryId = await expectSelectedId(
+        "Danh mục: không thể tạo mới",
+        supabase.from("categories").insert(payload).select("id").single(),
+      );
+    }
 
-  if (categoryId) {
     await normalizeSortOrder({
       supabase,
       table: "categories",
       id: categoryId,
       desiredPosition,
     });
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(error, "Danh mục: không thể lưu dữ liệu."),
+    );
+    return;
   }
 
   revalidateAdminData();
@@ -254,7 +324,18 @@ export async function deleteCategory(formData: FormData) {
   const id = getString(formData, "id");
 
   if (id) {
-    await supabase.from("categories").delete().eq("id", id);
+    try {
+      await expectMutation(
+        "Danh mục: không thể xóa",
+        supabase.from("categories").delete().eq("id", id),
+      );
+    } catch (error) {
+      await setAdminNotice(
+        "error",
+        getAdminActionErrorMessage(error, "Danh mục: không thể xóa."),
+      );
+      return;
+    }
     await setAdminNotice("success", "Đã xóa danh mục.");
   }
 
@@ -301,24 +382,31 @@ export async function upsertBrand(formData: FormData) {
   };
   let brandId = id;
 
-  if (id) {
-    await supabase.from("brands").update(payload).eq("id", id);
-  } else {
-    const { data } = await supabase
-      .from("brands")
-      .insert(payload)
-      .select("id")
-      .single();
-    brandId = data?.id ?? "";
-  }
+  try {
+    if (id) {
+      brandId = await expectSelectedId(
+        "Thương hiệu: không thể cập nhật",
+        supabase.from("brands").update(payload).eq("id", id).select("id").single(),
+      );
+    } else {
+      brandId = await expectSelectedId(
+        "Thương hiệu: không thể tạo mới",
+        supabase.from("brands").insert(payload).select("id").single(),
+      );
+    }
 
-  if (brandId) {
     await normalizeSortOrder({
       supabase,
       table: "brands",
       id: brandId,
       desiredPosition,
     });
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(error, "Thương hiệu: không thể lưu dữ liệu."),
+    );
+    return;
   }
 
   revalidateAdminData();
@@ -330,7 +418,18 @@ export async function deleteBrand(formData: FormData) {
   const id = getString(formData, "id");
 
   if (id) {
-    await supabase.from("brands").delete().eq("id", id);
+    try {
+      await expectMutation(
+        "Thương hiệu: không thể xóa",
+        supabase.from("brands").delete().eq("id", id),
+      );
+    } catch (error) {
+      await setAdminNotice(
+        "error",
+        getAdminActionErrorMessage(error, "Thương hiệu: không thể xóa."),
+      );
+      return;
+    }
     await setAdminNotice("success", "Đã xóa thương hiệu.");
   }
 
@@ -350,7 +449,18 @@ export async function upsertProduct(formData: FormData) {
   const visualBackground =
     getOptionalString(formData, "visual_background") ?? "#fff1f2";
   const badgeId = getOptionalString(formData, "badge_id");
-  const selectedBadge = await getSelectedProductBadge(supabase, badgeId);
+  let selectedBadge: Awaited<ReturnType<typeof getSelectedProductBadge>>;
+
+  try {
+    selectedBadge = await getSelectedProductBadge(supabase, badgeId);
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(error, "Sản phẩm: không thể đọc huy hiệu."),
+    );
+    return;
+  }
+
   const isBestSeller = selectedBadge
     ? isBestSellerBadgeLabel(normalizeBadgeLabel(selectedBadge.label))
     : false;
@@ -435,18 +545,24 @@ export async function upsertProduct(formData: FormData) {
   };
   let productId = id;
 
-  if (productId) {
-    await supabase.from("products").update(payload).eq("id", productId);
-  } else {
-    const { data } = await supabase
-      .from("products")
-      .insert(payload)
-      .select("id")
-      .single();
-    productId = data?.id ?? "";
-  }
+  try {
+    if (productId) {
+      productId = await expectSelectedId(
+        "Sản phẩm: không thể cập nhật",
+        supabase
+          .from("products")
+          .update(payload)
+          .eq("id", productId)
+          .select("id")
+          .single(),
+      );
+    } else {
+      productId = await expectSelectedId(
+        "Sản phẩm: không thể tạo mới",
+        supabase.from("products").insert(payload).select("id").single(),
+      );
+    }
 
-  if (productId) {
     await normalizeSortOrder({
       supabase,
       table: "products",
@@ -455,6 +571,12 @@ export async function upsertProduct(formData: FormData) {
     });
     await syncProductChildren(supabase, productId, formData);
     await syncRelatedProducts(supabase, productId, formData);
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(error, "Sản phẩm: không thể lưu dữ liệu."),
+    );
+    return;
   }
 
   revalidateAdminData();
@@ -472,12 +594,16 @@ async function getSelectedProductBadge(
     return null;
   }
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("product_badges")
     .select("id, label, is_active")
     .eq("id", badgeId)
     .eq("is_active", true)
     .maybeSingle();
+
+  if (error) {
+    throw new Error(`Huy hiệu: không thể đọc huy hiệu đã chọn (${error.message}).`);
+  }
 
   return data ?? null;
 }
@@ -498,11 +624,19 @@ export async function addProductBadge(formData: FormData) {
     return;
   }
 
-  const { data: badges } = await supabase
+  const { data: badges, error: badgesError } = await supabase
     .from("product_badges")
     .select("id, label, sort_order")
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
+
+  if (badgesError) {
+    await setAdminNotice(
+      "error",
+      `Huy hiệu: không thể kiểm tra danh sách hiện có (${badgesError.message}).`,
+    );
+    return;
+  }
 
   const duplicated = (badges ?? []).some((badge) => {
     const existingLabel = normalizeBadgeLabel(badge.label);
@@ -560,10 +694,24 @@ export async function deleteProductBadge(formData: FormData) {
     return;
   }
 
-  await supabase
-    .from("products")
-    .update({ badge_id: null, badge_type: "none", is_best_seller: false })
-    .eq("badge_id", badgeId);
+  try {
+    await expectMutation(
+      "Huy hiệu: không thể gỡ khỏi sản phẩm đang dùng",
+      supabase
+        .from("products")
+        .update({ badge_id: null, badge_type: "none", is_best_seller: false })
+        .eq("badge_id", badgeId),
+    );
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(
+        error,
+        "Huy hiệu: không thể gỡ khỏi sản phẩm đang dùng.",
+      ),
+    );
+    return;
+  }
 
   revalidateAdminData();
   await setAdminNotice("success", "Đã xóa huy hiệu khỏi danh sách chọn.");
@@ -583,12 +731,30 @@ async function syncProductChildren(
   formData: FormData,
 ) {
   await Promise.all([
-    supabase.from("product_sizes").delete().eq("product_id", productId),
-    supabase.from("product_flavors").delete().eq("product_id", productId),
-    supabase.from("product_benefits").delete().eq("product_id", productId),
-    supabase.from("product_usage").delete().eq("product_id", productId),
-    supabase.from("product_audiences").delete().eq("product_id", productId),
-    supabase.from("product_variants").delete().eq("product_id", productId),
+    expectMutation(
+      "Sản phẩm: không thể xóa quy cách cũ",
+      supabase.from("product_sizes").delete().eq("product_id", productId),
+    ),
+    expectMutation(
+      "Sản phẩm: không thể xóa hương vị cũ",
+      supabase.from("product_flavors").delete().eq("product_id", productId),
+    ),
+    expectMutation(
+      "Sản phẩm: không thể xóa công dụng cũ",
+      supabase.from("product_benefits").delete().eq("product_id", productId),
+    ),
+    expectMutation(
+      "Sản phẩm: không thể xóa cách sử dụng cũ",
+      supabase.from("product_usage").delete().eq("product_id", productId),
+    ),
+    expectMutation(
+      "Sản phẩm: không thể xóa đối tượng phù hợp cũ",
+      supabase.from("product_audiences").delete().eq("product_id", productId),
+    ),
+    expectMutation(
+      "Sản phẩm: không thể xóa biến thể cũ",
+      supabase.from("product_variants").delete().eq("product_id", productId),
+    ),
   ]);
 
   const sizes = getLocalizedLinesByVi(formData, "sizes").map((label, index) => ({
@@ -624,17 +790,41 @@ async function syncProductChildren(
   const variants = buildProductVariantRows(productId, formData, flavors, sizes);
 
   await Promise.all([
-    sizes.length ? supabase.from("product_sizes").insert(sizes) : undefined,
-    flavors.length ? supabase.from("product_flavors").insert(flavors) : undefined,
-    benefits.length
-      ? supabase.from("product_benefits").insert(benefits)
+    sizes.length
+      ? expectMutation(
+          "Sản phẩm: không thể lưu quy cách",
+          supabase.from("product_sizes").insert(sizes),
+        )
       : undefined,
-    usage.length ? supabase.from("product_usage").insert(usage) : undefined,
+    flavors.length
+      ? expectMutation(
+          "Sản phẩm: không thể lưu hương vị",
+          supabase.from("product_flavors").insert(flavors),
+        )
+      : undefined,
+    benefits.length
+      ? expectMutation(
+          "Sản phẩm: không thể lưu công dụng",
+          supabase.from("product_benefits").insert(benefits),
+        )
+      : undefined,
+    usage.length
+      ? expectMutation(
+          "Sản phẩm: không thể lưu cách sử dụng",
+          supabase.from("product_usage").insert(usage),
+        )
+      : undefined,
     audiences.length
-      ? supabase.from("product_audiences").insert(audiences)
+      ? expectMutation(
+          "Sản phẩm: không thể lưu đối tượng phù hợp",
+          supabase.from("product_audiences").insert(audiences),
+        )
       : undefined,
     variants.length
-      ? supabase.from("product_variants").insert(variants)
+      ? expectMutation(
+          "Sản phẩm: không thể lưu biến thể",
+          supabase.from("product_variants").insert(variants),
+        )
       : undefined,
   ]);
 }
@@ -750,18 +940,24 @@ async function syncRelatedProducts(
     ),
   );
 
-  await supabase.from("related_products").delete().eq("product_id", productId);
+  await expectMutation(
+    "Sản phẩm: không thể xóa sản phẩm liên quan cũ",
+    supabase.from("related_products").delete().eq("product_id", productId),
+  );
 
   if (!relatedIds.length) {
     return;
   }
 
-  await supabase.from("related_products").insert(
-    relatedIds.map((relatedProductId, index) => ({
-      product_id: productId,
-      related_product_id: relatedProductId,
-      sort_order: index + 1,
-    })),
+  await expectMutation(
+    "Sản phẩm: không thể lưu sản phẩm liên quan",
+    supabase.from("related_products").insert(
+      relatedIds.map((relatedProductId, index) => ({
+        product_id: productId,
+        related_product_id: relatedProductId,
+        sort_order: index + 1,
+      })),
+    ),
   );
 }
 
@@ -770,7 +966,18 @@ export async function deleteProduct(formData: FormData) {
   const id = getString(formData, "id");
 
   if (id) {
-    await supabase.from("products").delete().eq("id", id);
+    try {
+      await expectMutation(
+        "Sản phẩm: không thể xóa",
+        supabase.from("products").delete().eq("id", id),
+      );
+    } catch (error) {
+      await setAdminNotice(
+        "error",
+        getAdminActionErrorMessage(error, "Sản phẩm: không thể xóa."),
+      );
+      return;
+    }
     await setAdminNotice("success", "Đã xóa sản phẩm.");
   }
 
@@ -803,24 +1010,36 @@ export async function upsertBanner(formData: FormData) {
   };
   let bannerId = id;
 
-  if (id) {
-    await supabase.from("home_banners").update(payload).eq("id", id);
-  } else {
-    const { data } = await supabase
-      .from("home_banners")
-      .insert(payload)
-      .select("id")
-      .single();
-    bannerId = data?.id ?? "";
-  }
+  try {
+    if (id) {
+      bannerId = await expectSelectedId(
+        "Banner: không thể cập nhật",
+        supabase
+          .from("home_banners")
+          .update(payload)
+          .eq("id", id)
+          .select("id")
+          .single(),
+      );
+    } else {
+      bannerId = await expectSelectedId(
+        "Banner: không thể tạo mới",
+        supabase.from("home_banners").insert(payload).select("id").single(),
+      );
+    }
 
-  if (bannerId) {
     await normalizeSortOrder({
       supabase,
       table: "home_banners",
       id: bannerId,
       desiredPosition,
     });
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(error, "Banner: không thể lưu dữ liệu."),
+    );
+    return;
   }
 
   revalidateAdminData();
@@ -832,7 +1051,18 @@ export async function deleteBanner(formData: FormData) {
   const id = getString(formData, "id");
 
   if (id) {
-    await supabase.from("home_banners").delete().eq("id", id);
+    try {
+      await expectMutation(
+        "Banner: không thể xóa",
+        supabase.from("home_banners").delete().eq("id", id),
+      );
+    } catch (error) {
+      await setAdminNotice(
+        "error",
+        getAdminActionErrorMessage(error, "Banner: không thể xóa."),
+      );
+      return;
+    }
     await setAdminNotice("success", "Đã xóa banner.");
   }
 
@@ -866,24 +1096,31 @@ export async function upsertDocument(formData: FormData) {
   };
   let documentId = id;
 
-  if (id) {
-    await supabase.from("documents").update(payload).eq("id", id);
-  } else {
-    const { data } = await supabase
-      .from("documents")
-      .insert(payload)
-      .select("id")
-      .single();
-    documentId = data?.id ?? "";
-  }
+  try {
+    if (id) {
+      documentId = await expectSelectedId(
+        "Tài liệu: không thể cập nhật",
+        supabase.from("documents").update(payload).eq("id", id).select("id").single(),
+      );
+    } else {
+      documentId = await expectSelectedId(
+        "Tài liệu: không thể tạo mới",
+        supabase.from("documents").insert(payload).select("id").single(),
+      );
+    }
 
-  if (documentId) {
     await normalizeSortOrder({
       supabase,
       table: "documents",
       id: documentId,
       desiredPosition,
     });
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(error, "Tài liệu: không thể lưu dữ liệu."),
+    );
+    return;
   }
 
   revalidateAdminData();
@@ -895,7 +1132,18 @@ export async function deleteDocument(formData: FormData) {
   const id = getString(formData, "id");
 
   if (id) {
-    await supabase.from("documents").delete().eq("id", id);
+    try {
+      await expectMutation(
+        "Tài liệu: không thể xóa",
+        supabase.from("documents").delete().eq("id", id),
+      );
+    } catch (error) {
+      await setAdminNotice(
+        "error",
+        getAdminActionErrorMessage(error, "Tài liệu: không thể xóa."),
+      );
+      return;
+    }
     await setAdminNotice("success", "Đã xóa tài liệu.");
   }
 
@@ -930,24 +1178,31 @@ export async function upsertDealer(formData: FormData) {
   };
   let dealerId = id;
 
-  if (id) {
-    await supabase.from("dealers").update(payload).eq("id", id);
-  } else {
-    const { data } = await supabase
-      .from("dealers")
-      .insert(payload)
-      .select("id")
-      .single();
-    dealerId = data?.id ?? "";
-  }
+  try {
+    if (id) {
+      dealerId = await expectSelectedId(
+        "Đại lý: không thể cập nhật",
+        supabase.from("dealers").update(payload).eq("id", id).select("id").single(),
+      );
+    } else {
+      dealerId = await expectSelectedId(
+        "Đại lý: không thể tạo mới",
+        supabase.from("dealers").insert(payload).select("id").single(),
+      );
+    }
 
-  if (dealerId) {
     await normalizeSortOrder({
       supabase,
       table: "dealers",
       id: dealerId,
       desiredPosition,
     });
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(error, "Đại lý: không thể lưu dữ liệu."),
+    );
+    return;
   }
 
   revalidateAdminData();
@@ -959,7 +1214,18 @@ export async function deleteDealer(formData: FormData) {
   const id = getString(formData, "id");
 
   if (id) {
-    await supabase.from("dealers").delete().eq("id", id);
+    try {
+      await expectMutation(
+        "Đại lý: không thể xóa",
+        supabase.from("dealers").delete().eq("id", id),
+      );
+    } catch (error) {
+      await setAdminNotice(
+        "error",
+        getAdminActionErrorMessage(error, "Đại lý: không thể xóa."),
+      );
+      return;
+    }
     await setAdminNotice("success", "Đã xóa đại lý.");
   }
 
@@ -1004,24 +1270,36 @@ export async function upsertTestimonial(formData: FormData) {
   };
   let testimonialId = id;
 
-  if (id) {
-    await supabase.from("testimonials").update(payload).eq("id", id);
-  } else {
-    const { data } = await supabase
-      .from("testimonials")
-      .insert(payload)
-      .select("id")
-      .single();
-    testimonialId = data?.id ?? "";
-  }
+  try {
+    if (id) {
+      testimonialId = await expectSelectedId(
+        "Phản hồi: không thể cập nhật",
+        supabase
+          .from("testimonials")
+          .update(payload)
+          .eq("id", id)
+          .select("id")
+          .single(),
+      );
+    } else {
+      testimonialId = await expectSelectedId(
+        "Phản hồi: không thể tạo mới",
+        supabase.from("testimonials").insert(payload).select("id").single(),
+      );
+    }
 
-  if (testimonialId) {
     await normalizeSortOrder({
       supabase,
       table: "testimonials",
       id: testimonialId,
       desiredPosition,
     });
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(error, "Phản hồi: không thể lưu dữ liệu."),
+    );
+    return;
   }
 
   revalidateAdminData();
@@ -1033,7 +1311,18 @@ export async function deleteTestimonial(formData: FormData) {
   const id = getString(formData, "id");
 
   if (id) {
-    await supabase.from("testimonials").delete().eq("id", id);
+    try {
+      await expectMutation(
+        "Phản hồi: không thể xóa",
+        supabase.from("testimonials").delete().eq("id", id),
+      );
+    } catch (error) {
+      await setAdminNotice(
+        "error",
+        getAdminActionErrorMessage(error, "Phản hồi: không thể xóa."),
+      );
+      return;
+    }
     await setAdminNotice("success", "Đã xóa phản hồi khách hàng.");
   }
 
@@ -1046,7 +1335,18 @@ export async function updateLeadStatus(formData: FormData) {
   const status = getString(formData, "status") || "new";
 
   if (id) {
-    await supabase.from("contact_leads").update({ status }).eq("id", id);
+    try {
+      await expectMutation(
+        "Lead: không thể cập nhật trạng thái",
+        supabase.from("contact_leads").update({ status }).eq("id", id),
+      );
+    } catch (error) {
+      await setAdminNotice(
+        "error",
+        getAdminActionErrorMessage(error, "Lead: không thể cập nhật trạng thái."),
+      );
+      return;
+    }
     await setAdminNotice("success", "Đã cập nhật trạng thái lead.");
   }
 
@@ -1058,7 +1358,18 @@ export async function deleteLead(formData: FormData) {
   const id = getString(formData, "id");
 
   if (id) {
-    await supabase.from("contact_leads").delete().eq("id", id);
+    try {
+      await expectMutation(
+        "Lead: không thể xóa",
+        supabase.from("contact_leads").delete().eq("id", id),
+      );
+    } catch (error) {
+      await setAdminNotice(
+        "error",
+        getAdminActionErrorMessage(error, "Lead: không thể xóa."),
+      );
+      return;
+    }
     await setAdminNotice("success", "Đã xóa lead.");
   }
 
@@ -1095,17 +1406,34 @@ export async function updateSiteSettings(formData: FormData) {
     description: getString(formData, "seo_description"),
   };
 
-  await Promise.all([
-    supabase
-      .from("site_settings")
-      .upsert({ key: "contact", value: contact, is_public: true }),
-    supabase
-      .from("site_settings")
-      .upsert({ key: "social_links", value: socialLinks, is_public: true }),
-    supabase
-      .from("site_settings")
-      .upsert({ key: "seo", value: seo, is_public: true }),
-  ]);
+  try {
+    await Promise.all([
+      expectMutation(
+        "Cài đặt: không thể lưu thông tin liên hệ",
+        supabase
+          .from("site_settings")
+          .upsert({ key: "contact", value: contact, is_public: true }),
+      ),
+      expectMutation(
+        "Cài đặt: không thể lưu mạng xã hội",
+        supabase
+          .from("site_settings")
+          .upsert({ key: "social_links", value: socialLinks, is_public: true }),
+      ),
+      expectMutation(
+        "Cài đặt: không thể lưu SEO",
+        supabase
+          .from("site_settings")
+          .upsert({ key: "seo", value: seo, is_public: true }),
+      ),
+    ]);
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(error, "Cài đặt: không thể lưu dữ liệu."),
+    );
+    return;
+  }
 
   revalidateAdminData();
   await setAdminNotice("success", "Đã cập nhật cài đặt website.");
