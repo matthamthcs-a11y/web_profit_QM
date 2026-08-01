@@ -25,11 +25,10 @@ export function getBool(formData: FormData, key: string) {
 export function getLocalized(formData: FormData, baseKey: string): LocalizedText {
   const vi = getString(formData, `${baseKey}_vi`);
   const en = getString(formData, `${baseKey}_en`);
-  const fallback = vi || en;
 
   return {
-    vi: vi || fallback,
-    en: en || fallback,
+    vi,
+    en,
   };
 }
 
@@ -40,14 +39,20 @@ export function getLines(formData: FormData, key: string) {
     .filter(Boolean);
 }
 
+function getRawLines(formData: FormData, key: string) {
+  return getString(formData, key)
+    .split(/\r?\n/)
+    .map((item) => item.trim());
+}
+
 export function getLocalizedLines(formData: FormData, baseKey: string) {
-  const viLines = getLines(formData, `${baseKey}_vi`);
-  const enLines = getLines(formData, `${baseKey}_en`);
+  const viLines = getRawLines(formData, `${baseKey}_vi`);
+  const enLines = getRawLines(formData, `${baseKey}_en`);
   const maxLength = Math.max(viLines.length, enLines.length);
 
   return Array.from({ length: maxLength }, (_, index) => {
-    const vi = viLines[index] ?? enLines[index] ?? "";
-    const en = enLines[index] ?? viLines[index] ?? "";
+    const vi = viLines[index] ?? "";
+    const en = enLines[index] ?? "";
 
     return { vi, en };
   }).filter((item) => item.vi || item.en);

@@ -149,6 +149,12 @@ const adminProductCopy = {
           "Nhập hương vị và quy cách, bấm Tạo tổ hợp, sau đó nhập giá và ảnh cho từng biến thể.",
         variantFallback:
           "Nếu để trống giá hoặc ảnh, website sẽ dùng giá và ảnh mặc định ở phần thông tin cố định.",
+        variantSource:
+          "Tổ hợp biến thể được tạo theo dòng VI. Dòng EN chỉ dùng làm bản dịch theo đúng thứ tự dòng VI.",
+        variantExtraEnglish:
+          "EN đang có nhiều dòng hơn VI. Các dòng EN thừa sẽ không tạo tổ hợp, hãy chỉnh lại trước khi lưu.",
+        variantStale:
+          "Danh sách tổ hợp chưa khớp với hương vị/quy cách hiện tại. Hãy bấm Tạo tổ hợp trước khi lưu để tránh mất giá hoặc ảnh riêng.",
       },
       actions: {
         save: "Lưu",
@@ -260,6 +266,12 @@ const adminProductCopy = {
           "Enter flavors and sizes, generate combinations, then add price and image for each variant.",
         variantFallback:
           "Empty price or image fields use the fixed product price and product image above.",
+        variantSource:
+          "Variant combinations are generated from VI rows. EN rows are only matched as translations by row order.",
+        variantExtraEnglish:
+          "EN has more rows than VI. Extra EN rows will not create variants, please adjust before saving.",
+        variantStale:
+          "The generated combinations do not match the current flavors/sizes. Click Generate combinations before saving to avoid losing variant prices or images.",
       },
       actions: {
         save: "Save",
@@ -775,6 +787,9 @@ function ProductForm({
             nutritionImage: t.form.fields.variantNutritionImage,
             defaultVariant: t.form.fields.variantDefault,
             published: t.form.fields.variantPublished,
+            staleWarning: t.form.help.variantStale,
+            extraEnglishWarning: t.form.help.variantExtraEnglish,
+            sourceWarning: t.form.help.variantSource,
           }}
         />
       </ProductFormSection>

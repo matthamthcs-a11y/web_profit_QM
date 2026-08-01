@@ -29,11 +29,19 @@ export function AdminSubmitButton({
 }
 
 function getPendingLabel(label: string) {
-  const normalized = label.trim().toLowerCase();
+  const normalized = label
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
 
   if (normalized === "save") return "Saving...";
-  if (normalized.includes("cập nhật")) return "Đang cập nhật...";
-  if (normalized.includes("xóa")) return "Đang xóa...";
+  if (normalized.includes("cap nhat") || normalized.includes("update")) {
+    return "Đang cập nhật...";
+  }
+  if (normalized.includes("xoa") || normalized.includes("delete")) {
+    return "Đang xóa...";
+  }
 
   return "Đang lưu...";
 }

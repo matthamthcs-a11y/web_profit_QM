@@ -389,6 +389,19 @@ export type Database = {
         Args: Record<string, never>;
         Returns: boolean;
       };
+      replace_product_children: {
+        Args: {
+          p_product_id: string;
+          p_sizes?: Json;
+          p_flavors?: Json;
+          p_benefits?: Json;
+          p_usage?: Json;
+          p_audiences?: Json;
+          p_variants?: Json;
+          p_related_products?: Json;
+        };
+        Returns: undefined;
+      };
       set_updated_at: {
         Args: Record<string, never>;
         Returns: unknown;

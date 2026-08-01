@@ -148,14 +148,9 @@ export function LocalizedFields({
 export function localized(value: Json | null | undefined, locale: "vi" | "en") {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     const localeValue = value[locale];
-    const fallback = value.vi ?? value.en;
 
     if (typeof localeValue === "string") {
       return localeValue;
-    }
-
-    if (typeof fallback === "string") {
-      return fallback;
     }
   }
 

@@ -18,6 +18,7 @@ import {
   normalizeBadgeLabel,
 } from "@/lib/product-badges";
 import { buildVariantKey } from "@/lib/product-variants";
+import type { Json } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type AdminNoticeType = "success" | "error";
@@ -498,6 +499,13 @@ export async function upsertProduct(formData: FormData) {
     return;
   }
 
+  const variantInputError = await getProductVariantInputError(supabase, id, formData);
+
+  if (variantInputError) {
+    await setAdminNotice("error", variantInputError);
+    return;
+  }
+
   if (!isValidCurrency(currency)) {
     await setAdminNotice("error", "Sản phẩm: tiền tệ phải là mã 3 chữ cái, ví dụ VND.");
     return;
@@ -570,7 +578,6 @@ export async function upsertProduct(formData: FormData) {
       desiredPosition,
     });
     await syncProductChildren(supabase, productId, formData);
-    await syncRelatedProducts(supabase, productId, formData);
   } catch (error) {
     await setAdminNotice(
       "error",
@@ -730,33 +737,6 @@ async function syncProductChildren(
   productId: string,
   formData: FormData,
 ) {
-  await Promise.all([
-    expectMutation(
-      "Sản phẩm: không thể xóa quy cách cũ",
-      supabase.from("product_sizes").delete().eq("product_id", productId),
-    ),
-    expectMutation(
-      "Sản phẩm: không thể xóa hương vị cũ",
-      supabase.from("product_flavors").delete().eq("product_id", productId),
-    ),
-    expectMutation(
-      "Sản phẩm: không thể xóa công dụng cũ",
-      supabase.from("product_benefits").delete().eq("product_id", productId),
-    ),
-    expectMutation(
-      "Sản phẩm: không thể xóa cách sử dụng cũ",
-      supabase.from("product_usage").delete().eq("product_id", productId),
-    ),
-    expectMutation(
-      "Sản phẩm: không thể xóa đối tượng phù hợp cũ",
-      supabase.from("product_audiences").delete().eq("product_id", productId),
-    ),
-    expectMutation(
-      "Sản phẩm: không thể xóa biến thể cũ",
-      supabase.from("product_variants").delete().eq("product_id", productId),
-    ),
-  ]);
-
   const sizes = getLocalizedLinesByVi(formData, "sizes").map((label, index) => ({
     product_id: productId,
     label: label.vi,
@@ -788,45 +768,21 @@ async function syncProductChildren(
     }),
   );
   const variants = buildProductVariantRows(productId, formData, flavors, sizes);
+  const relatedProducts = buildRelatedProductRows(productId, formData);
 
-  await Promise.all([
-    sizes.length
-      ? expectMutation(
-          "Sản phẩm: không thể lưu quy cách",
-          supabase.from("product_sizes").insert(sizes),
-        )
-      : undefined,
-    flavors.length
-      ? expectMutation(
-          "Sản phẩm: không thể lưu hương vị",
-          supabase.from("product_flavors").insert(flavors),
-        )
-      : undefined,
-    benefits.length
-      ? expectMutation(
-          "Sản phẩm: không thể lưu công dụng",
-          supabase.from("product_benefits").insert(benefits),
-        )
-      : undefined,
-    usage.length
-      ? expectMutation(
-          "Sản phẩm: không thể lưu cách sử dụng",
-          supabase.from("product_usage").insert(usage),
-        )
-      : undefined,
-    audiences.length
-      ? expectMutation(
-          "Sản phẩm: không thể lưu đối tượng phù hợp",
-          supabase.from("product_audiences").insert(audiences),
-        )
-      : undefined,
-    variants.length
-      ? expectMutation(
-          "Sản phẩm: không thể lưu biến thể",
-          supabase.from("product_variants").insert(variants),
-        )
-      : undefined,
-  ]);
+  await expectMutation(
+    "Sản phẩm: không thể lưu dữ liệu con",
+    supabase.rpc("replace_product_children", {
+      p_product_id: productId,
+      p_sizes: toJsonPayload(sizes),
+      p_flavors: toJsonPayload(flavors),
+      p_benefits: toJsonPayload(benefits),
+      p_usage: toJsonPayload(usage),
+      p_audiences: toJsonPayload(audiences),
+      p_variants: toJsonPayload(variants),
+      p_related_products: toJsonPayload(relatedProducts),
+    }),
+  );
 }
 
 function buildProductVariantRows(
@@ -905,6 +861,91 @@ function getOptionalPositiveNumber(formData: FormData, key: string) {
   return Number.isFinite(numberValue) && numberValue >= 0 ? numberValue : null;
 }
 
+async function getProductVariantInputError(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  productId: string,
+  formData: FormData,
+) {
+  const flavorLines = getLocalizedLinesByVi(formData, "flavors");
+  const sizeLines = getLocalizedLinesByVi(formData, "sizes");
+  const flavorViCount = getLines(formData, "flavors_vi").length;
+  const flavorEnCount = getLines(formData, "flavors_en").length;
+  const sizeViCount = getLines(formData, "sizes_vi").length;
+  const sizeEnCount = getLines(formData, "sizes_en").length;
+
+  if (flavorEnCount > flavorViCount || sizeEnCount > sizeViCount) {
+    return "Biến thể: EN đang có nhiều dòng hơn VI. Hãy chỉnh số dòng EN khớp VI trước khi lưu.";
+  }
+
+  if (
+    (flavorLines.length > 0 && sizeLines.length === 0) ||
+    (flavorLines.length === 0 && sizeLines.length > 0)
+  ) {
+    return "Biến thể: cần nhập đủ cả hương vị và quy cách, hoặc để trống cả hai.";
+  }
+
+  const expectedKeys = buildVariantKeys(flavorLines, sizeLines);
+  const submittedKeys = getSubmittedVariantKeys(formData);
+
+  if (expectedKeys.length > 0 && submittedKeys.length === 0) {
+    return "Biến thể: hãy bấm Tạo tổ hợp trước khi lưu sản phẩm.";
+  }
+
+  if (submittedKeys.length > 0 && !sameStringSet(expectedKeys, submittedKeys)) {
+    return "Biến thể: danh sách tổ hợp chưa khớp với hương vị/quy cách hiện tại. Hãy bấm Tạo tổ hợp trước khi lưu.";
+  }
+
+  if (!productId || expectedKeys.length > 0) {
+    return null;
+  }
+
+  const { count, error } = await supabase
+    .from("product_variants")
+    .select("id", { count: "exact", head: true })
+    .eq("product_id", productId);
+
+  if (error) {
+    return `Biến thể: không thể kiểm tra biến thể hiện có (${error.message}).`;
+  }
+
+  if ((count ?? 0) > 0) {
+    return "Biến thể: sản phẩm đang có biến thể. Nếu muốn xóa hết hương vị/quy cách, hãy xác nhận lại thao tác này ở bước tối ưu sau.";
+  }
+
+  return null;
+}
+
+function buildVariantKeys(
+  flavors: Array<{ vi: string; en: string }>,
+  sizes: Array<{ vi: string; en: string }>,
+) {
+  return flavors.flatMap((flavor) =>
+    sizes.map((size) => buildVariantKey(flavor, size)),
+  );
+}
+
+function getSubmittedVariantKeys(formData: FormData) {
+  return Array.from(
+    new Set(
+      formData
+        .getAll("variant_combination_key")
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function sameStringSet(a: string[], b: string[]) {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  const bSet = new Set(b);
+
+  return a.every((value) => bSet.has(value));
+}
+
 function findInvalidVariantPriceKey(formData: FormData, defaultPrice: number) {
   for (const key of formData.keys()) {
     if (!key.startsWith("variant_list_price:")) {
@@ -925,11 +966,11 @@ function findInvalidVariantPriceKey(formData: FormData, defaultPrice: number) {
   return null;
 }
 
-async function syncRelatedProducts(
-  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
-  productId: string,
-  formData: FormData,
-) {
+function toJsonPayload(rows: Array<Record<string, unknown>>) {
+  return rows as unknown as Json;
+}
+
+function buildRelatedProductRows(productId: string, formData: FormData) {
   const relatedIds = Array.from(
     new Set(
       formData
@@ -940,25 +981,10 @@ async function syncRelatedProducts(
     ),
   );
 
-  await expectMutation(
-    "Sản phẩm: không thể xóa sản phẩm liên quan cũ",
-    supabase.from("related_products").delete().eq("product_id", productId),
-  );
-
-  if (!relatedIds.length) {
-    return;
-  }
-
-  await expectMutation(
-    "Sản phẩm: không thể lưu sản phẩm liên quan",
-    supabase.from("related_products").insert(
-      relatedIds.map((relatedProductId, index) => ({
-        product_id: productId,
-        related_product_id: relatedProductId,
-        sort_order: index + 1,
-      })),
-    ),
-  );
+  return relatedIds.map((relatedProductId, index) => ({
+    related_product_id: relatedProductId,
+    sort_order: index + 1,
+  }));
 }
 
 export async function deleteProduct(formData: FormData) {

@@ -33,6 +33,9 @@ type AdminProductVariantsFieldProps = {
     nutritionImage: string;
     defaultVariant: string;
     published: string;
+    staleWarning: string;
+    extraEnglishWarning: string;
+    sourceWarning: string;
   };
 };
 
@@ -70,6 +73,12 @@ export function AdminProductVariantsField({
   const [drafts, setDrafts] = useState(() =>
     buildDrafts(initialFlavorVi, initialFlavorEn, initialSizeVi, initialSizeEn, variantsByKey),
   );
+  const generatedKeys = drafts.map((draft) => draft.key);
+  const currentKeys = buildVariantKeys(flavorsVi, flavorsEn, sizesVi, sizesEn);
+  const isDraftStale = generatedKeys.join("|") !== currentKeys.join("|");
+  const hasExtraEnglishLines =
+    countLines(flavorsEn) > countLines(flavorsVi) ||
+    countLines(sizesEn) > countLines(sizesVi);
 
   function generateDrafts() {
     setDrafts(buildDrafts(flavorsVi, flavorsEn, sizesVi, sizesEn, variantsByKey));
@@ -128,6 +137,21 @@ export function AdminProductVariantsField({
         >
           {copy.createButton}
         </button>
+        <div className="mt-3 grid gap-2">
+          <p className="rounded border border-amber-200 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-900">
+            {copy.sourceWarning}
+          </p>
+          {hasExtraEnglishLines ? (
+            <p className="rounded border border-red-200 bg-red-50 p-3 text-xs font-bold leading-5 text-brand-red">
+              {copy.extraEnglishWarning}
+            </p>
+          ) : null}
+          {isDraftStale ? (
+            <p className="rounded border border-red-200 bg-red-50 p-3 text-xs font-bold leading-5 text-brand-red">
+              {copy.staleWarning}
+            </p>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid gap-3">
@@ -144,6 +168,7 @@ export function AdminProductVariantsField({
               key={draft.key}
               className="grid gap-4 rounded border border-line p-4"
             >
+              <input type="hidden" name="variant_combination_key" value={draft.key} />
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h5 className="font-black text-ink">
@@ -258,6 +283,20 @@ function buildDrafts(
   );
 }
 
+function buildVariantKeys(
+  flavorsVi: string,
+  flavorsEn: string,
+  sizesVi: string,
+  sizesEn: string,
+) {
+  const flavors = parseLocalizedLinesByVi(flavorsVi, flavorsEn);
+  const sizes = parseLocalizedLinesByVi(sizesVi, sizesEn);
+
+  return flavors.flatMap((flavor) =>
+    sizes.map((size) => buildVariantKey(flavor, size)),
+  );
+}
+
 function parseLocalizedLinesByVi(viText: string, enText: string): LocalizedText[] {
   const viLines = parseLines(viText);
   const enLines = parseLines(enText);
@@ -267,6 +306,10 @@ function parseLocalizedLinesByVi(viText: string, enText: string): LocalizedText[
 
     return { vi, en };
   });
+}
+
+function countLines(value: string) {
+  return parseLines(value).length;
 }
 
 function parseLines(value: string) {
