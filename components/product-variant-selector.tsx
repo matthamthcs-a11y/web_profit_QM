@@ -282,13 +282,13 @@ function DescriptionPanel({
   const hasLongContent = text.length > 260 || text.split(/\r?\n/).length > 5;
 
   return (
-    <div className="rounded border border-line bg-white p-5 shadow-sm">
+    <div className="rounded border border-line bg-white p-5 shadow-sm sm:p-6">
       <div
-        className={`whitespace-pre-line pr-2 text-sm leading-7 text-muted ${
+        className={`whitespace-pre-line pr-2 font-sans text-base font-normal leading-6 text-gray-800 ${
           hasLongContent
             ? isExpanded
-              ? "max-h-96 overflow-y-auto"
-              : "max-h-44 overflow-hidden"
+              ? "max-h-[30rem] overflow-y-auto"
+              : "max-h-56 overflow-hidden md:max-h-64"
             : ""
         }`}
       >
@@ -298,7 +298,7 @@ function DescriptionPanel({
         <button
           type="button"
           onClick={() => setIsExpanded((value) => !value)}
-          className="mt-3 text-sm font-black text-brand-red hover:text-red-700"
+          className="mt-4 text-sm font-black text-brand-red hover:text-red-700"
         >
           {isExpanded ? readLessLabel : readMoreLabel}
         </button>

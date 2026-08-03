@@ -140,20 +140,20 @@ function InfoPanel({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const cleanItems = items.map((item) => item.trim()).filter(Boolean);
-  const text = cleanItems.join("\n\n");
+  const text = cleanItems.join("\n");
   const hasLongContent = text.length > 320 || text.split(/\r?\n/).length > 7;
 
   return (
-    <div className="rounded border border-line bg-white p-5 shadow-sm">
-      <h3 className="text-xl font-black text-ink">{title}</h3>
+    <div className="rounded border border-line bg-white p-5 shadow-sm sm:p-6">
+      <h3 className="text-xl font-black text-ink md:text-2xl">{title}</h3>
       {text ? (
         <>
           <div
-            className={`mt-4 whitespace-pre-line pr-2 text-sm leading-7 text-muted ${
+            className={`mt-4 whitespace-pre-line pr-2 font-sans text-base font-normal leading-6 text-gray-800 ${
               hasLongContent
                 ? isExpanded
-                  ? "max-h-80 overflow-y-auto"
-                  : "max-h-36 overflow-hidden"
+                  ? "max-h-[30rem] overflow-y-auto"
+                  : "max-h-56 overflow-hidden md:max-h-64"
                 : ""
             }`}
           >
@@ -163,7 +163,7 @@ function InfoPanel({
             <button
               type="button"
               onClick={() => setIsExpanded((value) => !value)}
-              className="mt-3 text-sm font-black text-brand-red hover:text-red-700"
+              className="mt-4 text-sm font-black text-brand-red hover:text-red-700"
             >
               {isExpanded ? readLessLabel : readMoreLabel}
             </button>
