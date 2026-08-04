@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/product-card";
 import { ProductVariantSelector } from "@/components/product-variant-selector";
-import { copy, getLocale, text } from "@/lib/i18n";
+import { copy, getLocale } from "@/lib/i18n";
 import { getSiteSettings } from "@/lib/data/site-settings";
 import {
   getProductBySlug,
@@ -71,15 +71,15 @@ export default async function ProductDetailPage({
         informationBlocks={[
           {
             title: c.detail.benefits,
-            items: product.benefits.map((item) => text(item, locale)),
+            items: product.benefits.map((item) => item[locale] || ""),
           },
           {
             title: c.detail.usage,
-            items: product.usage.map((item) => text(item, locale)),
+            items: product.usage.map((item) => item[locale] || ""),
           },
           {
             title: c.detail.audience,
-            items: product.audience.map((item) => text(item, locale)),
+            items: product.audience.map((item) => item[locale] || ""),
           },
         ]}
       />

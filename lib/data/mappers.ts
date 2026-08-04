@@ -58,6 +58,17 @@ export function localizedText(value: Json | null, fallback = ""): LocalizedText 
   return { vi: fallback, en: fallback };
 }
 
+function localizedContentText(value: Json | null): LocalizedText {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return {
+      vi: typeof value.vi === "string" ? value.vi : "",
+      en: typeof value.en === "string" ? value.en : "",
+    };
+  }
+
+  return { vi: "", en: "" };
+}
+
 export function mapCategoryRow(row: CategoryRow): Category {
   return {
     id: row.id,
@@ -246,7 +257,7 @@ export function mapProductRows({
         badge: primaryGoal,
       },
       benefits: (benefitsByProduct.get(product.id) ?? []).map((row) =>
-        localizedText(row.content),
+        localizedContentText(row.content),
       ),
       ingredients: (ingredientsByProduct.get(product.id) ?? []).map((row) => ({
         name: row.name,
@@ -254,10 +265,10 @@ export function mapProductRows({
       })),
       variants: productVariants,
       usage: (usageByProduct.get(product.id) ?? []).map((row) =>
-        localizedText(row.content),
+        localizedContentText(row.content),
       ),
       audience: (audiencesByProduct.get(product.id) ?? []).map((row) =>
-        localizedText(row.content),
+        localizedContentText(row.content),
       ),
       relatedProductIds: (relatedByProduct.get(product.id) ?? []).map(
         (row) => row.related_product_id,

@@ -7,7 +7,6 @@ import {
   getBool,
   getLines,
   getLocalized,
-  getLocalizedLines,
   getNumber,
   getOptionalString,
   getString,
@@ -748,25 +747,9 @@ async function syncProductChildren(
     name,
     sort_order: index,
   }));
-  const benefits = getLocalizedLines(formData, "benefits").map(
-    (content, index) => ({
-      product_id: productId,
-      content,
-      sort_order: index,
-    }),
-  );
-  const usage = getLocalizedLines(formData, "usage").map((content, index) => ({
-    product_id: productId,
-    content,
-    sort_order: index,
-  }));
-  const audiences = getLocalizedLines(formData, "audiences").map(
-    (content, index) => ({
-      product_id: productId,
-      content,
-      sort_order: index,
-    }),
-  );
+  const benefits = buildLocalizedContentBlock(productId, formData, "benefits");
+  const usage = buildLocalizedContentBlock(productId, formData, "usage");
+  const audiences = buildLocalizedContentBlock(productId, formData, "audiences");
   const variants = buildProductVariantRows(productId, formData, flavors, sizes);
   const relatedProducts = buildRelatedProductRows(productId, formData);
 
@@ -783,6 +766,26 @@ async function syncProductChildren(
       p_related_products: toJsonPayload(relatedProducts),
     }),
   );
+}
+
+function buildLocalizedContentBlock(
+  productId: string,
+  formData: FormData,
+  baseKey: string,
+) {
+  const content = getLocalized(formData, baseKey);
+
+  if (!content.vi && !content.en) {
+    return [];
+  }
+
+  return [
+    {
+      product_id: productId,
+      content,
+      sort_order: 0,
+    },
+  ];
 }
 
 function buildProductVariantRows(
