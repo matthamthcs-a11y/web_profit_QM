@@ -93,7 +93,7 @@ export function ProductVariantSelector({
     currentVariant?.nutritionImagePath || product.nutritionImagePath || null;
   const price = currentVariant?.price ?? product.price;
   const listPrice = currentVariant?.listPrice ?? product.listPrice;
-  const shortDescription = localized(product.shortDescription, locale);
+  const shortDescription = product.shortDescription[locale] || "";
 
   function selectFlavor(flavorKey: string) {
     const currentSizeStillExists = variants.some(
