@@ -1430,6 +1430,9 @@ export async function updateSiteSettings(formData: FormData) {
     facebook_label: getString(formData, "facebook_label"),
     facebook_url: getString(formData, "facebook_url"),
   };
+  const appearance = {
+    logo_path: getString(formData, "logo_path"),
+  };
   const seo = {
     title: getString(formData, "seo_title"),
     description: getString(formData, "seo_description"),
@@ -1448,6 +1451,12 @@ export async function updateSiteSettings(formData: FormData) {
         supabase
           .from("site_settings")
           .upsert({ key: "social_links", value: socialLinks, is_public: true }),
+      ),
+      expectMutation(
+        "Cai dat: khong the luu giao dien",
+        supabase
+          .from("site_settings")
+          .upsert({ key: "appearance", value: appearance, is_public: true }),
       ),
       expectMutation(
         "Cài đặt: không thể lưu SEO",

@@ -314,6 +314,7 @@ insert into public.site_settings (key, value, is_public)
 values
   ('contact', '{"hotline":"02838481014","email":"hello@profitness.vn","zalo_url":"tel:02838481014","address":"Ho Chi Minh City, Vietnam"}'::jsonb, true),
   ('social_links', '{"facebook_label":"Pro-Fitness Vietnam","facebook_url":""}'::jsonb, true),
+  ('appearance', '{"logo_path":"/logo.webp"}'::jsonb, true),
   ('seo', '{"site_name":"Pro-Fitness Sports Nutrition","default_title":"Pro-Fitness Sports Nutrition","default_description":"Website tham khảo sản phẩm dinh dưỡng thể thao: giá, vị, công dụng và cách sử dụng."}'::jsonb, true)
 on conflict (key) do update
 set value = excluded.value,

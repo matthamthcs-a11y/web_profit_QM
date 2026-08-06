@@ -30,7 +30,7 @@ export async function Header() {
           className="relative h-12 w-[230px] shrink-0 md:h-14 md:w-[300px] xl:h-16 xl:w-[330px]"
         >
           <Image
-            src="/logo.webp"
+            src={siteSettings.logoPath}
             alt="Pro-Fitness Sports Nutrition"
             fill
             priority

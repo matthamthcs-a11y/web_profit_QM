@@ -45,6 +45,7 @@ export const defaultSiteSettings: SiteSettings = {
   facebookLabel: "Pro-Fitness Vietnam",
   facebookUrl: "",
   address: "Ho Chi Minh City, Vietnam",
+  logoPath: "/logo.webp",
 };
 
 export function localizedText(value: Json | null, fallback = ""): LocalizedText {
@@ -135,6 +136,7 @@ export function mapSiteSettingsRows(rows: SiteSettingRow[]): SiteSettings {
   const settings = { ...defaultSiteSettings };
   const contact = rows.find((row) => row.key === "contact")?.value;
   const socialLinks = rows.find((row) => row.key === "social_links")?.value;
+  const appearance = rows.find((row) => row.key === "appearance")?.value;
 
   if (contact && typeof contact === "object" && !Array.isArray(contact)) {
     settings.hotline =
@@ -162,6 +164,17 @@ export function mapSiteSettingsRows(rows: SiteSettingRow[]): SiteSettings {
       typeof socialLinks.facebook_url === "string"
         ? socialLinks.facebook_url
         : settings.facebookUrl;
+  }
+
+  if (
+    appearance &&
+    typeof appearance === "object" &&
+    !Array.isArray(appearance)
+  ) {
+    settings.logoPath =
+      typeof appearance.logo_path === "string" && appearance.logo_path
+        ? appearance.logo_path
+        : settings.logoPath;
   }
 
   return settings;

@@ -5,8 +5,10 @@ import {
   AdminPageHeader,
   AdminSubmit,
 } from "@/components/admin-fields";
+import { AdminAssetField } from "@/components/admin-asset-field";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAdminSettings } from "@/lib/admin/data";
+import { getLocale } from "@/lib/i18n";
 import type { Json } from "@/lib/supabase/database.types";
 
 export const metadata: Metadata = {
@@ -15,12 +17,15 @@ export const metadata: Metadata = {
 
 export default async function AdminSettingsPage() {
   await requireAdmin();
-  const rows = await getAdminSettings();
+  const [rows, locale] = await Promise.all([getAdminSettings(), getLocale()]);
   const contact = objectValue(rows.find((row) => row.key === "contact")?.value);
   const social = objectValue(
     rows.find((row) => row.key === "social_links")?.value,
   );
   const seo = objectValue(rows.find((row) => row.key === "seo")?.value);
+  const appearance = objectValue(
+    rows.find((row) => row.key === "appearance")?.value,
+  );
 
   return (
     <section className="container-px mx-auto max-w-7xl py-10">
@@ -30,6 +35,21 @@ export default async function AdminSettingsPage() {
         description="Cập nhật hotline, Zalo, email, địa chỉ và SEO cơ bản."
       />
       <form action={updateSiteSettings} className="mt-8 grid gap-5">
+        <div className="rounded border border-line p-5">
+          <AdminAssetField
+            label="Logo thanh điều hướng"
+            name="logo_path"
+            defaultValue={stringValue(appearance.logo_path)}
+            folder="logos"
+            accept="image/*"
+            locale={locale}
+            optimizeImage={{ maxWidth: 660, maxHeight: 128, quality: 0.88 }}
+          />
+          <p className="mt-2 text-xs font-semibold leading-5 text-muted">
+            Logo sẽ tự chuyển sang WebP và nằm trong khung cố định giống logo
+            hiện tại. Nếu để trống, website dùng logo mặc định.
+          </p>
+        </div>
         <div className="grid gap-4 md:grid-cols-2">
           <AdminField
             label="Hotline"

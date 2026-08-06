@@ -224,7 +224,7 @@ export async function getAdminSettings() {
   const { data } = await supabase
     .from("site_settings")
     .select("*")
-    .in("key", ["contact", "social_links", "seo"]);
+    .in("key", ["contact", "social_links", "seo", "appearance"]);
 
   return data ?? [];
 }

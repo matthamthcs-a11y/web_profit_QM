@@ -9,6 +9,7 @@ export type SiteSettings = {
   facebookLabel: string;
   facebookUrl: string;
   address: string;
+  logoPath: string;
 };
 
 const getSiteSettingsCached = unstable_cache(
