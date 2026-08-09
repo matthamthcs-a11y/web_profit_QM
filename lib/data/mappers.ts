@@ -161,7 +161,7 @@ export function mapSiteSettingsRows(rows: SiteSettingRow[]): SiteSettings {
     !Array.isArray(socialLinks)
   ) {
     if (Array.isArray(socialLinks.facebook_pages)) {
-      settings.facebookPages = socialLinks.facebook_pages.map((page: { label?: unknown; url?: unknown }) => ({
+      settings.facebookPages = socialLinks.facebook_pages.map((page: any) => ({
         label: typeof page?.label === "string" ? page.label : "",
         url: typeof page?.url === "string" ? page.url : "",
       }));
