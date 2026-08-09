@@ -223,6 +223,7 @@ export function ProductVariantSelector({
               {product.featureBadges.map((badge) => (
                 <div key={badge.id} className="flex flex-col items-center">
                   {badge.imagePath && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={badge.imagePath}
                       alt=""

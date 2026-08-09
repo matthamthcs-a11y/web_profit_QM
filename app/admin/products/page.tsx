@@ -663,6 +663,7 @@ function ProductForm({
                 }`}
               >
                 {badge.image_path ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={badge.image_path}
                     alt=""

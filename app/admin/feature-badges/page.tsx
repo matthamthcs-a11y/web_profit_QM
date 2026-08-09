@@ -4,10 +4,8 @@ import { AdminAssetField } from "@/components/admin-asset-field";
 import {
   AdminCheckbox,
   AdminDeleteButton,
-  AdminField,
   AdminPageHeader,
   AdminSubmit,
-  LocalizedFields,
 } from "@/components/admin-fields";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAdminFeatureBadges } from "@/lib/admin/data";
@@ -63,7 +61,7 @@ export default async function AdminFeatureBadgesPage() {
         <summary className="cursor-pointer text-lg font-black">
           {t.addNew}
         </summary>
-        <FeatureBadgeForm position={badges.length + 1} locale={locale} t={t} />
+        <FeatureBadgeForm locale={locale} t={t} />
       </details>
       <div className="mt-8 grid gap-4">
         {badges.map((badge, index) => (
@@ -71,13 +69,14 @@ export default async function AdminFeatureBadgesPage() {
             <summary className="cursor-pointer font-black flex items-center gap-4">
               {badge.image_path ? (
                 <div className="rounded border border-line bg-slate-50 p-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={badge.image_path} alt="" className="h-10 w-auto object-contain" />
                 </div>
               ) : (
                 <span>Huy hiệu {index + 1}</span>
               )}
             </summary>
-            <FeatureBadgeForm badge={badge} position={index + 1} locale={locale} t={t} />
+            <FeatureBadgeForm badge={badge} locale={locale} t={t} />
             <form action={deleteFeatureBadge} className="mt-4">
               <input type="hidden" name="id" value={badge.id} />
               <AdminDeleteButton />
@@ -91,12 +90,10 @@ export default async function AdminFeatureBadgesPage() {
 
 function FeatureBadgeForm({
   badge,
-  position,
   locale,
   t,
 }: {
   badge?: Awaited<ReturnType<typeof getAdminFeatureBadges>>[number];
-  position: number;
   locale: Locale;
   t: FeatureBadgeCopy;
 }) {
