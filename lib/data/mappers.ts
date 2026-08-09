@@ -161,10 +161,13 @@ export function mapSiteSettingsRows(rows: SiteSettingRow[]): SiteSettings {
     !Array.isArray(socialLinks)
   ) {
     if (Array.isArray(socialLinks.facebook_pages)) {
-      settings.facebookPages = socialLinks.facebook_pages.map((page: any) => ({
-        label: typeof page?.label === "string" ? page.label : "",
-        url: typeof page?.url === "string" ? page.url : "",
-      }));
+      settings.facebookPages = socialLinks.facebook_pages.map((page) => {
+        const p = page as Record<string, unknown>;
+        return {
+          label: typeof p?.label === "string" ? p.label : "",
+          url: typeof p?.url === "string" ? p.url : "",
+        };
+      });
     } else if (typeof socialLinks.facebook_url === "string" && socialLinks.facebook_url) {
       settings.facebookPages = [
         {
