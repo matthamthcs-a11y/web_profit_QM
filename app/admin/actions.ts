@@ -844,13 +844,14 @@ function buildProductVariantRows(
     defaultRow.is_default = true;
   }
 
+  return rows;
 }
 
 export async function upsertFeatureBadge(formData: FormData) {
   const supabase = await getAdminClient();
   const id = getString(formData, "id");
   const image_path = getString(formData, "image_path");
-  const is_active = getBool(formData, "is_active", true);
+  const is_active = getBool(formData, "is_active");
 
   if (!image_path) {
     await setAdminNotice("error", "Huy hiệu: Cần chọn hình ảnh");
