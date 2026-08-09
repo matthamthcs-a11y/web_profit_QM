@@ -752,6 +752,10 @@ async function syncProductChildren(
   const audiences = buildLocalizedContentBlock(productId, formData, "audiences");
   const variants = buildProductVariantRows(productId, formData, flavors, sizes);
   const relatedProducts = buildRelatedProductRows(productId, formData);
+  const featureBadges = formData.getAll("feature_badges[]").map((id, index) => ({
+    badge_id: String(id),
+    sort_order: index + 1,
+  }));
 
   await expectMutation(
     "Sản phẩm: không thể lưu dữ liệu con",
@@ -764,6 +768,7 @@ async function syncProductChildren(
       p_audiences: toJsonPayload(audiences),
       p_variants: toJsonPayload(variants),
       p_related_products: toJsonPayload(relatedProducts),
+      p_feature_badges: toJsonPayload(featureBadges),
     }),
   );
 }
@@ -839,7 +844,72 @@ function buildProductVariantRows(
     defaultRow.is_default = true;
   }
 
-  return rows;
+}
+
+export async function upsertFeatureBadge(formData: FormData) {
+  const supabase = await getAdminClient();
+  const id = getString(formData, "id");
+  const image_path = getString(formData, "image_path");
+  const is_active = getBool(formData, "is_active", true);
+
+  if (!image_path) {
+    await setAdminNotice("error", "Huy hiệu: Cần chọn hình ảnh");
+    return;
+  }
+
+  const payload = {
+    label: { vi: "", en: "" },
+    image_path,
+    sort_order: 1,
+    is_active,
+  };
+
+  const { error } = id
+    ? await supabase.from("feature_badges").update(payload).eq("id", id)
+    : await supabase.from("feature_badges").insert(payload);
+
+  if (error) {
+    await setAdminNotice(
+      "error",
+      `Huy hiệu: không thể lưu (${error.message}).`,
+    );
+    return;
+  }
+
+  await setAdminNotice(
+    "success",
+    id
+      ? "Huy hiệu: đã cập nhật thành công."
+      : "Huy hiệu: đã tạo mới thành công.",
+  );
+  revalidatePath("/admin/feature-badges");
+  revalidatePath("/admin/products");
+  revalidateTag("products");
+}
+
+export async function deleteFeatureBadge(formData: FormData) {
+  const supabase = await getAdminClient();
+  const id = getString(formData, "id");
+
+  if (!id) {
+    await setAdminNotice("error", "Huy hiệu: không xác định.");
+    return;
+  }
+
+  const { error } = await supabase.from("feature_badges").delete().eq("id", id);
+
+  if (error) {
+    await setAdminNotice(
+      "error",
+      `Huy hiệu: không thể xóa (${error.message}).`,
+    );
+    return;
+  }
+
+  await setAdminNotice("success", "Huy hiệu: đã xóa thành công.");
+  revalidatePath("/admin/feature-badges");
+  revalidatePath("/admin/products");
+  revalidateTag("products");
 }
 
 function getLocalizedLinesByVi(formData: FormData, baseKey: string) {
@@ -1420,6 +1490,16 @@ export async function updateSiteSettings(formData: FormData) {
     return;
   }
 
+  let facebookPages = [];
+  const facebookPagesRaw = getString(formData, "facebook_pages");
+  if (facebookPagesRaw) {
+    try {
+      facebookPages = JSON.parse(facebookPagesRaw);
+    } catch {
+      // ignore
+    }
+  }
+
   const contact = {
     hotline,
     email,
@@ -1427,8 +1507,7 @@ export async function updateSiteSettings(formData: FormData) {
     address: getString(formData, "address"),
   };
   const socialLinks = {
-    facebook_label: getString(formData, "facebook_label"),
-    facebook_url: getString(formData, "facebook_url"),
+    facebook_pages: facebookPages,
   };
   const appearance = {
     logo_path: getString(formData, "logo_path"),

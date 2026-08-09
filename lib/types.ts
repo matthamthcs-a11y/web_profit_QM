@@ -26,6 +26,14 @@ export type Category = {
   description: LocalizedText;
 };
 
+export type FeatureBadge = {
+  id: string;
+  label: LocalizedText;
+  imagePath: string;
+  isActive: boolean;
+  sortOrder: number;
+};
+
 export type Product = {
   id: string;
   name: LocalizedText;
@@ -61,6 +69,7 @@ export type Product = {
   isBestSeller: boolean;
   badge: ProductBadge | null;
   badgeType: ProductBadgeType;
+  featureBadges?: FeatureBadge[];
 };
 
 export type ProductVariant = {

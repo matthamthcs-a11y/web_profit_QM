@@ -18,7 +18,6 @@ export default async function ContactPage() {
   const phoneHref = `tel:${toPhoneHref(siteSettings.hotline)}`;
   const emailHref = siteSettings.email ? `mailto:${siteSettings.email}` : undefined;
   const zaloHref = siteSettings.zaloUrl || undefined;
-  const facebookHref = siteSettings.facebookUrl || undefined;
   const addressHref = siteSettings.address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
         siteSettings.address,
@@ -62,14 +61,17 @@ export default async function ContactPage() {
             iconClassName="text-[#0068ff]"
             iconBackgroundClassName="bg-blue-50"
           />
-          <ContactLine
-            icon={Facebook}
-            label="Facebook"
-            value={siteSettings.facebookLabel}
-            href={facebookHref}
-            iconClassName="text-[#1877f2]"
-            iconBackgroundClassName="bg-blue-50"
-          />
+          {siteSettings.facebookPages.map((page, index) => (
+            <ContactLine
+              key={index}
+              icon={Facebook}
+              label="Facebook"
+              value={page.label || "Facebook"}
+              href={page.url}
+              iconClassName="text-[#1877f2]"
+              iconBackgroundClassName="bg-blue-50"
+            />
+          ))}
           <ContactLine
             icon={MapPin}
             label={locale === "vi" ? "Văn phòng" : "Office"}

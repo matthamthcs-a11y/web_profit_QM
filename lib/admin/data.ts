@@ -58,7 +58,7 @@ export async function getAdminCatalogOptions() {
 
 export async function getAdminProductEditorData(editProductId?: string) {
   const supabase = await createSupabaseServerClient();
-  const [products, categories, brands, productBadges] = await Promise.all([
+  const [products, categories, brands, productBadges, featureBadges] = await Promise.all([
     supabase
       .from("products")
       .select("*")
@@ -76,6 +76,11 @@ export async function getAdminProductEditorData(editProductId?: string) {
       .select("*")
       .eq("is_active", true)
       .order("sort_order", { ascending: true }),
+    supabase
+      .from("feature_badges")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
   ]);
 
   const [
@@ -86,6 +91,7 @@ export async function getAdminProductEditorData(editProductId?: string) {
     audiences,
     variants,
     relatedProducts,
+    productFeatureBadges,
   ] = editProductId
     ? await Promise.all([
         supabase
@@ -123,8 +129,14 @@ export async function getAdminProductEditorData(editProductId?: string) {
           .select("*")
           .eq("product_id", editProductId)
           .order("sort_order", { ascending: true }),
+        supabase
+          .from("product_feature_badges")
+          .select("*")
+          .eq("product_id", editProductId)
+          .order("sort_order", { ascending: true }),
       ])
     : [
+        { data: [] },
         { data: [] },
         { data: [] },
         { data: [] },
@@ -139,13 +151,17 @@ export async function getAdminProductEditorData(editProductId?: string) {
     categories: categories.data ?? [],
     brands: brands.data ?? [],
     productBadges: productBadges.data ?? [],
-    sizes: sizes.data ?? [],
-    flavors: flavors.data ?? [],
-    benefits: benefits.data ?? [],
-    usage: usage.data ?? [],
-    audiences: audiences.data ?? [],
-    variants: variants.data ?? [],
-    relatedProducts: relatedProducts.data ?? [],
+    featureBadges: featureBadges.data ?? [],
+    editData: {
+      sizes: sizes.data ?? [],
+      flavors: flavors.data ?? [],
+      benefits: benefits.data ?? [],
+      usage: usage.data ?? [],
+      audiences: audiences.data ?? [],
+      variants: variants.data ?? [],
+      relatedProducts: relatedProducts.data ?? [],
+      productFeatureBadges: productFeatureBadges.data ?? [],
+    },
   };
 }
 
@@ -163,6 +179,16 @@ export async function getAdminBrands() {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("brands")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  return data ?? [];
+}
+
+export async function getAdminFeatureBadges() {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("feature_badges")
     .select("*")
     .order("sort_order", { ascending: true });
 

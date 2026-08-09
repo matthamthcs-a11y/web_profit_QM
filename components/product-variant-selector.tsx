@@ -216,6 +216,24 @@ export function ProductVariantSelector({
             </div>
           </div>
         </div>
+
+        {product.featureBadges && product.featureBadges.length > 0 && (
+          <div className="container-px mx-auto max-w-7xl pb-14">
+            <div className="flex flex-wrap items-center justify-center gap-8 rounded border border-line bg-white p-6 shadow-sm sm:gap-12 md:p-8">
+              {product.featureBadges.map((badge) => (
+                <div key={badge.id} className="flex flex-col items-center">
+                  {badge.imagePath && (
+                    <img
+                      src={badge.imagePath}
+                      alt=""
+                      className="h-16 w-auto object-contain"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <ProductInformationSection

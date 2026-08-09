@@ -9,6 +9,7 @@ import {
   Settings,
   Star,
   Tags,
+  Shield,
 } from "lucide-react";
 import { getLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/types";
@@ -24,6 +25,7 @@ const adminNavCopy = {
     dealers: "Đại lý",
     testimonials: "Phản hồi",
     leads: "Lead",
+    featureBadges: "Huy hiệu",
     settings: "Cài đặt",
   },
   en: {
@@ -36,6 +38,7 @@ const adminNavCopy = {
     dealers: "Dealers",
     testimonials: "Testimonials",
     leads: "Leads",
+    featureBadges: "Badges",
     settings: "Settings",
   },
 } as const;
@@ -49,6 +52,7 @@ export function getAdminLinks(locale: Locale) {
     { href: "/admin/categories", label: t.categories, icon: Tags },
     { href: "/admin/brands", label: t.brands, icon: Tags },
     { href: "/admin/banners", label: t.banners, icon: ImageIcon },
+    { href: "/admin/feature-badges", label: t.featureBadges, icon: Shield },
     { href: "/admin/documents", label: t.documents, icon: FileText },
     { href: "/admin/dealers", label: t.dealers, icon: MapPin },
     { href: "/admin/testimonials", label: t.testimonials, icon: Star },

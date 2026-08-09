@@ -186,6 +186,38 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["home_banners"]["Insert"]>;
         Relationships: [];
       };
+      feature_badges: {
+        Row: TimestampColumns & {
+          id: string;
+          label: Json;
+          image_path: string;
+          sort_order: number;
+          is_active: boolean;
+        };
+        Insert: OptionalTimestampColumns & {
+          id?: string;
+          label: Json;
+          image_path: string;
+          sort_order?: number;
+          is_active?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["feature_badges"]["Insert"]>;
+        Relationships: [];
+      };
+      product_feature_badges: {
+        Row: {
+          product_id: string;
+          badge_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          product_id: string;
+          badge_id: string;
+          sort_order?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["product_feature_badges"]["Insert"]>;
+        Relationships: [];
+      };
       product_audiences: ProductJsonChildTable;
       product_benefits: ProductJsonChildTable;
       product_badges: {
@@ -399,6 +431,7 @@ export type Database = {
           p_audiences?: Json;
           p_variants?: Json;
           p_related_products?: Json;
+          p_feature_badges?: Json;
         };
         Returns: undefined;
       };

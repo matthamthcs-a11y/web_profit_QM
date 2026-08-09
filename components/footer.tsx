@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { FacebookBrandIcon, ZaloBrandIcon } from "@/components/brand-social-icons";
+import { ZaloBrandIcon } from "@/components/brand-social-icons";
+import { FooterFacebookMenu } from "@/components/footer-facebook-menu";
 import { getSiteSettings } from "@/lib/data/site-settings";
 import { copy, getLocale } from "@/lib/i18n";
 
@@ -67,13 +68,7 @@ export async function Footer() {
               {siteSettings.address}
             </FooterContactLink>
             <div className="flex items-center gap-2 pt-1">
-              <SocialIconLink
-                href={siteSettings.facebookUrl}
-                label="Facebook"
-                className="text-white hover:text-brand-red"
-              >
-                <FacebookBrandIcon className="h-5 w-5" />
-              </SocialIconLink>
+              <FooterFacebookMenu pages={siteSettings.facebookPages} />
               <SocialIconLink
                 href={siteSettings.zaloUrl}
                 label="Zalo"

@@ -42,6 +42,8 @@ async function getProductsUncached() {
     variantsResult,
     relatedProductsResult,
     badgesResult,
+    featureBadgesResult,
+    productFeatureBadgesResult,
   ] = await Promise.all([
     supabase
       .from("products")
@@ -82,6 +84,15 @@ async function getProductsUncached() {
       .select("*")
       .eq("is_active", true)
       .order("sort_order", { ascending: true }),
+    supabase
+      .from("feature_badges")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("product_feature_badges")
+      .select("*")
+      .order("sort_order", { ascending: true }),
   ]);
 
   const hasError = [
@@ -96,6 +107,8 @@ async function getProductsUncached() {
     variantsResult,
     relatedProductsResult,
     badgesResult,
+    featureBadgesResult,
+    productFeatureBadgesResult,
   ].some((result) => result.error);
 
   if (hasError) {
@@ -115,6 +128,8 @@ async function getProductsUncached() {
     ingredients: [],
     variants: variantsResult.data ?? [],
     relatedProducts: relatedProductsResult.data ?? [],
+    featureBadges: featureBadgesResult.data ?? [],
+    productFeatureBadges: productFeatureBadgesResult.data ?? [],
   });
 }
 

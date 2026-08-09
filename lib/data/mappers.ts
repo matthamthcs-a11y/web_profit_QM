@@ -42,8 +42,12 @@ export const defaultSiteSettings: SiteSettings = {
   hotline: "02838481014",
   email: "hello@profitness.vn",
   zaloUrl: "tel:02838481014",
-  facebookLabel: "Pro-Fitness Vietnam",
-  facebookUrl: "",
+  facebookPages: [
+    {
+      label: "Pro-Fitness Vietnam",
+      url: "",
+    },
+  ],
   address: "Ho Chi Minh City, Vietnam",
   logoPath: "/logo.webp",
 };
@@ -156,14 +160,19 @@ export function mapSiteSettingsRows(rows: SiteSettingRow[]): SiteSettings {
     typeof socialLinks === "object" &&
     !Array.isArray(socialLinks)
   ) {
-    settings.facebookLabel =
-      typeof socialLinks.facebook_label === "string"
-        ? socialLinks.facebook_label
-        : settings.facebookLabel;
-    settings.facebookUrl =
-      typeof socialLinks.facebook_url === "string"
-        ? socialLinks.facebook_url
-        : settings.facebookUrl;
+    if (Array.isArray(socialLinks.facebook_pages)) {
+      settings.facebookPages = socialLinks.facebook_pages.map((page: { label?: unknown; url?: unknown }) => ({
+        label: typeof page?.label === "string" ? page.label : "",
+        url: typeof page?.url === "string" ? page.url : "",
+      }));
+    } else if (typeof socialLinks.facebook_url === "string" && socialLinks.facebook_url) {
+      settings.facebookPages = [
+        {
+          label: typeof socialLinks.facebook_label === "string" ? socialLinks.facebook_label : "Facebook",
+          url: socialLinks.facebook_url,
+        },
+      ];
+    }
   }
 
   if (
@@ -180,6 +189,9 @@ export function mapSiteSettingsRows(rows: SiteSettingRow[]): SiteSettings {
   return settings;
 }
 
+type FeatureBadgeRow = Tables<"feature_badges">;
+type ProductFeatureBadgeRow = Tables<"product_feature_badges">;
+
 export function mapProductRows({
   products,
   categories,
@@ -193,6 +205,8 @@ export function mapProductRows({
   variants,
   relatedProducts,
   badges = [],
+  featureBadges = [],
+  productFeatureBadges = [],
 }: {
   products: ProductRow[];
   categories: CategoryRow[];
@@ -206,6 +220,8 @@ export function mapProductRows({
   ingredients: ProductIngredientRow[];
   variants: ProductVariantRow[];
   relatedProducts: RelatedProductRow[];
+  featureBadges?: FeatureBadgeRow[];
+  productFeatureBadges?: ProductFeatureBadgeRow[];
 }): Product[] {
   const categoriesById = new Map(categories.map((row) => [row.id, row]));
   const brandsById = new Map(brands.map((row) => [row.id, row]));
@@ -218,6 +234,8 @@ export function mapProductRows({
   const variantsByProduct = groupBy(variants, (row) => row.product_id);
   const relatedByProduct = groupBy(relatedProducts, (row) => row.product_id);
   const badgesById = new Map(badges.map((row) => [row.id, row]));
+  const featureBadgesById = new Map(featureBadges.map((row) => [row.id, row]));
+  const featureBadgesByProduct = groupBy(productFeatureBadges, (row) => row.product_id);
 
   return products.map((product) => {
     const category = product.category_id
@@ -246,6 +264,17 @@ export function mapProductRows({
     );
     const badgeType = normalizeProductBadgeType(product.badge_type);
     const productBadge = mapProductBadge(product, badgesById.get(product.badge_id ?? ""));
+
+    const productFeatureBadges = (featureBadgesByProduct.get(product.id) ?? [])
+      .map((row) => featureBadgesById.get(row.badge_id))
+      .filter((b): b is FeatureBadgeRow => b !== undefined)
+      .map((badge, idx) => ({
+        id: badge.id,
+        label: localizedText(badge.label),
+        imagePath: badge.image_path,
+        isActive: badge.is_active,
+        sortOrder: badge.sort_order ?? idx,
+      }));
 
     return {
       id: product.id,
@@ -290,6 +319,7 @@ export function mapProductRows({
       isBestSeller: product.is_best_seller,
       badge: productBadge ?? mapLegacyProductBadge(badgeType),
       badgeType,
+      featureBadges: productFeatureBadges,
     };
   });
 }

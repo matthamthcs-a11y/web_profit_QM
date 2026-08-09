@@ -6,8 +6,7 @@ export type SiteSettings = {
   hotline: string;
   email: string;
   zaloUrl: string;
-  facebookLabel: string;
-  facebookUrl: string;
+  facebookPages: { label: string; url: string }[];
   address: string;
   logoPath: string;
 };

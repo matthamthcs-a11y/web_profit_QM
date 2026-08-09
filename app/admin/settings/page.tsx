@@ -6,8 +6,10 @@ import {
   AdminSubmit,
 } from "@/components/admin-fields";
 import { AdminAssetField } from "@/components/admin-asset-field";
+import { AdminFacebookPagesField } from "@/components/admin-facebook-pages-field";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAdminSettings } from "@/lib/admin/data";
+import { getSiteSettings } from "@/lib/data/site-settings";
 import { getLocale } from "@/lib/i18n";
 import type { Json } from "@/lib/supabase/database.types";
 
@@ -17,11 +19,8 @@ export const metadata: Metadata = {
 
 export default async function AdminSettingsPage() {
   await requireAdmin();
-  const [rows, locale] = await Promise.all([getAdminSettings(), getLocale()]);
+  const [rows, locale, siteSettings] = await Promise.all([getAdminSettings(), getLocale(), getSiteSettings()]);
   const contact = objectValue(rows.find((row) => row.key === "contact")?.value);
-  const social = objectValue(
-    rows.find((row) => row.key === "social_links")?.value,
-  );
   const seo = objectValue(rows.find((row) => row.key === "seo")?.value);
   const appearance = objectValue(
     rows.find((row) => row.key === "appearance")?.value,
@@ -71,16 +70,7 @@ export default async function AdminSettingsPage() {
             name="address"
             defaultValue={stringValue(contact.address)}
           />
-          <AdminField
-            label="Facebook label"
-            name="facebook_label"
-            defaultValue={stringValue(social.facebook_label)}
-          />
-          <AdminField
-            label="Facebook URL"
-            name="facebook_url"
-            defaultValue={stringValue(social.facebook_url)}
-          />
+          <AdminFacebookPagesField defaultValue={siteSettings.facebookPages} />
           <AdminField
             label="SEO title"
             name="seo_title"

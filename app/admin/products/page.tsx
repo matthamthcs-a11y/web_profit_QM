@@ -83,6 +83,10 @@ const adminProductCopy = {
           title: "Phân loại và thứ tự hiển thị",
           description: "Chọn danh mục, thương hiệu và vị trí sắp xếp trong danh sách.",
         },
+        featureBadges: {
+          title: "Huy hiệu tính năng",
+          description: "Chọn các huy hiệu tính năng (ví dụ: GMP, Made in USA) để hiển thị trên trang chi tiết sản phẩm.",
+        },
         assets: {
           title: "Ảnh sản phẩm",
           description:
@@ -198,7 +202,11 @@ const adminProductCopy = {
         },
         taxonomy: {
           title: "Classification and display order",
-          description: "Choose category, brand and sorting position.",
+          description: "Select category, brand and display position in lists.",
+        },
+        featureBadges: {
+          title: "Feature Badges",
+          description: "Select feature badges (e.g. GMP, Made in USA) to display on the product detail page.",
         },
         assets: {
           title: "Product images",
@@ -295,13 +303,14 @@ export default async function AdminProductsPage({
   const editProductId = getSingleParam(params.edit);
   const data = await getAdminProductEditorData(editProductId);
   const t = adminProductCopy[locale];
-  const sizes = groupBy(data.sizes, (row) => row.product_id);
-  const flavors = groupBy(data.flavors, (row) => row.product_id);
-  const benefits = groupBy(data.benefits, (row) => row.product_id);
-  const usage = groupBy(data.usage, (row) => row.product_id);
-  const audiences = groupBy(data.audiences, (row) => row.product_id);
-  const variants = groupBy(data.variants, (row) => row.product_id);
-  const relatedProducts = groupBy(data.relatedProducts, (row) => row.product_id);
+  const sizes = groupBy(data.editData.sizes, (row) => row.product_id);
+  const flavors = groupBy(data.editData.flavors, (row) => row.product_id);
+  const benefits = groupBy(data.editData.benefits, (row) => row.product_id);
+  const usage = groupBy(data.editData.usage, (row) => row.product_id);
+  const audiences = groupBy(data.editData.audiences, (row) => row.product_id);
+  const variants = groupBy(data.editData.variants, (row) => row.product_id);
+  const relatedProducts = groupBy(data.editData.relatedProducts, (row) => row.product_id);
+  const productFeatureBadges = groupBy(data.editData.productFeatureBadges, (row) => row.product_id);
   const filters = getProductFilters(params);
   const filteredProducts = filterProducts(data.products, filters);
 
@@ -369,6 +378,7 @@ export default async function AdminProductsPage({
                     audiences={audiences.get(product.id)}
                     variants={variants.get(product.id)}
                     relatedProducts={relatedProducts.get(product.id)}
+                    productFeatureBadges={productFeatureBadges.get(product.id)}
                     position={position}
                     locale={locale}
                     t={t}
@@ -504,19 +514,21 @@ function ProductForm({
   audiences = [],
   variants = [],
   relatedProducts = [],
+  productFeatureBadges = [],
   position,
   locale,
   t,
 }: {
   data: ProductEditorData;
   product?: ProductRow;
-  sizes?: ProductEditorData["sizes"];
-  flavors?: ProductEditorData["flavors"];
-  benefits?: ProductEditorData["benefits"];
-  usage?: ProductEditorData["usage"];
-  audiences?: ProductEditorData["audiences"];
-  variants?: ProductEditorData["variants"];
-  relatedProducts?: ProductEditorData["relatedProducts"];
+  sizes?: ProductEditorData["editData"]["sizes"];
+  flavors?: ProductEditorData["editData"]["flavors"];
+  benefits?: ProductEditorData["editData"]["benefits"];
+  usage?: ProductEditorData["editData"]["usage"];
+  audiences?: ProductEditorData["editData"]["audiences"];
+  variants?: ProductEditorData["editData"]["variants"];
+  relatedProducts?: ProductEditorData["editData"]["relatedProducts"];
+  productFeatureBadges?: ProductEditorData["editData"]["productFeatureBadges"];
   position: number;
   locale: Locale;
   t: ProductCopy;
@@ -629,6 +641,58 @@ function ProductForm({
             defaultValue={position}
             min={1}
           />
+        </div>
+      </ProductFormSection>
+
+      <ProductFormSection
+        title={t.form.sections.featureBadges.title}
+        description={t.form.sections.featureBadges.description}
+      >
+        <div className="flex flex-wrap gap-4">
+          {data.featureBadges.map((badge) => {
+            const isSelected = productFeatureBadges.some(
+              (fb) => fb.badge_id === badge.id
+            );
+            return (
+              <label
+                key={badge.id}
+                className={`flex flex-col items-center justify-center gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                  isSelected
+                    ? "border-brand-red bg-brand-red/5"
+                    : "border-line bg-white hover:bg-slate-50"
+                }`}
+              >
+                {badge.image_path ? (
+                  <img
+                    src={badge.image_path}
+                    alt=""
+                    className="h-10 w-auto object-contain"
+                  />
+                ) : (
+                  <div className="h-10 w-10 bg-slate-100 rounded"></div>
+                )}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="feature_badges[]"
+                    value={badge.id}
+                    defaultChecked={isSelected}
+                    className="size-4 rounded text-brand-red focus:ring-brand-red"
+                  />
+                  <span className="text-xs font-bold text-muted">
+                    {isSelected ? "Đã chọn" : "Chọn"}
+                  </span>
+                </div>
+              </label>
+            );
+          })}
+          {data.featureBadges.length === 0 && (
+            <div className="text-sm text-muted italic">
+              {locale === "vi" 
+                ? "Chưa có huy hiệu nào trong thư viện. Bạn cần tạo huy hiệu trước ở phần Cài đặt."
+                : "No badges available in the library. You need to create badges in Settings first."}
+            </div>
+          )}
         </div>
       </ProductFormSection>
 
