@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { ZaloBrandIcon } from "@/components/brand-social-icons";
 import { FooterFacebookMenu } from "@/components/footer-facebook-menu";
+import { DealerContactPopup } from "@/components/dealer-contact-popup";
 import { getSiteSettings } from "@/lib/data/site-settings";
 import { copy, getLocale } from "@/lib/i18n";
 
@@ -95,6 +96,9 @@ export async function Footer() {
                   </li>
                 ))}
               </ul>
+              {group.title === "Pro-Fitness" && (
+                <DealerContactPopup />
+              )}
             </div>
           ))}
         </div>
