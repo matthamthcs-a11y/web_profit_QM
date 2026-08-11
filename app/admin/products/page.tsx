@@ -9,6 +9,7 @@ import {
 } from "@/app/admin/actions";
 import { AdminAssetField } from "@/components/admin-asset-field";
 import { AdminProductVariantsField } from "@/components/admin-product-variants-field";
+import { AdminProductBadgeSelector } from "@/components/admin-product-badge-selector";
 import {
   AdminCheckbox,
   AdminDeleteButton,
@@ -648,45 +649,11 @@ function ProductForm({
         title={t.form.sections.featureBadges.title}
         description={t.form.sections.featureBadges.description}
       >
-        <div className="flex flex-wrap gap-4">
-          {data.featureBadges.map((badge) => {
-            const isSelected = productFeatureBadges.some(
-              (fb) => fb.badge_id === badge.id
-            );
-            return (
-              <label
-                key={badge.id}
-                className={`flex flex-col items-center justify-center gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
-                  isSelected
-                    ? "border-brand-red bg-brand-red/5"
-                    : "border-line bg-white hover:bg-slate-50"
-                }`}
-              >
-                {badge.image_path ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={badge.image_path}
-                    alt=""
-                    className="h-10 w-auto object-contain"
-                  />
-                ) : (
-                  <div className="h-10 w-10 bg-slate-100 rounded"></div>
-                )}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="feature_badges[]"
-                    value={badge.id}
-                    defaultChecked={isSelected}
-                    className="size-4 rounded text-brand-red focus:ring-brand-red"
-                  />
-                  <span className="text-xs font-bold text-muted">
-                    {isSelected ? "Đã chọn" : "Chọn"}
-                  </span>
-                </div>
-              </label>
-            );
-          })}
+        <div className="flex flex-col gap-4">
+          <AdminProductBadgeSelector 
+            availableBadges={data.featureBadges}
+            initialSelectedIds={productFeatureBadges.map(fb => fb.badge_id)}
+          />
           {data.featureBadges.length === 0 && (
             <div className="text-sm text-muted italic">
               {locale === "vi" 
