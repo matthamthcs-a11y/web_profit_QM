@@ -414,16 +414,12 @@ export const dealers: Dealer[] = [
   {
     id: "dealer_hcm",
     name: "Pro-Fitness Ho Chi Minh",
-    city: "Ho Chi Minh City",
-    address: "District 1, Ho Chi Minh City",
-    phone: "02838481014",
+    logoPath: null,
   },
   {
     id: "dealer_hanoi",
     name: "Pro-Fitness Ha Noi Partner",
-    city: "Ha Noi",
-    address: "Ba Dinh, Ha Noi",
-    phone: "02838481014",
+    logoPath: null,
   },
 ];
 

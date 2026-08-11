@@ -1268,11 +1268,7 @@ export async function upsertDealer(formData: FormData) {
 
   const payload = {
     name,
-    city: getOptionalString(formData, "city"),
-    address: getOptionalString(formData, "address"),
-    phone: getOptionalString(formData, "phone"),
-    zalo: getOptionalString(formData, "zalo"),
-    map_url: getOptionalString(formData, "map_url"),
+    logo_path: getOptionalString(formData, "logo_path"),
     sort_order: desiredPosition,
     is_active: getBool(formData, "is_active"),
   };

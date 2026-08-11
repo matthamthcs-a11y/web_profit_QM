@@ -120,9 +120,7 @@ export function mapDealerRow(row: DealerRow): Dealer {
   return {
     id: row.id,
     name: row.name,
-    city: row.city ?? "",
-    address: row.address ?? "",
-    phone: row.phone ?? "",
+    logoPath: row.logo_path,
   };
 }
 

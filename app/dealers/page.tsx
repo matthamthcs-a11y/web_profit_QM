@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { MapPin, Phone } from "lucide-react";
 import { SectionHeading } from "@/components/section-heading";
 import { getDealers } from "@/lib/data/dealers";
 import { getLocale } from "@/lib/i18n";
@@ -26,19 +25,22 @@ export default async function DealersPage() {
       />
       <div className="grid gap-5 md:grid-cols-2">
         {dealers.map((dealer) => (
-          <article key={dealer.id} className="rounded border border-line p-6">
-            <h2 className="text-2xl font-black text-ink">{dealer.name}</h2>
-            <p className="mt-2 text-sm font-bold uppercase text-brand-red">
-              {dealer.city}
-            </p>
-            <p className="mt-5 flex items-center gap-2 text-sm text-muted">
-              <MapPin className="h-4 w-4 text-brand-red" />
-              {dealer.address}
-            </p>
-            <p className="mt-3 flex items-center gap-2 text-sm text-muted">
-              <Phone className="h-4 w-4 text-brand-red" />
-              {dealer.phone}
-            </p>
+          <article key={dealer.id} className="rounded border border-line p-6 flex flex-col items-center justify-center gap-4 text-center bg-white shadow-sm hover:shadow transition-shadow">
+            {dealer.logoPath ? (
+              <div className="h-24 w-full flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={dealer.logoPath} 
+                  alt={dealer.name} 
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="h-24 w-24 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold text-xl">
+                {dealer.name.charAt(0)}
+              </div>
+            )}
+            <h2 className="text-xl font-black text-ink">{dealer.name}</h2>
           </article>
         ))}
       </div>

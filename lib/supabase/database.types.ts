@@ -112,26 +112,18 @@ export type Database = {
       };
       dealers: {
         Row: TimestampColumns & {
-          address: string | null;
-          city: string | null;
           id: string;
           is_active: boolean;
-          map_url: string | null;
+          logo_path: string | null;
           name: string;
-          phone: string | null;
           sort_order: number;
-          zalo: string | null;
         };
         Insert: OptionalTimestampColumns & {
-          address?: string | null;
-          city?: string | null;
           id?: string;
           is_active?: boolean;
-          map_url?: string | null;
+          logo_path?: string | null;
           name: string;
-          phone?: string | null;
           sort_order?: number;
-          zalo?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["dealers"]["Insert"]>;
         Relationships: [];

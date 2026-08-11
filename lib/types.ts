@@ -120,9 +120,7 @@ export type Testimonial = {
 export type Dealer = {
   id: string;
   name: string;
-  city: string;
-  address: string;
-  phone: string;
+  logoPath?: string | null;
 };
 
 export type DocumentAsset = {

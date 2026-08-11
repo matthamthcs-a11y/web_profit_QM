@@ -7,6 +7,7 @@ import {
   AdminPageHeader,
   AdminSubmit,
 } from "@/components/admin-fields";
+import { AdminAssetField } from "@/components/admin-asset-field";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAdminDealers } from "@/lib/admin/data";
 
@@ -23,7 +24,7 @@ export default async function AdminDealersPage() {
       <AdminPageHeader
         eyebrow="Sales"
         title="Đại lý"
-        description="Quản lý thông tin đại lý, hotline, Zalo và map URL."
+        description="Quản lý thông tin và logo đại lý."
       />
       <details className="mt-6 rounded border border-line p-5" open>
         <summary className="cursor-pointer text-lg font-black">
@@ -34,11 +35,16 @@ export default async function AdminDealersPage() {
       <div className="mt-8 grid gap-4">
         {dealers.map((dealer, index) => (
           <details key={dealer.id} className="rounded border border-line p-5">
-            <summary className="cursor-pointer font-black">
-              {dealer.name}{" "}
-              <span className="text-sm font-semibold text-muted">
-                / {dealer.city}
-              </span>
+            <summary className="cursor-pointer font-black flex items-center gap-4">
+              {dealer.logo_path ? (
+                <div className="rounded border border-line bg-slate-50 p-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={dealer.logo_path} alt="" className="h-10 w-auto object-contain" />
+                </div>
+              ) : (
+                <div className="h-14 w-14 bg-slate-100 rounded"></div>
+              )}
+              {dealer.name}
             </summary>
             <DealerForm dealer={dealer} position={index + 1} />
             <form action={deleteDealer} className="mt-4">
@@ -62,15 +68,15 @@ function DealerForm({
   return (
     <form action={upsertDealer} className="mt-5 grid gap-4">
       <input type="hidden" name="id" value={dealer?.id ?? ""} />
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <AdminField label="Tên" name="name" defaultValue={dealer?.name} required />
-        <AdminField label="Thành phố" name="city" defaultValue={dealer?.city} />
-        <AdminField label="Số điện thoại" name="phone" defaultValue={dealer?.phone} />
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <AdminField label="Địa chỉ" name="address" defaultValue={dealer?.address} />
-        <AdminField label="Zalo" name="zalo" defaultValue={dealer?.zalo} />
-        <AdminField label="Map URL" name="map_url" defaultValue={dealer?.map_url} />
+        <AdminAssetField
+          label="Logo đại lý"
+          name="logo_path"
+          defaultValue={dealer?.logo_path}
+          folder="dealers"
+          accept="image/*"
+        />
       </div>
       <div className="flex flex-wrap items-end gap-4">
         <AdminField
