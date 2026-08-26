@@ -1513,6 +1513,36 @@ export async function updateSiteSettings(formData: FormData) {
     title: getString(formData, "seo_title"),
     description: getString(formData, "seo_description"),
   };
+  const aboutPage = {
+    eyebrow: {
+      vi: getString(formData, "about_eyebrow_vi"),
+      en: getString(formData, "about_eyebrow_en"),
+    },
+    title: {
+      vi: getString(formData, "about_title_vi"),
+      en: getString(formData, "about_title_en"),
+    },
+    description: {
+      vi: getString(formData, "about_description_vi"),
+      en: getString(formData, "about_description_en"),
+    },
+    block1_title: {
+      vi: getString(formData, "about_block1_title_vi"),
+      en: getString(formData, "about_block1_title_en"),
+    },
+    block1_content: {
+      vi: getString(formData, "about_block1_content_vi"),
+      en: getString(formData, "about_block1_content_en"),
+    },
+    block2_title: {
+      vi: getString(formData, "about_block2_title_vi"),
+      en: getString(formData, "about_block2_title_en"),
+    },
+    block2_list: {
+      vi: getString(formData, "about_block2_list_vi"),
+      en: getString(formData, "about_block2_list_en"),
+    },
+  };
 
   try {
     await Promise.all([
@@ -1539,6 +1569,12 @@ export async function updateSiteSettings(formData: FormData) {
         supabase
           .from("site_settings")
           .upsert({ key: "seo", value: seo, is_public: true }),
+      ),
+      expectMutation(
+        "Cài đặt: không thể lưu trang Giới thiệu",
+        supabase
+          .from("site_settings")
+          .upsert({ key: "about_page", value: aboutPage, is_public: true }),
       ),
     ]);
   } catch (error) {

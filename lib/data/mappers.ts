@@ -50,6 +50,24 @@ export const defaultSiteSettings: SiteSettings = {
   ],
   address: "Ho Chi Minh City, Vietnam",
   logoPath: "/logo.webp",
+  aboutPage: {
+    eyebrow: { vi: "Giới thiệu", en: "About" },
+    title: { vi: "Pro-Fitness Sports Nutrition", en: "Pro-Fitness Sports Nutrition" },
+    description: {
+      vi: "Trang giới thiệu ngắn gọn về định hướng sản phẩm, phân phối và tư vấn dinh dưỡng thể thao.",
+      en: "A concise introduction to the product direction, distribution and sports nutrition consultation.",
+    },
+    block1Title: { vi: "Định hướng", en: "Direction" },
+    block1Content: {
+      vi: "Pro-Fitness tập trung vào nhóm sản phẩm dinh dưỡng thể thao chính hãng, giúp khách hàng tham khảo nhanh giá bán, hương vị, công dụng và cách sử dụng trước khi liên hệ đội ngũ tư vấn.\nWebsite không xử lý đặt hàng online trong giai đoạn này. Vai trò chính là catalog sản phẩm và cổng liên hệ nhanh.",
+      en: "Pro-Fitness focuses on official sports nutrition products, helping customers quickly review prices, flavors, benefits and usage instructions before contacting the sales team.\nThe website does not handle online checkout at this stage. Its main role is a product catalog and quick contact channel.",
+    },
+    block2Title: { vi: "Thông tin nổi bật", en: "Highlights" },
+    block2List: {
+      vi: "Sản phẩm theo danh mục rõ ràng\nGiá bán luôn hiển thị\nHương vị và quy cách dễ xem\nCách sử dụng đặt ngay trong trang sản phẩm\nHotline cố định để tư vấn nhanh",
+      en: "Clear product categories\nPrices are always visible\nFlavors and sizes are easy to scan\nUsage instructions are shown on product pages\nFixed hotline for quick consultation",
+    },
+  },
 };
 
 export function localizedText(value: Json | null, fallback = ""): LocalizedText {
@@ -139,6 +157,7 @@ export function mapSiteSettingsRows(rows: SiteSettingRow[]): SiteSettings {
   const contact = rows.find((row) => row.key === "contact")?.value;
   const socialLinks = rows.find((row) => row.key === "social_links")?.value;
   const appearance = rows.find((row) => row.key === "appearance")?.value;
+  const aboutPage = rows.find((row) => row.key === "about_page")?.value;
 
   if (contact && typeof contact === "object" && !Array.isArray(contact)) {
     settings.hotline =
@@ -185,6 +204,22 @@ export function mapSiteSettingsRows(rows: SiteSettingRow[]): SiteSettings {
       typeof appearance.logo_path === "string" && appearance.logo_path
         ? appearance.logo_path
         : settings.logoPath;
+  }
+
+  if (
+    aboutPage &&
+    typeof aboutPage === "object" &&
+    !Array.isArray(aboutPage)
+  ) {
+    settings.aboutPage = {
+      eyebrow: localizedText(aboutPage.eyebrow as Json, settings.aboutPage.eyebrow.vi),
+      title: localizedText(aboutPage.title as Json, settings.aboutPage.title.vi),
+      description: localizedText(aboutPage.description as Json, settings.aboutPage.description.vi),
+      block1Title: localizedText(aboutPage.block1_title as Json, settings.aboutPage.block1Title.vi),
+      block1Content: localizedText(aboutPage.block1_content as Json, settings.aboutPage.block1Content.vi),
+      block2Title: localizedText(aboutPage.block2_title as Json, settings.aboutPage.block2Title.vi),
+      block2List: localizedText(aboutPage.block2_list as Json, settings.aboutPage.block2List.vi),
+    };
   }
 
   return settings;

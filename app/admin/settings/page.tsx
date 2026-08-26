@@ -4,6 +4,7 @@ import {
   AdminField,
   AdminPageHeader,
   AdminSubmit,
+  LocalizedFields,
 } from "@/components/admin-fields";
 import { AdminAssetField } from "@/components/admin-asset-field";
 import { AdminFacebookPagesField } from "@/components/admin-facebook-pages-field";
@@ -80,6 +81,54 @@ export default async function AdminSettingsPage() {
             label="SEO description"
             name="seo_description"
             defaultValue={stringValue(seo.description)}
+          />
+        </div>
+        <div className="rounded border border-line p-5 grid gap-4">
+          <h2 className="font-bold text-lg text-ink">Cài đặt Trang Giới Thiệu</h2>
+          
+          <LocalizedFields
+            base="about_eyebrow"
+            label="Eyebrow (Chữ nhỏ trên tiêu đề)"
+            value={siteSettings.aboutPage.eyebrow as Json}
+          />
+          <LocalizedFields
+            base="about_title"
+            label="Tiêu đề chính"
+            value={siteSettings.aboutPage.title as Json}
+          />
+          <LocalizedFields
+            base="about_description"
+            label="Mô tả dưới tiêu đề"
+            value={siteSettings.aboutPage.description as Json}
+            textarea
+          />
+          
+          <hr className="my-2 border-line" />
+          <h3 className="font-bold text-md text-ink">Khối bên trái (Định hướng)</h3>
+          <LocalizedFields
+            base="about_block1_title"
+            label="Tiêu đề khối 1"
+            value={siteSettings.aboutPage.block1Title as Json}
+          />
+          <LocalizedFields
+            base="about_block1_content"
+            label="Nội dung khối 1"
+            value={siteSettings.aboutPage.block1Content as Json}
+            textarea
+          />
+
+          <hr className="my-2 border-line" />
+          <h3 className="font-bold text-md text-ink">Khối bên phải (Điểm nổi bật)</h3>
+          <LocalizedFields
+            base="about_block2_title"
+            label="Tiêu đề khối 2"
+            value={siteSettings.aboutPage.block2Title as Json}
+          />
+          <LocalizedFields
+            base="about_block2_list"
+            label="Danh sách điểm nổi bật (mỗi dòng 1 mục)"
+            value={siteSettings.aboutPage.block2List as Json}
+            textarea
           />
         </div>
         <AdminSubmit />

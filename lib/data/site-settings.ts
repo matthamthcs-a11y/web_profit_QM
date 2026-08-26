@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import type { LocalizedText } from "@/lib/types";
 import { defaultSiteSettings, mapSiteSettingsRows } from "@/lib/data/mappers";
 import { getSupabaseDataClient } from "@/lib/data/source";
 
@@ -9,6 +10,15 @@ export type SiteSettings = {
   facebookPages: { label: string; url: string }[];
   address: string;
   logoPath: string;
+  aboutPage: {
+    eyebrow: LocalizedText;
+    title: LocalizedText;
+    description: LocalizedText;
+    block1Title: LocalizedText;
+    block1Content: LocalizedText;
+    block2Title: LocalizedText;
+    block2List: LocalizedText;
+  };
 };
 
 const getSiteSettingsCached = unstable_cache(
