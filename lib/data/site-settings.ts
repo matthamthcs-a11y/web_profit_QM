@@ -27,8 +27,13 @@ const getSiteSettingsCached = unstable_cache(
   { revalidate: 300, tags: ["site-settings"] },
 );
 
-export async function getSiteSettings() {
-  return getSiteSettingsCached();
+export async function getSiteSettings(): Promise<SiteSettings> {
+  const cached = await getSiteSettingsCached();
+  return {
+    ...defaultSiteSettings,
+    ...cached,
+    aboutPage: cached.aboutPage ?? defaultSiteSettings.aboutPage,
+  };
 }
 
 async function getSiteSettingsUncached() {
