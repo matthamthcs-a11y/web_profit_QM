@@ -1,6 +1,7 @@
 "use client";
 
-import { Eye, FileCheck2, X } from "lucide-react";
+import Image from "next/image";
+import { Download, Eye, FileCheck2, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/types";
 
@@ -64,13 +65,14 @@ export function DocumentCardClient({
         className={`mb-5 flex ${thumbnailClass} items-center justify-center overflow-hidden rounded border border-line bg-surface`}
       >
         {hasThumbnail ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={thumbnailUrl}
-            alt={title}
-            loading="lazy"
-            className="h-full w-full object-contain p-3"
-          />
+          <div className="relative h-full w-full">
+            <Image
+              src={thumbnailUrl}
+              alt={title}
+              fill
+              className="object-contain p-3"
+            />
+          </div>
         ) : (
           <FileCheck2 className="h-9 w-9 text-brand-red" />
         )}
@@ -144,10 +146,11 @@ export function DocumentCardClient({
             >
               {fileKind === "image" ? (
                 <div className="flex min-h-full items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={fileUrl}
                     alt={title}
+                    width={1000}
+                    height={1000}
                     className="h-auto max-h-full max-w-full object-contain"
                   />
                 </div>

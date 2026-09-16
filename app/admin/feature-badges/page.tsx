@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import { Metadata } from "next";
+import Image from "next/image";
 import { deleteFeatureBadge, upsertFeatureBadge } from "@/app/admin/actions";
 import { AdminAssetField } from "@/components/admin-asset-field";
 import {
@@ -68,9 +69,13 @@ export default async function AdminFeatureBadgesPage() {
           <details key={badge.id} className="rounded border border-line p-5">
             <summary className="cursor-pointer font-black flex items-center gap-4">
               {badge.image_path ? (
-                <div className="rounded border border-line bg-slate-50 p-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={badge.image_path} alt="" className="h-10 w-auto object-contain" />
+                <div className="relative h-14 w-14 rounded border border-line bg-slate-50 p-2">
+                  <Image 
+                    src={badge.image_path} 
+                    alt="" 
+                    fill
+                    className="object-contain p-2" 
+                  />
                 </div>
               ) : (
                 <span>Huy hiệu {index + 1}</span>

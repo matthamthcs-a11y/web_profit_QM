@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -76,12 +77,14 @@ export function AdminProductBadgeSelector({
             >
               <div className="h-10 w-full flex items-center justify-center">
                 {badge.image_path ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={badge.image_path}
-                    alt=""
-                    className="max-h-full max-w-full object-contain"
-                  />
+                  <div className="relative h-full w-full">
+                    <Image
+                      src={badge.image_path}
+                      alt=""
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                 ) : (
                   <div className="h-full w-full bg-slate-100 rounded"></div>
                 )}
@@ -137,12 +140,14 @@ export function AdminProductBadgeSelector({
             >
               <div className="h-10 w-full flex items-center justify-center">
                 {badge.image_path ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={badge.image_path}
-                    alt=""
-                    className="max-h-full max-w-full object-contain"
-                  />
+                  <div className="relative h-full w-full">
+                    <Image
+                      src={badge.image_path}
+                      alt=""
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                 ) : (
                   <div className="h-full w-full bg-slate-100 rounded"></div>
                 )}

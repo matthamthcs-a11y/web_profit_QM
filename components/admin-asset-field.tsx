@@ -7,6 +7,7 @@ import {
   Loader2,
   Upload,
 } from "lucide-react";
+import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Locale } from "@/lib/types";
@@ -228,9 +229,8 @@ export function AdminAssetField({
         </span>
       ) : null}
       {isImage && value ? (
-        <span className="block overflow-hidden rounded border border-line bg-slate-50">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="" className="h-28 w-full object-contain p-2" />
+        <span className="relative block h-28 w-full overflow-hidden rounded border border-line bg-slate-50">
+          <Image src={value} alt="" fill className="object-contain p-2" />
         </span>
       ) : null}
     </label>
@@ -307,7 +307,7 @@ async function optimizeImageFile(
 function loadImage(file: File) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const url = URL.createObjectURL(file);
-    const image = new Image();
+    const image = new window.Image();
 
     image.onload = () => {
       URL.revokeObjectURL(url);
