@@ -144,6 +144,7 @@ function DocumentForm({
           folder="document-thumbnails"
           accept="image/*"
           locale={locale}
+          optimizeImage={{ maxWidth: 800, maxHeight: 800, quality: 0.85 }}
         />
         <AdminField
           label={t.fields.sortOrder}

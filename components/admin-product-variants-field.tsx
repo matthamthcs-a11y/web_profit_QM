@@ -230,6 +230,7 @@ export function AdminProductVariantsField({
                   folder="products/variants"
                   accept="image/*"
                   locale={locale}
+                  optimizeImage={{ maxWidth: 1000, maxHeight: 1000, quality: 0.85 }}
                 />
                 <AdminAssetField
                   label={copy.nutritionImage}
@@ -238,6 +239,7 @@ export function AdminProductVariantsField({
                   folder="products/variant-nutrition"
                   accept="image/*"
                   locale={locale}
+                  optimizeImage={{ maxWidth: 1000, maxHeight: 1000, quality: 0.85 }}
                 />
               </div>
             </div>

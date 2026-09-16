@@ -676,6 +676,7 @@ function ProductForm({
             folder="products"
             accept="image/*"
             locale={locale}
+            optimizeImage={{ maxWidth: 1000, maxHeight: 1000, quality: 0.85 }}
           />
           <AdminAssetField
             label={t.form.fields.nutritionImage}
@@ -684,6 +685,7 @@ function ProductForm({
             folder="nutrition"
             accept="image/*"
             locale={locale}
+            optimizeImage={{ maxWidth: 1000, maxHeight: 1000, quality: 0.85 }}
           />
         </div>
       </ProductFormSection>

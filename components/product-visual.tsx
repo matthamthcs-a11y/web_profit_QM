@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { Locale, Product } from "@/lib/types";
 
 type ProductVisualProps = {
@@ -37,17 +38,16 @@ export function ProductVisual({
       style={hasRealImage ? undefined : { backgroundColor: product.visual.background }}
     >
       {product.imagePath ? (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={product.imagePath}
             alt={product.name[locale] ?? product.name.vi}
-            className={`relative z-10 h-full w-full object-contain ${
+            className={`relative z-10 object-contain ${
               isHero || isBanner ? "p-3 sm:p-4" : "p-2"
             }`}
-            loading={isHero || isBanner ? "eager" : "lazy"}
+            fill
+            sizes={isHero ? "(min-width: 768px) 50vw, 100vw" : "(min-width: 768px) 33vw, 50vw"}
+            priority={isHero || isBanner}
           />
-        </>
       ) : (
         <>
           <div

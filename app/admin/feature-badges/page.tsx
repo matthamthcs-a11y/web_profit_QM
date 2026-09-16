@@ -108,6 +108,7 @@ function FeatureBadgeForm({
           folder="badges"
           accept="image/*"
           locale={locale}
+          optimizeImage={{ maxWidth: 400, maxHeight: 400, quality: 0.85 }}
         />
         <div className="flex items-center">
           <AdminCheckbox

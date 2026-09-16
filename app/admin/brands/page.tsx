@@ -124,6 +124,7 @@ function BrandForm({
           folder="brands"
           accept="image/*"
           locale={locale}
+          optimizeImage={{ maxWidth: 400, maxHeight: 400, quality: 0.85 }}
         />
         <AdminField
           label={t.fields.sortOrder}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Maximize2, X } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import type { Locale } from "@/lib/types";
 
@@ -72,11 +73,12 @@ export function ProductInformationSection({
 
           <div className="max-h-[620px] overflow-auto rounded border border-line bg-surface p-3">
             {nutritionImagePath ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={nutritionImagePath}
                 alt={t.nutrition}
-                className="mx-auto h-auto max-w-full object-contain"
+                width={800}
+                height={800}
+                className="mx-auto h-auto w-full max-w-full object-contain"
                 loading="lazy"
               />
             ) : null}
@@ -113,10 +115,11 @@ export function ProductInformationSection({
           </button>
           <div className="flex h-full items-center justify-center">
             <div className="max-h-full max-w-5xl overflow-auto rounded bg-white p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={nutritionImagePath}
                 alt={t.nutrition}
+                width={1200}
+                height={1200}
                 className="mx-auto h-auto max-w-full object-contain"
               />
             </div>

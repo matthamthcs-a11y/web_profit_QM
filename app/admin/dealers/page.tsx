@@ -76,6 +76,7 @@ function DealerForm({
           defaultValue={dealer?.logo_path}
           folder="dealers"
           accept="image/*"
+          optimizeImage={{ maxWidth: 400, maxHeight: 400, quality: 0.85 }}
         />
       </div>
       <div className="flex flex-wrap items-end gap-4">

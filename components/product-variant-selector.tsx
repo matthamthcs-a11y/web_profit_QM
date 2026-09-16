@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { MessageCircle, Phone, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PriceDisplay } from "@/components/price-display";
@@ -223,10 +224,11 @@ export function ProductVariantSelector({
               {product.featureBadges.map((badge) => (
                 <div key={badge.id} className="flex flex-col items-center">
                   {badge.imagePath && (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
+                    <Image
                       src={badge.imagePath}
                       alt=""
+                      width={64}
+                      height={64}
                       className="h-16 w-auto object-contain"
                     />
                   )}

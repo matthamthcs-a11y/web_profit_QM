@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import { Metadata } from "next";
+import Image from "next/image";
 import { SectionHeading } from "@/components/section-heading";
 import { getDealers } from "@/lib/data/dealers";
 import { getLocale } from "@/lib/i18n";
@@ -27,12 +28,12 @@ export default async function DealersPage() {
         {dealers.map((dealer) => (
           <article key={dealer.id} className="rounded border border-line p-6 flex flex-col items-center justify-center gap-4 text-center bg-white shadow-sm hover:shadow transition-shadow">
             {dealer.logoPath ? (
-              <div className="h-24 w-full flex items-center justify-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
+              <div className="relative h-24 w-full">
+                <Image 
                   src={dealer.logoPath} 
                   alt={dealer.name} 
-                  className="max-h-full max-w-full object-contain"
+                  fill
+                  className="object-contain"
                 />
               </div>
             ) : (
