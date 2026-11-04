@@ -1,11 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { MessageCircle, Phone, ShieldCheck } from "lucide-react";
+import { Minus, Plus, ShoppingBag, ShoppingCart, MessageCircle, Phone, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { PriceDisplay } from "@/components/price-display";
 import { ProductInformationSection } from "@/components/product-information-section";
 import { ProductVisual } from "@/components/product-visual";
+import { useCart } from "@/context/cart-context";
 import { buildOptionKey, getDefaultVariant } from "@/lib/product-variants";
 import type { SiteSettings } from "@/lib/data/site-settings";
 import type { Locale, LocalizedText, Product } from "@/lib/types";
@@ -26,8 +28,11 @@ const detailCopy = {
     size: "Quy cách",
     brand: "Thương hiệu",
     origin: "Xuất xứ",
-    messageZalo: "Nhắn Zalo",
-    clearInfo: "Thông tin sản phẩm rõ ràng",
+    quantity: "Số lượng",
+    addToCart: "Thêm vào giỏ",
+    buyNow: "Mua ngay",
+    messageZalo: "Tư vấn Zalo",
+    clearInfo: "Thông tin sản phẩm chính hãng rõ ràng",
     readMore: "Xem thêm",
     readLess: "Thu gọn",
   },
@@ -36,8 +41,11 @@ const detailCopy = {
     size: "Size",
     brand: "Brand",
     origin: "Origin",
+    quantity: "Quantity",
+    addToCart: "Add to Cart",
+    buyNow: "Buy Now",
     messageZalo: "Message Zalo",
-    clearInfo: "Clear product information",
+    clearInfo: "Clear official product information",
     readMore: "Read more",
     readLess: "Collapse",
   },
@@ -64,6 +72,40 @@ export function ProductVariantSelector({
   const [selectedSizeKey, setSelectedSizeKey] = useState(
     defaultVariant?.sizeKey ?? "",
   );
+  const [quantity, setQuantity] = useState(1);
+  const router = useRouter();
+  const { addItem } = useCart();
+
+  function handleAddToCart(redirectCheckout = false) {
+    const itemFlavor = currentVariant
+      ? localized(currentVariant.flavor, locale)
+      : null;
+    const itemSize = currentVariant
+      ? localized(currentVariant.size, locale)
+      : product.sizes[0] || null;
+
+    const variantId = currentVariant?.id || null;
+    const cartItemId = `${product.id}__${variantId || "default"}`;
+
+    addItem(
+      {
+        id: cartItemId,
+        productId: product.id,
+        variantId,
+        slug: product.slug,
+        name: product.name,
+        flavor: itemFlavor,
+        size: itemSize,
+        price: price ?? 0,
+        imagePath: currentVariant?.imagePath || product.imagePath || null,
+      },
+      quantity,
+    );
+
+    if (redirectCheckout) {
+      router.push("/cart");
+    }
+  }
 
   const currentVariant =
     variants.find(
@@ -193,20 +235,67 @@ export function ProductVariantSelector({
               </div>
             )}
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            {/* Quantity Selector */}
+            <div className="mt-6 flex items-center gap-4">
+              <span className="text-sm font-bold text-ink">{c.quantity}:</span>
+              <div className="flex h-11 items-center rounded border border-line bg-white">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="flex h-full w-10 items-center justify-center text-ink transition hover:bg-surface"
+                  aria-label="Giảm số lượng"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="w-12 text-center text-base font-black text-ink">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="flex h-full w-10 items-center justify-center text-ink transition hover:bg-surface"
+                  aria-label="Tăng số lượng"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Shopping Cart & Buy Now Buttons */}
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => handleAddToCart(false)}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded border-2 border-brand-red bg-white px-5 text-sm font-black uppercase text-brand-red transition hover:bg-brand-red hover:text-white"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                {c.addToCart}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddToCart(true)}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded bg-brand-red px-5 text-sm font-black uppercase text-white shadow transition hover:bg-red-700"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {c.buyNow}
+              </button>
+            </div>
+
+            {/* Direct Consultation Links */}
+            <div className="mt-4 flex flex-wrap gap-3">
               <a
                 href={siteSettings.zaloUrl}
-                className="inline-flex h-12 items-center gap-2 rounded bg-brand-red px-5 text-sm font-black text-white hover:bg-red-700"
+                className="inline-flex h-10 items-center gap-2 rounded border border-line bg-surface px-4 text-xs font-bold text-ink transition hover:bg-slate-200"
               >
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className="h-4 w-4 text-brand-red" />
                 {c.messageZalo}
               </a>
               <a
                 href={`tel:${siteSettings.hotline}`}
-                className="inline-flex h-12 items-center gap-2 rounded bg-ink px-5 text-sm font-black text-white hover:bg-slate-800"
+                className="inline-flex h-10 items-center gap-2 rounded border border-line bg-surface px-4 text-xs font-bold text-ink transition hover:bg-slate-200"
               >
-                <Phone className="h-4 w-4" />
-                {siteSettings.hotline}
+                <Phone className="h-4 w-4 text-brand-red" />
+                Hotline: {siteSettings.hotline}
               </a>
             </div>
             <div className="mt-5 flex flex-wrap gap-3 text-sm font-bold text-muted">

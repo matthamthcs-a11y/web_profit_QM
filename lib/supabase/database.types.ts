@@ -368,6 +368,76 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["related_products"]["Insert"]>;
         Relationships: [];
       };
+      orders: {
+        Row: TimestampColumns & {
+          id: string;
+          order_code: string;
+          customer_name: string;
+          customer_phone: string;
+          customer_email: string | null;
+          shipping_address: string;
+          province_city: string | null;
+          district: string | null;
+          payment_preference: "cod" | "bank_transfer" | string;
+          customer_notes: string | null;
+          subtotal: number;
+          shipping_fee: number;
+          total_amount: number;
+          status: "new" | "contacted" | "confirmed" | "shipping" | "completed" | "cancelled" | string;
+          staff_notes: string | null;
+          source_domain: string | null;
+        };
+        Insert: OptionalTimestampColumns & {
+          id?: string;
+          order_code: string;
+          customer_name: string;
+          customer_phone: string;
+          customer_email?: string | null;
+          shipping_address: string;
+          province_city?: string | null;
+          district?: string | null;
+          payment_preference?: "cod" | "bank_transfer" | string;
+          customer_notes?: string | null;
+          subtotal?: number;
+          shipping_fee?: number;
+          total_amount?: number;
+          status?: "new" | "contacted" | "confirmed" | "shipping" | "completed" | "cancelled" | string;
+          staff_notes?: string | null;
+          source_domain?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["orders"]["Insert"]>;
+        Relationships: [];
+      };
+      order_items: {
+        Row: {
+          id: string;
+          order_id: string;
+          product_id: string | null;
+          variant_id: string | null;
+          product_name: string;
+          variant_label: string | null;
+          price: number;
+          quantity: number;
+          total_price: number;
+          image_path: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          product_id?: string | null;
+          variant_id?: string | null;
+          product_name: string;
+          variant_label?: string | null;
+          price?: number;
+          quantity?: number;
+          total_price?: number;
+          image_path?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["order_items"]["Insert"]>;
+        Relationships: [];
+      };
       site_settings: {
         Row: {
           is_public: boolean;

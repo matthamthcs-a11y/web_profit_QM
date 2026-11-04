@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Menu, MessageCircle } from "lucide-react";
+import { CartHeaderButton } from "@/components/cart-header-button";
 import { LanguageToggle } from "@/components/language-toggle";
 import { getCategories } from "@/lib/data/categories";
 import { getSiteSettings } from "@/lib/data/site-settings";
@@ -82,6 +83,7 @@ export async function Header() {
         </nav>
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
+          <CartHeaderButton />
           <LanguageToggle locale={locale} />
           <a
             href={`tel:${siteSettings.hotline}`}

@@ -29,6 +29,8 @@ const copy = {
       dealers: "Đại lý",
       testimonials: "Phản hồi",
       newLeads: "Lead mới",
+      newOrders: "Đơn hàng mới",
+      totalOrders: "Tổng đơn hàng",
     },
   },
   en: {
@@ -47,6 +49,8 @@ const copy = {
       dealers: "Dealers",
       testimonials: "Testimonials",
       newLeads: "New leads",
+      newOrders: "New orders",
+      totalOrders: "Total orders",
     },
   },
 } as const;
@@ -60,6 +64,8 @@ export default async function AdminDashboardPage() {
   const t = copy[locale];
   const adminLinks = getAdminLinks(locale);
   const statCards = [
+    { label: t.stats.newOrders, value: counts.newOrders },
+    { label: t.stats.totalOrders, value: counts.totalOrders },
     { label: t.stats.products, value: counts.products },
     { label: t.stats.categories, value: counts.categories },
     { label: t.stats.brands, value: counts.brands },

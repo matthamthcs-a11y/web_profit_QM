@@ -3,6 +3,8 @@ import { Roboto_Condensed } from "next/font/google";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { QuickContact } from "@/components/quick-contact";
+import { MiniCartDrawer } from "@/components/mini-cart-drawer";
+import { CartProvider } from "@/context/cart-context";
 import { getLocale } from "@/lib/i18n";
 import "./globals.css";
 
@@ -34,10 +36,13 @@ export default async function RootLayout({
   return (
     <html lang={htmlLang}>
       <body className={robotoCondensed.variable}>
-        <Header />
+        <CartProvider>
+          <Header />
         <main>{children}</main>
         <Footer />
         <QuickContact locale={locale} />
+          <MiniCartDrawer />
+        </CartProvider>
       </body>
     </html>
   );

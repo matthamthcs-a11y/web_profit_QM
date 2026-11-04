@@ -139,3 +139,60 @@ export type HomeBanner = {
   alt: LocalizedText;
   linkUrl?: string | null;
 };
+
+export type CartItem = {
+  id: string;
+  productId: string;
+  variantId?: string | null;
+  slug: string;
+  name: LocalizedText;
+  flavor?: string | null;
+  size?: string | null;
+  price: number;
+  imagePath?: string | null;
+  quantity: number;
+};
+
+export type OrderStatus =
+  | "new"
+  | "contacted"
+  | "confirmed"
+  | "shipping"
+  | "completed"
+  | "cancelled";
+
+export type Order = {
+  id: string;
+  orderCode: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string | null;
+  shippingAddress: string;
+  provinceCity?: string | null;
+  district?: string | null;
+  paymentPreference: "cod" | "bank_transfer";
+  customerNotes?: string | null;
+  subtotal: number;
+  shippingFee: number;
+  totalAmount: number;
+  status: OrderStatus;
+  staffNotes?: string | null;
+  sourceDomain?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items?: OrderItem[];
+};
+
+export type OrderItem = {
+  id: string;
+  orderId: string;
+  productId?: string | null;
+  variantId?: string | null;
+  productName: string;
+  variantLabel?: string | null;
+  price: number;
+  quantity: number;
+  totalPrice: number;
+  imagePath?: string | null;
+  createdAt: string;
+};
