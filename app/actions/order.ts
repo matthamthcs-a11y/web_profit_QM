@@ -82,13 +82,15 @@ export async function createOrderAction(
 
     const sourcePrefix = input.sourceDomain?.includes("hammer") ? "HN" : "PF";
     const orderCode = generateOrderCode(sourcePrefix);
+    const orderId = crypto.randomUUID();
 
     const supabase = await createSupabaseServerClient();
 
     // 1. Insert order
-    const { data: orderData, error: orderError } = await supabase
+    const { error: orderError } = await supabase
       .from("orders")
       .insert({
+        id: orderId,
         order_code: orderCode,
         customer_name: customerName,
         customer_phone: customerPhone,
@@ -103,11 +105,9 @@ export async function createOrderAction(
         total_amount: totalAmount,
         status: "new",
         source_domain: input.sourceDomain || "profitness",
-      })
-      .select("id, order_code")
-      .single();
+      });
 
-    if (orderError || !orderData) {
+    if (orderError) {
       console.error("Order creation error:", orderError);
       return {
         success: false,
@@ -119,7 +119,7 @@ export async function createOrderAction(
 
     // 2. Insert order items
     const orderItemsPayload = input.items.map((item) => ({
-      order_id: orderData.id,
+      order_id: orderId,
       product_id: item.productId || null,
       variant_id: item.variantId || null,
       product_name: item.productName,
@@ -136,13 +136,12 @@ export async function createOrderAction(
 
     if (itemsError) {
       console.error("Order items creation error:", itemsError);
-      // We don't necessarily abort since main order is already created, but we log
     }
 
     revalidatePath("/admin");
     revalidatePath("/admin/orders");
 
-    return { success: true, orderCode: orderData.order_code };
+    return { success: true, orderCode };
   } catch (error) {
     console.error("Unexpected order creation error:", error);
     return {

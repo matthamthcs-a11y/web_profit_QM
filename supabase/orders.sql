@@ -59,10 +59,11 @@ grant select, insert, update, delete on public.order_items to authenticated;
 
 -- Policies for public.orders
 drop policy if exists "Anon can insert orders" on public.orders;
-create policy "Anon can insert orders"
+drop policy if exists "Anyone can insert orders" on public.orders;
+create policy "Anyone can insert orders"
 on public.orders
 for insert
-to anon
+to anon, authenticated
 with check (true);
 
 drop policy if exists "Admins can select orders" on public.orders;
@@ -89,10 +90,11 @@ using (public.current_user_is_admin());
 
 -- Policies for public.order_items
 drop policy if exists "Anon can insert order items" on public.order_items;
-create policy "Anon can insert order items"
+drop policy if exists "Anyone can insert order items" on public.order_items;
+create policy "Anyone can insert order items"
 on public.order_items
 for insert
-to anon
+to anon, authenticated
 with check (true);
 
 drop policy if exists "Admins can select order items" on public.order_items;
