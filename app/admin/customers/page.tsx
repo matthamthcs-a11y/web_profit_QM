@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AdminCustomersManager } from "@/components/admin-customers-manager";
 import { AdminPageHeader } from "@/components/admin-fields";
 import { requireAdmin } from "@/lib/admin/auth";
-import { getAdminCustomers } from "@/lib/admin/data";
+import { getAdminCustomersPage } from "@/lib/admin/data";
 
 export const metadata: Metadata = {
   title: "Quản lý Khách hàng | Admin",
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function AdminCustomersPage() {
   await requireAdmin();
-  const customers = await getAdminCustomers();
+  const initialData = await getAdminCustomersPage({ limit: 25, offset: 0 });
 
   return (
     <section className="container-px mx-auto max-w-7xl py-10">
@@ -22,7 +22,7 @@ export default async function AdminCustomersPage() {
         description="Danh sách khách hàng từ Hammer Nutrition & Pro-Fitness, tự động tổng hợp số đơn hàng, tổng chi tiêu và hỗ trợ xuất file Excel."
       />
 
-      <AdminCustomersManager customers={customers} />
+      <AdminCustomersManager initialData={initialData} />
     </section>
   );
 }

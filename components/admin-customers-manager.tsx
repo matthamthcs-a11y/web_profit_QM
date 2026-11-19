@@ -5,6 +5,7 @@ import {
   ChevronRight,
   Eye,
   FileSpreadsheet,
+  Loader2,
   Mail,
   MapPin,
   MessageCircle,
@@ -15,11 +16,15 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { deleteCustomer, saveCustomer } from "@/app/admin/actions";
 import { AdminDeleteButton, AdminSubmit } from "@/components/admin-fields";
 import { formatPrice } from "@/components/price-display";
-import type { AdminCustomerWithStats } from "@/lib/admin/data";
+import type {
+  AdminCustomerOrderSummary,
+  AdminCustomerPageRow,
+  AdminCustomersPageResult,
+} from "@/lib/admin/data";
 
 const PAGE_SIZE = 25;
 
@@ -48,116 +53,158 @@ const orderStatusLabels: Record<string, { label: string; cls: string }> = {
 };
 
 export function AdminCustomersManager({
-  customers,
+  initialData,
 }: {
-  customers: AdminCustomerWithStats[];
+  initialData: AdminCustomersPageResult;
 }) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [data, setData] = useState<AdminCustomersPageResult>(initialData);
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSource, setSelectedSource] = useState<string>("all");
   const [selectedSegment, setSelectedSegment] = useState<string>("all");
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [activeCustomer, setActiveCustomer] =
-    useState<AdminCustomerWithStats | null>(null);
+    useState<AdminCustomerPageRow | null>(null);
+  const [customerOrders, setCustomerOrders] = useState<
+    AdminCustomerOrderSummary[]
+  >([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const stats = useMemo(() => {
-    const withOrders = customers.filter((c) => c.order_count > 0).length;
-    const repeat = customers.filter((c) => c.order_count >= 2).length;
-    const hammer = customers.filter((c) =>
-      (c.source_domain || "").toLowerCase().includes("hammer"),
-    ).length;
-    return {
-      total: customers.length,
-      withOrders,
-      repeat,
-      hammer,
-      profitness: customers.length - hammer,
-    };
-  }, [customers]);
+  const isFirstRender = useRef(true);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const filteredCustomers = useMemo(() => {
-    return customers.filter((c) => {
-      if (selectedSource !== "all") {
-        const isHammer = (c.source_domain || "").toLowerCase().includes("hammer");
-        if (selectedSource === "hammer" && !isHammer) return false;
-        if (selectedSource === "profitness" && isHammer) return false;
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchInput.trim());
+    }, 280);
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
+
+  const fetchCustomersPage = useCallback(
+    async (params: {
+      q: string;
+      source: string;
+      segment: string;
+      pageNum: number;
+    }) => {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setIsLoading(true);
+
+      try {
+        const sp = new URLSearchParams({
+          page: String(params.pageNum),
+          limit: String(PAGE_SIZE),
+          source: params.source,
+          segment: params.segment,
+        });
+        if (params.q) sp.set("q", params.q);
+
+        const res = await fetch(`/api/admin/customers?${sp.toString()}`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const json = (await res.json()) as AdminCustomersPageResult;
+        setData(json);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          console.error("Failed to fetch customers page:", err);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
+    },
+    [],
+  );
 
-      if (selectedSegment === "with_orders" && c.order_count === 0) return false;
-      if (selectedSegment === "repeat" && c.order_count < 2) return false;
-      if (selectedSegment === "no_orders" && c.order_count > 0) return false;
-
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const matchName = c.full_name.toLowerCase().includes(q);
-        const matchPhone = (c.phone || "").toLowerCase().includes(q);
-        const matchEmail = (c.email || "").toLowerCase().includes(q);
-        const matchAddress = (c.address || "").toLowerCase().includes(q);
-        return matchName || matchPhone || matchEmail || matchAddress;
-      }
-      return true;
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    fetchCustomersPage({
+      q: debouncedSearch,
+      source: selectedSource,
+      segment: selectedSegment,
+      pageNum: page,
     });
-  }, [customers, selectedSource, selectedSegment, searchQuery]);
+  }, [
+    debouncedSearch,
+    selectedSource,
+    selectedSegment,
+    page,
+    fetchCustomersPage,
+  ]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredCustomers.length / PAGE_SIZE));
+  const refreshCurrent = useCallback(() => {
+    return fetchCustomersPage({
+      q: debouncedSearch,
+      source: selectedSource,
+      segment: selectedSegment,
+      pageNum: page,
+    });
+  }, [
+    debouncedSearch,
+    selectedSource,
+    selectedSegment,
+    page,
+    fetchCustomersPage,
+  ]);
+
+  // Lazy-load order history only when a customer detail modal is opened
+  useEffect(() => {
+    if (!activeCustomer) {
+      setCustomerOrders([]);
+      return;
+    }
+    let cancelled = false;
+    setIsLoadingOrders(true);
+    fetch(`/api/admin/customers/${activeCustomer.id}/orders`, {
+      cache: "no-store",
+    })
+      .then((res) => (res.ok ? res.json() : { orders: [] }))
+      .then((json: { orders?: AdminCustomerOrderSummary[] }) => {
+        if (!cancelled) {
+          setCustomerOrders(json.orders || []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setCustomerOrders([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingOrders(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCustomer]);
+
+  const totalPages = Math.max(1, Math.ceil(data.filteredTotal / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
-  const paginatedCustomers = useMemo(() => {
-    const start = (safePage - 1) * PAGE_SIZE;
-    return filteredCustomers.slice(start, start + PAGE_SIZE);
-  }, [filteredCustomers, safePage]);
 
   function handleExportExcel() {
-    if (filteredCustomers.length === 0) {
+    if (data.filteredTotal === 0) {
       alert("Không có khách hàng nào để xuất.");
       return;
     }
-
-    const headers = [
-      "Họ và tên",
-      "Số điện thoại",
-      "Email",
-      "Địa chỉ",
-      "Nguồn",
-      "Số đơn hàng",
-      "Tổng chi tiêu (VNĐ)",
-      "Đơn hàng gần nhất",
-      "Ngày khởi tạo",
-      "Ghi chú CSKH",
-    ];
-
-    const rows = filteredCustomers.map((c) => {
-      const sourceText = (c.source_domain || "").toLowerCase().includes("hammer")
-        ? "Hammer Nutrition"
-        : "Pro-Fitness";
-      return [
-        `"${c.full_name.replace(/"/g, '""')}"`,
-        c.phone ? `"'${c.phone}"` : '""',
-        `"${(c.email || "").replace(/"/g, '""')}"`,
-        `"${(c.address || "").replace(/"/g, '""')}"`,
-        `"${sourceText}"`,
-        c.order_count,
-        c.total_spent,
-        c.last_order_at
-          ? `"${new Date(c.last_order_at).toLocaleString("vi-VN")}"`
-          : '""',
-        `"${new Date(c.created_at).toLocaleString("vi-VN")}"`,
-        `"${(c.notes || "").replace(/"/g, '""')}"`,
-      ];
+    const sp = new URLSearchParams({
+      source: selectedSource,
+      segment: selectedSegment,
     });
-
-    const csvContent =
-      "\uFEFF" +
-      [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    const dateStr = new Date().toISOString().slice(0, 10);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `khach_hang_${dateStr}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (debouncedSearch) sp.set("q", debouncedSearch);
+    window.location.href = `/api/admin/customers/export?${sp.toString()}`;
   }
 
   return (
@@ -180,7 +227,9 @@ export function AdminCustomersManager({
           <span className="text-xs font-bold uppercase text-muted">
             Tổng khách hàng
           </span>
-          <span className="mt-1 text-2xl font-black text-ink">{stats.total}</span>
+          <span className="mt-1 text-2xl font-black text-ink">
+            {data.stats.total}
+          </span>
         </button>
 
         <button
@@ -199,7 +248,7 @@ export function AdminCustomersManager({
             Đã phát sinh đơn
           </span>
           <span className="mt-1 text-2xl font-black text-emerald-700">
-            {stats.withOrders}
+            {data.stats.withOrders}
           </span>
         </button>
 
@@ -219,7 +268,7 @@ export function AdminCustomersManager({
             Khách quay lại (≥2 đơn)
           </span>
           <span className="mt-1 text-2xl font-black text-indigo-700">
-            {stats.repeat}
+            {data.stats.repeat}
           </span>
         </button>
 
@@ -240,7 +289,7 @@ export function AdminCustomersManager({
             Nguồn Hammer / Pro-Fitness
           </span>
           <span className="mt-1 text-2xl font-black text-amber-800">
-            {stats.hammer} / {stats.profitness}
+            {data.stats.hammer} / {data.stats.profitness}
           </span>
         </button>
       </div>
@@ -248,22 +297,26 @@ export function AdminCustomersManager({
       {/* 2. Search, Filter & Actions */}
       <div className="flex flex-col gap-4 rounded-lg border border-line bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          {isLoading ? (
+            <Loader2 className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-brand-red" />
+          ) : (
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          )}
           <input
             type="text"
             placeholder="Tìm theo họ tên, số điện thoại, email hoặc địa chỉ..."
-            value={searchQuery}
+            value={searchInput}
             onChange={(e) => {
-              setSearchQuery(e.target.value);
+              setSearchInput(e.target.value);
               setPage(1);
             }}
             className="h-10 w-full rounded border border-line pl-10 pr-9 text-sm font-medium text-ink placeholder:text-muted focus:border-ink focus:outline-none"
           />
-          {searchQuery && (
+          {searchInput && (
             <button
               type="button"
               onClick={() => {
-                setSearchQuery("");
+                setSearchInput("");
                 setPage(1);
               }}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink"
@@ -318,14 +371,14 @@ export function AdminCustomersManager({
           >
             <FileSpreadsheet className="h-4 w-4" />
             <span className="hidden sm:inline">
-              Xuất Excel ({filteredCustomers.length})
+              Xuất Excel ({data.filteredTotal})
             </span>
           </button>
         </div>
       </div>
 
       {/* 3. Customers Table */}
-      {filteredCustomers.length === 0 ? (
+      {data.customers.length === 0 ? (
         <div className="rounded-lg border border-line bg-white p-12 text-center">
           <Users className="mx-auto h-12 w-12 text-slate-300" />
           <h3 className="mt-3 text-base font-bold text-ink">
@@ -336,7 +389,11 @@ export function AdminCustomersManager({
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-line bg-white shadow-sm">
+        <div
+          className={`overflow-hidden rounded-lg border border-line bg-white shadow-sm transition-opacity ${
+            isLoading ? "opacity-60" : "opacity-100"
+          }`}
+        >
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-line bg-surface/70 text-xs font-black uppercase text-muted">
@@ -350,7 +407,7 @@ export function AdminCustomersManager({
                 </tr>
               </thead>
               <tbody className="divide-y divide-line font-medium text-ink">
-                {paginatedCustomers.map((customer) => {
+                {data.customers.map((customer) => {
                   const isHammer = (customer.source_domain || "")
                     .toLowerCase()
                     .includes("hammer");
@@ -399,7 +456,10 @@ export function AdminCustomersManager({
                         {customer.email && (
                           <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
                             <Mail className="h-3.5 w-3.5" />
-                            <span className="max-w-[210px] truncate" title={customer.email}>
+                            <span
+                              className="max-w-[210px] truncate"
+                              title={customer.email}
+                            >
                               {customer.email}
                             </span>
                           </div>
@@ -428,19 +488,22 @@ export function AdminCustomersManager({
                           <ShoppingBag className="h-3.5 w-3.5 text-muted" />
                           <span>{customer.order_count} đơn</span>
                         </button>
-                        {customer.total_spent > 0 && (
+                        {Number(customer.total_spent) > 0 && (
                           <div className="mt-0.5 text-xs font-black text-brand-red">
-                            {formatPrice(customer.total_spent)}
+                            {formatPrice(Number(customer.total_spent))}
                           </div>
                         )}
                       </td>
 
                       <td className="whitespace-nowrap px-4 py-3.5 text-xs text-muted">
-                        {new Date(customer.created_at).toLocaleDateString("vi-VN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })}
+                        {new Date(customer.created_at).toLocaleDateString(
+                          "vi-VN",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          },
+                        )}
                       </td>
 
                       <td className="whitespace-nowrap px-4 py-3.5 text-right">
@@ -475,8 +538,17 @@ export function AdminCustomersManager({
                             <Eye className="h-4 w-4" />
                           </button>
 
-                          <form action={deleteCustomer}>
-                            <input type="hidden" name="id" value={customer.id} />
+                          <form
+                            action={async (fd) => {
+                              await deleteCustomer(fd);
+                              await refreshCurrent();
+                            }}
+                          >
+                            <input
+                              type="hidden"
+                              name="id"
+                              value={customer.id}
+                            />
                             <AdminDeleteButton />
                           </form>
                         </div>
@@ -492,14 +564,14 @@ export function AdminCustomersManager({
           <div className="flex flex-col items-center justify-between gap-3 border-t border-line bg-surface/40 px-4 py-3 text-xs font-bold text-muted sm:flex-row">
             <span>
               Hiển thị {(safePage - 1) * PAGE_SIZE + 1} –{" "}
-              {Math.min(safePage * PAGE_SIZE, filteredCustomers.length)} trên tổng{" "}
-              {filteredCustomers.length} khách hàng
+              {Math.min(safePage * PAGE_SIZE, data.filteredTotal)} trên tổng{" "}
+              {data.filteredTotal} khách hàng
             </span>
             {totalPages > 1 && (
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  disabled={safePage <= 1}
+                  disabled={safePage <= 1 || isLoading}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   className="inline-flex h-8 items-center gap-1 rounded border border-line bg-white px-2.5 text-ink hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -511,7 +583,7 @@ export function AdminCustomersManager({
                 </span>
                 <button
                   type="button"
-                  disabled={safePage >= totalPages}
+                  disabled={safePage >= totalPages || isLoading}
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   className="inline-flex h-8 items-center gap-1 rounded border border-line bg-white px-2.5 text-ink hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -540,10 +612,10 @@ export function AdminCustomersManager({
                 </h3>
                 <p className="text-xs text-muted">
                   Khởi tạo:{" "}
-                  {new Date(activeCustomer.created_at).toLocaleString("vi-VN")} •{" "}
-                  {activeCustomer.order_count} đơn hàng • Tổng chi tiêu:{" "}
+                  {new Date(activeCustomer.created_at).toLocaleString("vi-VN")}{" "}
+                  • {activeCustomer.order_count} đơn hàng • Tổng chi tiêu:{" "}
                   <strong className="text-brand-red">
-                    {formatPrice(activeCustomer.total_spent)}
+                    {formatPrice(Number(activeCustomer.total_spent))}
                   </strong>
                 </p>
               </div>
@@ -557,8 +629,14 @@ export function AdminCustomersManager({
             </div>
 
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
-              {/* Edit Form */}
-              <form action={saveCustomer} className="space-y-4">
+              <form
+                action={async (fd) => {
+                  await saveCustomer(fd);
+                  await refreshCurrent();
+                  setActiveCustomer(null);
+                }}
+                className="space-y-4"
+              >
                 <input type="hidden" name="id" value={activeCustomer.id} />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
@@ -644,18 +722,22 @@ export function AdminCustomersManager({
                 </div>
               </form>
 
-              {/* Customer Order History */}
               <div className="border-t border-line pt-5">
                 <h4 className="text-xs font-black uppercase text-ink">
-                  Lịch sử đơn hàng ({activeCustomer.orders.length})
+                  Lịch sử đơn hàng ({activeCustomer.order_count})
                 </h4>
-                {activeCustomer.orders.length === 0 ? (
+                {isLoadingOrders ? (
+                  <div className="mt-3 flex items-center justify-center gap-2 rounded border border-line p-6 text-xs font-bold text-muted">
+                    <Loader2 className="h-4 w-4 animate-spin text-brand-red" />
+                    Đang tải lịch sử đơn hàng...
+                  </div>
+                ) : customerOrders.length === 0 ? (
                   <p className="mt-2 rounded border border-dashed border-line p-4 text-center text-xs text-muted">
                     Chưa có đơn hàng nào khớp với SĐT/Email của khách hàng này.
                   </p>
                 ) : (
                   <div className="mt-2 divide-y divide-line rounded border border-line">
-                    {activeCustomer.orders.map((order) => {
+                    {customerOrders.map((order) => {
                       const st = orderStatusLabels[order.status] || {
                         label: order.status,
                         cls: "bg-surface text-muted border-line",
@@ -670,7 +752,9 @@ export function AdminCustomersManager({
                               #{order.order_code}
                             </span>
                             <span className="ml-2 text-xs text-muted">
-                              {new Date(order.created_at).toLocaleString("vi-VN")}
+                              {new Date(order.created_at).toLocaleString(
+                                "vi-VN",
+                              )}
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
@@ -680,7 +764,7 @@ export function AdminCustomersManager({
                               {st.label}
                             </span>
                             <span className="font-black text-ink">
-                              {formatPrice(order.total_amount)}
+                              {formatPrice(Number(order.total_amount))}
                             </span>
                           </div>
                         </div>
@@ -753,6 +837,7 @@ export function AdminCustomersManager({
               action={async (fd) => {
                 await saveCustomer(fd);
                 setShowCreateModal(false);
+                await refreshCurrent();
               }}
               className="mt-4 space-y-4"
             >

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -12,7 +13,7 @@ export type CurrentAdmin = {
 
 const allowedRoles = new Set(["admin", "editor"]);
 
-export async function getCurrentAdmin(): Promise<CurrentAdmin | null> {
+export const getCurrentAdmin = cache(async (): Promise<CurrentAdmin | null> => {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -34,7 +35,7 @@ export async function getCurrentAdmin(): Promise<CurrentAdmin | null> {
   }
 
   return { user, profile };
-}
+});
 
 export async function requireAdmin(): Promise<CurrentAdmin> {
   const admin = await getCurrentAdmin();

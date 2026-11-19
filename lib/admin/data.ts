@@ -461,6 +461,176 @@ export async function getAdminCustomers(): Promise<AdminCustomerWithStats[]> {
   });
 }
 
+export type AdminOrderItemRow = {
+  id: string;
+  product_name: string;
+  variant_label: string | null;
+  price: number;
+  quantity: number;
+  total_price: number;
+  image_path: string | null;
+};
+
+export type AdminOrderRow = {
+  id: string;
+  order_code: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  shipping_address: string;
+  province_city: string | null;
+  district: string | null;
+  payment_preference: string;
+  customer_notes: string | null;
+  subtotal: number;
+  shipping_fee: number;
+  total_amount: number;
+  status: string;
+  staff_notes: string | null;
+  source_domain: string | null;
+  created_at: string;
+  updated_at: string;
+  order_items?: AdminOrderItemRow[];
+};
+
+export type AdminOrdersStats = {
+  total: number;
+  new: number;
+  processing: number;
+  completed: number;
+  cancelled: number;
+};
+
+export type AdminOrdersPageResult = {
+  stats: AdminOrdersStats;
+  filteredTotal: number;
+  orders: AdminOrderRow[];
+};
+
+export async function getAdminOrdersPage(options?: {
+  search?: string;
+  status?: string;
+  source?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<AdminOrdersPageResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("get_admin_orders_page", {
+    p_search: options?.search?.trim() || null,
+    p_status: options?.status || "all",
+    p_source: options?.source || "all",
+    p_limit: options?.limit ?? 25,
+    p_offset: options?.offset ?? 0,
+  });
+
+  if (error || !data || typeof data !== "object") {
+    console.error("getAdminOrdersPage error:", error);
+    return {
+      stats: { total: 0, new: 0, processing: 0, completed: 0, cancelled: 0 },
+      filteredTotal: 0,
+      orders: [],
+    };
+  }
+
+  const parsed = data as unknown as AdminOrdersPageResult;
+  return {
+    stats: parsed.stats ?? {
+      total: 0,
+      new: 0,
+      processing: 0,
+      completed: 0,
+      cancelled: 0,
+    },
+    filteredTotal: Number(parsed.filteredTotal) || 0,
+    orders: Array.isArray(parsed.orders) ? parsed.orders : [],
+  };
+}
+
+export type AdminCustomerStats = {
+  total: number;
+  withOrders: number;
+  repeat: number;
+  hammer: number;
+  profitness: number;
+};
+
+export type AdminCustomerPageRow = {
+  id: string;
+  legacy_id: number | null;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  notes: string | null;
+  source_domain: string;
+  created_at: string;
+  updated_at: string;
+  order_count: number;
+  total_spent: number;
+  last_order_at: string | null;
+};
+
+export type AdminCustomersPageResult = {
+  stats: AdminCustomerStats;
+  filteredTotal: number;
+  customers: AdminCustomerPageRow[];
+};
+
+export async function getAdminCustomersPage(options?: {
+  search?: string;
+  source?: string;
+  segment?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<AdminCustomersPageResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("get_admin_customers_page", {
+    p_search: options?.search?.trim() || null,
+    p_source: options?.source || "all",
+    p_segment: options?.segment || "all",
+    p_limit: options?.limit ?? 25,
+    p_offset: options?.offset ?? 0,
+  });
+
+  if (error || !data || typeof data !== "object") {
+    console.error("getAdminCustomersPage error:", error);
+    return {
+      stats: { total: 0, withOrders: 0, repeat: 0, hammer: 0, profitness: 0 },
+      filteredTotal: 0,
+      customers: [],
+    };
+  }
+
+  const parsed = data as unknown as AdminCustomersPageResult;
+  return {
+    stats: parsed.stats ?? {
+      total: 0,
+      withOrders: 0,
+      repeat: 0,
+      hammer: 0,
+      profitness: 0,
+    },
+    filteredTotal: Number(parsed.filteredTotal) || 0,
+    customers: Array.isArray(parsed.customers) ? parsed.customers : [],
+  };
+}
+
+export async function getAdminCustomerOrders(
+  customerId: string,
+): Promise<AdminCustomerOrderSummary[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("get_admin_customer_orders", {
+    p_customer_id: customerId,
+  });
+
+  if (error || !Array.isArray(data)) {
+    console.error("getAdminCustomerOrders error:", error);
+    return [];
+  }
+
+  return data as unknown as AdminCustomerOrderSummary[];
+}
+
 export async function getAdminOrderById(id: string) {
   const supabase = await createSupabaseServerClient();
   const [{ data: order, error: orderError }, { data: items, error: itemsError }] =

@@ -535,6 +535,32 @@ export type Database = {
         };
         Returns: undefined;
       };
+      get_admin_orders_page: {
+        Args: {
+          p_search?: string | null;
+          p_status?: string;
+          p_source?: string;
+          p_limit?: number;
+          p_offset?: number;
+        };
+        Returns: Json;
+      };
+      get_admin_customers_page: {
+        Args: {
+          p_search?: string | null;
+          p_source?: string;
+          p_segment?: string;
+          p_limit?: number;
+          p_offset?: number;
+        };
+        Returns: Json;
+      };
+      get_admin_customer_orders: {
+        Args: {
+          p_customer_id: string;
+        };
+        Returns: Json;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
