@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { HomeBanner, Locale, Product } from "@/lib/types";
 
 type HeroBannerProps = {
@@ -90,20 +90,31 @@ export function HeroBanner({ locale, products, banners = [] }: HeroBannerProps) 
   }, [products]);
 
   const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const hasBanners = banners.length > 0;
   const totalSlides = hasBanners ? banners.length : fallbackSlides.length;
-  const currentBanner = hasBanners ? banners[index] ?? banners[0] : null;
-  const currentFallback = fallbackSlides[index] ?? fallbackSlides[0];
+  const hasMultipleSlides = totalSlides >= 2;
+  const activeIndex = totalSlides > 0 ? index % totalSlides : 0;
 
-  const prev = () => {
+  const prev = useCallback(() => {
     if (!totalSlides) return;
     setIndex((value) => (value - 1 + totalSlides) % totalSlides);
-  };
+  }, [totalSlides]);
 
-  const next = () => {
+  const next = useCallback(() => {
     if (!totalSlides) return;
     setIndex((value) => (value + 1) % totalSlides);
-  };
+  }, [totalSlides]);
+
+  useEffect(() => {
+    if (!hasMultipleSlides || isPaused) return;
+
+    const timer = window.setInterval(() => {
+      setIndex((value) => (value + 1) % totalSlides);
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, [hasMultipleSlides, isPaused, totalSlides, activeIndex]);
 
   const bannerLine =
     locale === "vi"
@@ -115,36 +126,81 @@ export function HeroBanner({ locale, products, banners = [] }: HeroBannerProps) 
   return (
     <section className="bg-white">
       <div className="mx-auto max-w-[1920px] px-0">
-        <div className="relative overflow-hidden bg-white">
+        <div
+          className="relative overflow-hidden bg-white"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
           <div
             className={
-              currentBanner
-                ? "relative flex max-h-[75vh] items-center justify-center bg-white"
-                : "relative h-[340px] bg-slate-950 sm:h-[420px] lg:h-[500px]"
+              hasBanners
+                ? "relative max-h-[75vh] w-full overflow-hidden bg-white"
+                : "relative h-[340px] w-full overflow-hidden bg-slate-950 sm:h-[420px] lg:h-[500px]"
             }
           >
-            {currentBanner ? (
-              <BannerImage banner={currentBanner} locale={locale} />
-            ) : currentFallback ? (
-              <SlideArt theme={currentFallback} />
+            {hasBanners ? (
+              <div
+                className="flex transition-transform duration-700 ease-in-out"
+                style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+              >
+                {banners.map((banner) => (
+                  <div
+                    key={banner.id}
+                    className="flex max-h-[75vh] w-full shrink-0 items-center justify-center bg-white"
+                  >
+                    <BannerImage banner={banner} locale={locale} />
+                  </div>
+                ))}
+              </div>
+            ) : fallbackSlides.length > 0 ? (
+              <div
+                className="flex h-full transition-transform duration-700 ease-in-out"
+                style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+              >
+                {fallbackSlides.map((theme, slideIdx) => (
+                  <div key={slideIdx} className="relative h-full w-full shrink-0">
+                    <SlideArt theme={theme} />
+                  </div>
+                ))}
+              </div>
             ) : null}
 
-            <button
-              type="button"
-              onClick={prev}
-              aria-label="Previous banner"
-              className="absolute left-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded border border-white/40 bg-black/15 text-white backdrop-blur hover:bg-black/25"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={next}
-              aria-label="Next banner"
-              className="absolute right-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded border border-white/40 bg-black/15 text-white backdrop-blur hover:bg-black/25"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
+            {hasMultipleSlides ? (
+              <>
+                <button
+                  type="button"
+                  onClick={prev}
+                  aria-label="Previous banner"
+                  className="absolute left-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded border border-white/40 bg-black/15 text-white backdrop-blur transition hover:bg-black/30"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={next}
+                  aria-label="Next banner"
+                  className="absolute right-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded border border-white/40 bg-black/15 text-white backdrop-blur transition hover:bg-black/30"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+
+                <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-1.5 backdrop-blur-sm">
+                  {Array.from({ length: totalSlides }).map((_, dotIdx) => (
+                    <button
+                      key={dotIdx}
+                      type="button"
+                      onClick={() => setIndex(dotIdx)}
+                      aria-label={`Chuyển sang banner ${dotIdx + 1}`}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        dotIdx === activeIndex
+                          ? "w-6 bg-white"
+                          : "w-2 bg-white/50 hover:bg-white/80"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : null}
           </div>
 
           <div className="border-t border-line bg-white px-6 py-5 sm:py-6">
