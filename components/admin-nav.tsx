@@ -11,6 +11,7 @@ import {
   Star,
   Tags,
   Shield,
+  Users,
 } from "lucide-react";
 import { getLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/types";
@@ -19,6 +20,7 @@ const adminNavCopy = {
   vi: {
     overview: "Tổng quan",
     orders: "Đơn hàng",
+    customers: "Khách hàng",
     products: "Sản phẩm",
     categories: "Danh mục",
     brands: "Thương hiệu",
@@ -33,6 +35,7 @@ const adminNavCopy = {
   en: {
     overview: "Overview",
     orders: "Orders",
+    customers: "Customers",
     products: "Products",
     categories: "Categories",
     brands: "Brands",
@@ -52,6 +55,7 @@ export function getAdminLinks(locale: Locale) {
   return [
     { href: "/admin", label: t.overview, icon: LayoutDashboard },
     { href: "/admin/orders", label: t.orders, icon: ShoppingCart },
+    { href: "/admin/customers", label: t.customers, icon: Users },
     { href: "/admin/products", label: t.products, icon: Package },
     { href: "/admin/categories", label: t.categories, icon: Tags },
     { href: "/admin/brands", label: t.brands, icon: Tags },

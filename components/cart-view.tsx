@@ -123,7 +123,11 @@ export function CartView() {
         paymentPreference,
         customerNotes,
         items: orderItems,
-        sourceDomain: "profitness",
+        sourceDomain:
+          typeof window !== "undefined" &&
+          window.location.hostname.toLowerCase().includes("hammer")
+            ? "hammer"
+            : "profitness",
       });
 
       if (!res.success) {

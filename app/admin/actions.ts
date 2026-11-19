@@ -48,6 +48,7 @@ const adminPaths = [
   "/admin/testimonials",
   "/admin/leads",
   "/admin/orders",
+  "/admin/customers",
   "/admin/settings",
 ];
 
@@ -62,6 +63,7 @@ function revalidateAdminData() {
     "home-banners",
     "product-badges",
     "orders",
+    "customers",
   ].forEach((tag) => revalidateTag(tag));
 
   adminPaths.forEach((path) => revalidatePath(path));
@@ -1540,6 +1542,78 @@ export async function deleteOrder(formData: FormData) {
       return;
     }
     await setAdminNotice("success", "Đã xóa đơn hàng.");
+  }
+
+  revalidateAdminData();
+}
+
+export async function saveCustomer(formData: FormData) {
+  const supabase = await getAdminClient();
+  const id = getString(formData, "id");
+  const fullName = getString(formData, "full_name");
+  const phone = getOptionalString(formData, "phone");
+  const email = getOptionalString(formData, "email");
+  const address = getOptionalString(formData, "address");
+  const notes = getOptionalString(formData, "notes");
+  const sourceDomain = getString(formData, "source_domain") || "profitness";
+
+  if (!fullName) {
+    await setAdminNotice("error", "Khách hàng: họ và tên là bắt buộc.");
+    return;
+  }
+
+  const payload = {
+    full_name: fullName,
+    phone,
+    email,
+    address,
+    notes,
+    source_domain: sourceDomain,
+  };
+
+  try {
+    if (id) {
+      await expectMutation(
+        "Khách hàng: không thể cập nhật",
+        supabase.from("customers").update(payload).eq("id", id),
+      );
+      await setAdminNotice("success", "Đã cập nhật thông tin khách hàng.");
+    } else {
+      await expectMutation(
+        "Khách hàng: không thể tạo mới",
+        supabase.from("customers").insert(payload),
+      );
+      await setAdminNotice("success", "Đã thêm khách hàng mới.");
+    }
+  } catch (error) {
+    await setAdminNotice(
+      "error",
+      getAdminActionErrorMessage(error, "Khách hàng: không thể lưu thông tin."),
+    );
+    return;
+  }
+
+  revalidateAdminData();
+}
+
+export async function deleteCustomer(formData: FormData) {
+  const supabase = await getAdminClient();
+  const id = getString(formData, "id");
+
+  if (id) {
+    try {
+      await expectMutation(
+        "Khách hàng: không thể xóa",
+        supabase.from("customers").delete().eq("id", id),
+      );
+    } catch (error) {
+      await setAdminNotice(
+        "error",
+        getAdminActionErrorMessage(error, "Khách hàng: không thể xóa."),
+      );
+      return;
+    }
+    await setAdminNotice("success", "Đã xóa khách hàng.");
   }
 
   revalidateAdminData();

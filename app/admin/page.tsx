@@ -31,6 +31,7 @@ const copy = {
       newLeads: "Lead mới",
       newOrders: "Đơn hàng mới",
       totalOrders: "Tổng đơn hàng",
+      customers: "Khách hàng",
     },
   },
   en: {
@@ -51,6 +52,7 @@ const copy = {
       newLeads: "New leads",
       newOrders: "New orders",
       totalOrders: "Total orders",
+      customers: "Customers",
     },
   },
 } as const;
@@ -66,6 +68,7 @@ export default async function AdminDashboardPage() {
   const statCards = [
     { label: t.stats.newOrders, value: counts.newOrders },
     { label: t.stats.totalOrders, value: counts.totalOrders },
+    { label: t.stats.customers, value: counts.customers },
     { label: t.stats.products, value: counts.products },
     { label: t.stats.categories, value: counts.categories },
     { label: t.stats.brands, value: counts.brands },

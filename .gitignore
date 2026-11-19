@@ -13,3 +13,5 @@ pnpm-debug.log*
 *.tsbuildinfo
 .codex-dev-server.log
 .codex-dev-server.err.log
+hammernutrition_db.sql
+/*.sql

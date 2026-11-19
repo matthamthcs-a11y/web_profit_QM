@@ -3,6 +3,8 @@
 import Image from "next/image";
 import {
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Eye,
   FileSpreadsheet,
@@ -96,9 +98,13 @@ const statusConfig: Record<
   },
 };
 
+const PAGE_SIZE = 25;
+
 export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [selectedSource, setSelectedSource] = useState<string>("all");
+  const [page, setPage] = useState(1);
   const [activeDetailOrder, setActiveDetailOrder] = useState<AdminOrder | null>(
     null,
   );
@@ -119,20 +125,39 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
   // Filtered orders
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      if (selectedStatus !== "all" && order.status !== selectedStatus) {
+      if (selectedStatus === "processing") {
+        if (!["contacted", "confirmed", "shipping"].includes(order.status)) {
+          return false;
+        }
+      } else if (selectedStatus !== "all" && order.status !== selectedStatus) {
         return false;
       }
+
+      if (selectedSource !== "all") {
+        const src = (order.source_domain || "profitness").toLowerCase();
+        if (selectedSource === "hammer" && !src.includes("hammer")) return false;
+        if (selectedSource === "profitness" && src.includes("hammer")) return false;
+      }
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchCode = order.order_code.toLowerCase().includes(q);
         const matchName = order.customer_name.toLowerCase().includes(q);
         const matchPhone = order.customer_phone.toLowerCase().includes(q);
         const matchAddress = order.shipping_address.toLowerCase().includes(q);
-        return matchCode || matchName || matchPhone || matchAddress;
+        const matchEmail = (order.customer_email || "").toLowerCase().includes(q);
+        return matchCode || matchName || matchPhone || matchAddress || matchEmail;
       }
       return true;
     });
-  }, [orders, selectedStatus, searchQuery]);
+  }, [orders, selectedStatus, selectedSource, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginatedOrders = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filteredOrders.slice(start, start + PAGE_SIZE);
+  }, [filteredOrders, safePage]);
 
   // Export CSV with UTF-8 BOM for Excel
   function handleExportExcel() {
@@ -143,6 +168,7 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
 
     const headers = [
       "Mã đơn hàng",
+      "Nguồn web",
       "Ngày đặt",
       "Họ tên khách",
       "Số điện thoại",
@@ -150,6 +176,8 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
       "Địa chỉ giao hàng",
       "Tỉnh/Thành",
       "Hình thức thanh toán",
+      "Tạm tính (VNĐ)",
+      "Phí ship (VNĐ)",
       "Tổng tiền (VNĐ)",
       "Trạng thái",
       "Sản phẩm đặt mua",
@@ -170,9 +198,13 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
         o.payment_preference === "bank_transfer"
           ? "Chuyển khoản ngân hàng"
           : "Thanh toán khi nhận hàng (COD)";
+      const sourceText = (o.source_domain || "").toLowerCase().includes("hammer")
+        ? "Hammer Nutrition"
+        : "Pro-Fitness";
 
       return [
         `"${o.order_code}"`,
+        `"${sourceText}"`,
         `"${new Date(o.created_at).toLocaleString("vi-VN")}"`,
         `"${o.customer_name.replace(/"/g, '""')}"`,
         `"'${o.customer_phone}"`,
@@ -180,6 +212,8 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
         `"${o.shipping_address.replace(/"/g, '""')}"`,
         `"${(o.province_city || "").replace(/"/g, '""')}"`,
         `"${paymentText}"`,
+        o.subtotal,
+        o.shipping_fee,
         o.total_amount,
         `"${statusText}"`,
         `"${itemsSummary.replace(/"/g, '""')}"`,
@@ -197,7 +231,7 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
     const link = document.createElement("a");
     const dateStr = new Date().toISOString().slice(0, 10);
     link.setAttribute("href", url);
-    link.setAttribute("download", `don_hang_profitness_${dateStr}.csv`);
+    link.setAttribute("download", `don_hang_${dateStr}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -209,7 +243,10 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
         <button
           type="button"
-          onClick={() => setSelectedStatus("all")}
+          onClick={() => {
+            setSelectedStatus("all");
+            setPage(1);
+          }}
           className={`flex flex-col rounded-lg border p-4 text-left transition ${
             selectedStatus === "all"
               ? "border-ink bg-surface shadow-sm"
@@ -224,7 +261,10 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
 
         <button
           type="button"
-          onClick={() => setSelectedStatus("new")}
+          onClick={() => {
+            setSelectedStatus("new");
+            setPage(1);
+          }}
           className={`flex flex-col rounded-lg border p-4 text-left transition ${
             selectedStatus === "new"
               ? "border-red-500 bg-red-50 shadow-sm"
@@ -241,9 +281,12 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
 
         <button
           type="button"
-          onClick={() => setSelectedStatus("confirmed")}
+          onClick={() => {
+            setSelectedStatus("processing");
+            setPage(1);
+          }}
           className={`flex flex-col rounded-lg border p-4 text-left transition ${
-            selectedStatus === "confirmed"
+            selectedStatus === "processing"
               ? "border-indigo-500 bg-indigo-50 shadow-sm"
               : "border-line bg-white hover:bg-surface/50"
           }`}
@@ -258,7 +301,10 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
 
         <button
           type="button"
-          onClick={() => setSelectedStatus("completed")}
+          onClick={() => {
+            setSelectedStatus("completed");
+            setPage(1);
+          }}
           className={`flex flex-col rounded-lg border p-4 text-left transition ${
             selectedStatus === "completed"
               ? "border-emerald-500 bg-emerald-50 shadow-sm"
@@ -275,7 +321,10 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
 
         <button
           type="button"
-          onClick={() => setSelectedStatus("cancelled")}
+          onClick={() => {
+            setSelectedStatus("cancelled");
+            setPage(1);
+          }}
           className={`flex flex-col rounded-lg border p-4 text-left transition ${
             selectedStatus === "cancelled"
               ? "border-slate-500 bg-slate-100 shadow-sm"
@@ -297,15 +346,21 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
           <input
             type="text"
-            placeholder="Tìm theo mã đơn, họ tên, số điện thoại hoặc địa chỉ..."
+            placeholder="Tìm theo mã đơn, họ tên, số điện thoại, email hoặc địa chỉ..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
             className="h-10 w-full rounded border border-line pl-10 pr-4 text-sm font-medium text-ink placeholder:text-muted focus:border-ink focus:outline-none"
           />
           {searchQuery && (
             <button
               type="button"
-              onClick={() => setSearchQuery("")}
+              onClick={() => {
+                setSearchQuery("");
+                setPage(1);
+              }}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink"
             >
               <X className="h-4 w-4" />
@@ -313,14 +368,31 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <select
+            value={selectedSource}
+            onChange={(e) => {
+              setSelectedSource(e.target.value);
+              setPage(1);
+            }}
+            className="h-10 rounded border border-line bg-white px-3 text-sm font-bold text-ink focus:outline-none"
+          >
+            <option value="all">Tất cả nguồn</option>
+            <option value="hammer">Hammer Nutrition</option>
+            <option value="profitness">Pro-Fitness</option>
+          </select>
+
           <select
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
+            onChange={(e) => {
+              setSelectedStatus(e.target.value);
+              setPage(1);
+            }}
             className="h-10 rounded border border-line bg-white px-3 text-sm font-bold text-ink focus:outline-none"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="new">Đơn mới (Chưa gọi)</option>
+            <option value="processing">Đang xử lý</option>
             <option value="contacted">Đã liên hệ</option>
             <option value="confirmed">Đã chốt đơn</option>
             <option value="shipping">Đang giao hàng</option>
@@ -335,7 +407,7 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
             title="Xuất file Excel danh sách đơn hàng"
           >
             <FileSpreadsheet className="h-4 w-4" />
-            <span className="hidden sm:inline">Xuất Excel</span>
+            <span className="hidden sm:inline">Xuất Excel ({filteredOrders.length})</span>
           </button>
         </div>
       </div>
@@ -369,7 +441,7 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line font-medium text-ink">
-                {filteredOrders.map((order) => {
+                {paginatedOrders.map((order) => {
                   const cfg = statusConfig[order.status] || {
                     label: order.status,
                     bg: "bg-surface border-line",
@@ -379,6 +451,9 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
                     (s, i) => s + i.quantity,
                     0,
                   );
+                  const isHammer = (order.source_domain || "")
+                    .toLowerCase()
+                    .includes("hammer");
 
                   return (
                     <tr
@@ -394,10 +469,21 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
                         >
                           #{order.order_code}
                         </button>
-                        <div className="text-[11px] font-semibold text-muted">
-                          {order.payment_preference === "bank_transfer"
-                            ? "Chuyển khoản"
-                            : "COD"}
+                        <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-muted">
+                          <span>
+                            {order.payment_preference === "bank_transfer"
+                              ? "Chuyển khoản"
+                              : "COD"}
+                          </span>
+                          <span
+                            className={`rounded px-1.5 py-0.5 text-[10px] font-black uppercase ${
+                              isHammer
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-slate-100 text-slate-700"
+                            }`}
+                          >
+                            {isHammer ? "Hammer" : "Pro-Fitness"}
+                          </span>
                         </div>
                       </td>
 
@@ -514,6 +600,40 @@ export function AdminOrdersManager({ orders }: { orders: AdminOrder[] }) {
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Pagination Footer */}
+          <div className="flex flex-col items-center justify-between gap-3 border-t border-line bg-surface/40 px-4 py-3 text-xs font-bold text-muted sm:flex-row">
+            <span>
+              Hiển thị {(safePage - 1) * PAGE_SIZE + 1} –{" "}
+              {Math.min(safePage * PAGE_SIZE, filteredOrders.length)} trên tổng{" "}
+              {filteredOrders.length} đơn hàng
+            </span>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={safePage <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="inline-flex h-8 items-center gap-1 rounded border border-line bg-white px-2.5 text-ink hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Trước
+                </button>
+                <span className="px-2 text-ink">
+                  Trang {safePage} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  disabled={safePage >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className="inline-flex h-8 items-center gap-1 rounded border border-line bg-white px-2.5 text-ink hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Sau
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -110,6 +110,30 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["contact_leads"]["Insert"]>;
         Relationships: [];
       };
+      customers: {
+        Row: TimestampColumns & {
+          address: string | null;
+          email: string | null;
+          full_name: string;
+          id: string;
+          legacy_id: number | null;
+          notes: string | null;
+          phone: string | null;
+          source_domain: string;
+        };
+        Insert: OptionalTimestampColumns & {
+          address?: string | null;
+          email?: string | null;
+          full_name: string;
+          id?: string;
+          legacy_id?: number | null;
+          notes?: string | null;
+          phone?: string | null;
+          source_domain?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["customers"]["Insert"]>;
+        Relationships: [];
+      };
       dealers: {
         Row: TimestampColumns & {
           id: string;
@@ -500,6 +524,16 @@ export type Database = {
       set_updated_at: {
         Args: Record<string, never>;
         Returns: unknown;
+      };
+      upsert_customer_from_order: {
+        Args: {
+          p_full_name: string;
+          p_phone: string;
+          p_email?: string | null;
+          p_address?: string | null;
+          p_source_domain?: string;
+        };
+        Returns: undefined;
       };
     };
     Enums: Record<string, never>;

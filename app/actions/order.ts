@@ -138,8 +138,33 @@ export async function createOrderAction(
       console.error("Order items creation error:", itemsError);
     }
 
+    // 3. Sync customer profile automatically via safe SECURITY DEFINER RPC
+    const fullShippingAddress = [
+      shippingAddress,
+      input.district?.trim(),
+      input.provinceCity?.trim(),
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const { error: customerSyncError } = await supabase.rpc(
+      "upsert_customer_from_order",
+      {
+        p_full_name: customerName,
+        p_phone: customerPhone,
+        p_email: input.customerEmail?.trim() || null,
+        p_address: fullShippingAddress,
+        p_source_domain: input.sourceDomain || "profitness",
+      },
+    );
+
+    if (customerSyncError) {
+      console.error("Customer sync warning:", customerSyncError);
+    }
+
     revalidatePath("/admin");
     revalidatePath("/admin/orders");
+    revalidatePath("/admin/customers");
 
     return { success: true, orderCode };
   } catch (error) {
